@@ -21,13 +21,20 @@ async function buildNotes() {
     const filePath = path.join(NOTES_DIR, file);
     try {
       const { value: html } = await mammoth.convertToHtml({ path: filePath });
+      // Extract summary (first 100 chars or first paragraph)
+      const textContent = html.replace(/<[^>]+>/g, ' '); // simple strip tags
+      const summary = textContent.length > 150 ? textContent.substring(0, 150) + '...' : textContent;
+
       // Get file creation time as date
       const stats = fs.statSync(filePath);
       
       notes.push({
+        id: file.replace('.docx', ''), // simple id
         filename: file,
+        url: `/notes/${file}`, // raw file access
         date: stats.birthtime.toISOString().split('T')[0],
-        content: html
+        content: html,
+        summary: summary
       });
       console.log(`Processed: ${file}`);
     } catch (error) {

@@ -43,6 +43,9 @@ export default {
         if (url.pathname === '/gallery') {
           return new Request(`${url.origin}/gallery.html`, req)
         }
+        if (url.pathname === '/notes') {
+          return new Request(`${url.origin}/notes.html`, req)
+        }
         return mapRequestToAsset(req)
       }
 
