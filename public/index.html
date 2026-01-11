@@ -5,11 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>图库</title>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <!-- 引入 Supabase JS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
-      --sidebar-width: 256px;
       --top-bar-height: 64px;
       --bg-color: #ffffff;
       --hover-bg: #f1f3f4;
@@ -26,68 +23,9 @@
       background-color: var(--bg-color);
       color: var(--text-color);
       display: flex;
+      flex-direction: column;
       height: 100vh;
       overflow: hidden;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      width: var(--sidebar-width);
-      display: flex;
-      flex-direction: column;
-      padding: 8px 0;
-      flex-shrink: 0;
-    }
-
-    .logo-area {
-      padding: 12px 24px;
-      display: flex;
-      align-items: center;
-      font-size: 22px;
-      color: var(--secondary-text);
-      font-weight: 400;
-    }
-    .logo-icon {
-      font-size: 32px;
-      color: #fbbc04; /* Google Photos Yellowish */
-      margin-right: 8px;
-    }
-    /* Logo 颜色模仿 */
-    .logo-icon span:nth-child(1) { color: #4285f4; }
-    .logo-icon span:nth-child(2) { color: #ea4335; }
-    .logo-icon span:nth-child(3) { color: #fbbc04; }
-    .logo-icon span:nth-child(4) { color: #34a853; }
-
-    .nav-item {
-      display: flex;
-      align-items: center;
-      padding: 0 24px;
-      height: 48px;
-      cursor: pointer;
-      color: var(--secondary-text);
-      font-weight: 500;
-      border-radius: 0 24px 24px 0;
-      margin-right: 8px;
-      text-decoration: none;
-    }
-    .nav-item:hover {
-      background-color: var(--hover-bg);
-    }
-    .nav-item.active {
-      color: var(--primary-color);
-      background-color: #e8f0fe;
-    }
-    .nav-item .material-icons {
-      margin-right: 16px;
-      font-size: 24px;
-    }
-
-    /* Main Content */
-    .main-content {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      min-width: 0; /* 防止 flex 子项溢出 */
     }
 
     /* Top Bar */
@@ -97,7 +35,29 @@
       align-items: center;
       padding: 8px 20px;
       justify-content: space-between;
+      border-bottom: 1px solid #eee;
+      flex-shrink: 0;
+      z-index: 10;
+      background: white;
     }
+    .logo-area {
+      display: flex;
+      align-items: center;
+      font-size: 22px;
+      color: var(--secondary-text);
+      font-weight: 400;
+      margin-right: 20px;
+    }
+    .logo-icon {
+      font-size: 28px;
+      color: #fbbc04;
+      margin-right: 8px;
+    }
+    .logo-icon span:nth-child(1) { color: #4285f4; }
+    .logo-icon span:nth-child(2) { color: #ea4335; }
+    .logo-icon span:nth-child(3) { color: #fbbc04; }
+    .logo-icon span:nth-child(4) { color: #34a853; }
+
     .search-box {
       background: #f1f3f4;
       border-radius: 8px;
@@ -105,9 +65,8 @@
       display: flex;
       align-items: center;
       padding: 0 16px;
-      width: 100%;
+      flex-grow: 1;
       max-width: 720px;
-      margin-right: 20px;
       transition: background 0.2s, box-shadow 0.2s;
     }
     .search-box:focus-within {
@@ -133,7 +92,88 @@
       background-color: rgba(60,64,67,0.08);
     }
 
-    /* Gallery Area */
+    /* Carousel */
+    .carousel-container {
+      width: 100%;
+      height: 400px; /* 大图高度 */
+      position: relative;
+      overflow: hidden;
+      background: #000;
+      flex-shrink: 0;
+    }
+    
+    .carousel-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      filter: blur(30px) brightness(0.6);
+      transform: scale(1.1); /* 避免模糊边缘 */
+      transition: background-image 0.5s ease;
+      z-index: 1;
+    }
+
+    .carousel-main {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .carousel-img {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border-radius: 4px;
+      transition: opacity 0.5s ease;
+      opacity: 0; /* 初始隐藏，加载完显示 */
+    }
+    .carousel-img.active {
+      opacity: 1;
+    }
+
+    .carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+      transition: background 0.3s;
+    }
+    .carousel-btn:hover {
+      background: rgba(255,255,255,0.4);
+    }
+    .prev-btn { left: 20px; }
+    .next-btn { right: 20px; }
+    .carousel-btn .material-icons { font-size: 32px; }
+
+    /* Main Content (Gallery) */
+    .main-content {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background-color: var(--bg-color);
+    }
+
     .gallery-scroll-area {
       flex-grow: 1;
       overflow-y: auto;
@@ -152,20 +192,16 @@
       display: flex;
       align-items: center;
     }
-    .date-header .main-date {
-      font-size: 18px;
-      margin-right: 8px;
-    }
 
     /* Photo Grid */
     .photo-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 16px; /* Google Photos 的间距通常比较大 */
+      gap: 16px;
     }
     .photo-item {
       position: relative;
-      padding-bottom: 100%; /* 正方形占位 */
+      padding-bottom: 100%;
       border-radius: 8px;
       overflow: hidden;
       background-color: #f0f0f0;
@@ -184,7 +220,6 @@
       filter: brightness(0.9);
     }
     
-    /* Overlay for copy button etc */
     .photo-overlay {
       position: absolute;
       top: 8px;
@@ -210,122 +245,57 @@
       background: #fff;
     }
 
-    /* Loading/Empty State */
     .loading-state {
       text-align: center;
-      padding: 100px;
+      padding: 50px;
       color: var(--secondary-text);
     }
 
-    /* Modal Styles */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    .modal-card {
-      background: white;
-      border-radius: 8px;
-      width: 100%;
-      max-width: 360px;
-      padding: 32px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      text-align: center;
-    }
-    .modal-title {
-      font-size: 24px;
-      margin-bottom: 24px;
-      font-weight: 500;
-    }
-    .modal-input {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 16px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 16px;
-    }
-    .modal-btn {
-      width: 100%;
-      padding: 10px;
-      background: var(--primary-color);
-      color: white;
-      border: none;
-      border-radius: 4px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      margin-top: 8px;
-    }
-    .modal-btn:hover {
-      background: #1765cc;
-    }
-    .modal-btn.secondary {
-      background: white;
-      color: var(--primary-color);
-      margin-top: 12px;
-    }
-    .modal-btn.secondary:hover {
-      background: #f1f3f4;
-    }
-    .status-msg {
-      margin-top: 16px;
-      font-size: 14px;
-      min-height: 20px;
-    }
-    .user-avatar-active {
-      color: var(--primary-color) !important;
-    }
-
     @media (max-width: 600px) {
-      .sidebar { display: none; } /* 移动端暂时隐藏侧边栏 */
+      .carousel-container { height: 250px; }
       .photo-grid {
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
         gap: 2px;
       }
       .photo-item { border-radius: 0; }
       .gallery-scroll-area { padding: 10px; }
+      .logo-area span { display: none; } /* 移动端隐藏 Logo 文字，省空间 */
     }
   </style>
 </head>
 <body>
 
-  <!-- Sidebar -->
-  <aside class="sidebar">
+  <!-- Top Bar -->
+  <header class="top-bar">
     <div class="logo-area">
+      <span class="material-icons logo-icon" style="color:#fbbc04;">photo_library</span>
       <span style="font-weight: bold; color: #5f6368;">Google</span>&nbsp;<span style="color: #5f6368;">相册</span>
     </div>
-    <nav>
-      <a href="#" class="nav-item active">
-        <span class="material-icons">photo</span>
-        照片
-      </a>
-      <!-- 用户要求只保留图库，其他移除 -->
-    </nav>
-  </aside>
+    <div class="search-box">
+      <span class="material-icons" style="color: #5f6368;">search</span>
+      <input type="text" id="searchInput" placeholder="搜索您的照片" onkeyup="filterImages()">
+    </div>
+    <div class="top-actions">
+      <span class="material-icons">settings</span>
+    </div>
+  </header>
 
-  <!-- Main Content -->
+  <!-- Carousel Section -->
+  <div class="carousel-container" id="carouselContainer">
+    <div class="carousel-bg" id="carouselBg"></div>
+    <div class="carousel-main">
+      <img src="" alt="" class="carousel-img" id="carouselImg">
+    </div>
+    <button class="carousel-btn prev-btn" onclick="prevSlide()">
+      <span class="material-icons">chevron_left</span>
+    </button>
+    <button class="carousel-btn next-btn" onclick="nextSlide()">
+      <span class="material-icons">chevron_right</span>
+    </button>
+  </div>
+
+  <!-- Main Content (Gallery Grid) -->
   <main class="main-content">
-    <header class="top-bar">
-      <div class="search-box">
-        <span class="material-icons" style="color: #5f6368;">search</span>
-        <input type="text" id="searchInput" placeholder="搜索您的照片" onkeyup="filterImages()">
-      </div>
-      <div class="top-actions">
-        <span class="material-icons">cloud_upload</span>
-        <span class="material-icons">help_outline</span>
-        <span class="material-icons">settings</span>
-        <span class="material-icons" id="userIcon" onclick="openAuthModal()">account_circle</span>
-      </div>
-    </header>
-
     <div id="gallery-scroll-area" class="gallery-scroll-area">
       <div id="gallery-content">
         <div class="loading-state">正在加载照片...</div>
@@ -333,148 +303,13 @@
     </div>
   </main>
 
-  <!-- Auth Modal -->
-  <div id="authModal" class="modal-overlay" onclick="closeAuthModal(event)">
-    <div class="modal-card" onclick="event.stopPropagation()">
-      <div class="modal-title" id="modalTitle">登录</div>
-      <input type="email" id="emailInput" class="modal-input" placeholder="邮箱" />
-      <input type="password" id="passwordInput" class="modal-input" placeholder="密码" />
-      
-      <button class="modal-btn" onclick="handleAuthAction()" id="actionBtn">登录</button>
-      <button class="modal-btn secondary" onclick="toggleAuthMode()" id="toggleBtn">创建账号</button>
-      
-      <div class="status-msg" id="statusMsg"></div>
-      
-      <div style="margin-top: 20px; font-size: 12px; color: #666;">
-        ⚠️ 演示功能：无需真实数据
-      </div>
-    </div>
-  </div>
-
   <script>
-    // 配置加速域名
     const CDN_HOST = 'love.canz-monkey.cn';
     const baseUrl = CDN_HOST ? `https://${CDN_HOST}` : window.location.origin;
 
-    // Supabase 配置 (请在此填入您的 Supabase URL 和 Anon Key)
-    const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-    const SUPABASE_KEY = 'YOUR_ANON_KEY';
-    
-    let supabase = null;
-    try {
-      if (SUPABASE_URL.includes('YOUR_PROJECT_ID')) {
-        console.warn('请配置 Supabase URL 和 Key');
-      } else {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      }
-    } catch (e) {
-      console.error('Supabase init failed:', e);
-    }
-
-    // Auth State
-    let isLoginMode = true;
-
-    function openAuthModal() {
-      document.getElementById('authModal').style.display = 'flex';
-      checkUser();
-    }
-
-    function closeAuthModal(e) {
-      if (e) e.stopPropagation();
-      document.getElementById('authModal').style.display = 'none';
-      document.getElementById('statusMsg').innerText = '';
-    }
-
-    function toggleAuthMode() {
-      isLoginMode = !isLoginMode;
-      document.getElementById('modalTitle').innerText = isLoginMode ? '登录' : '注册';
-      document.getElementById('actionBtn').innerText = isLoginMode ? '登录' : '注册';
-      document.getElementById('toggleBtn').innerText = isLoginMode ? '创建账号' : '返回登录';
-      document.getElementById('statusMsg').innerText = '';
-    }
-
-    async function handleAuthAction() {
-      if (!supabase) {
-        setStatus('请先在代码中配置 Supabase URL 和 Key', true);
-        return;
-      }
-
-      const email = document.getElementById('emailInput').value;
-      const password = document.getElementById('passwordInput').value;
-      const statusDiv = document.getElementById('statusMsg');
-
-      if (!email || !password) {
-        setStatus('请输入邮箱和密码', true);
-        return;
-      }
-
-      setStatus('处理中...');
-
-      try {
-        let error;
-        if (isLoginMode) {
-          const { data, error: err } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-          error = err;
-          if (!error) {
-            setStatus('登录成功！');
-            setTimeout(closeAuthModal, 1000);
-            updateUserIcon(true);
-          }
-        } else {
-          const { data, error: err } = await supabase.auth.signUp({
-            email,
-            password,
-          });
-          error = err;
-          if (!error) {
-            setStatus('注册成功！请检查邮箱验证。');
-          }
-        }
-
-        if (error) throw error;
-
-      } catch (e) {
-        setStatus(e.message, true);
-      }
-    }
-
-    function setStatus(msg, isError = false) {
-      const el = document.getElementById('statusMsg');
-      el.innerText = msg;
-      el.style.color = isError ? '#d93025' : '#188038';
-    }
-
-    async function checkUser() {
-      if (!supabase) return;
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        document.getElementById('modalTitle').innerText = '已登录';
-        document.getElementById('emailInput').style.display = 'none';
-        document.getElementById('passwordInput').style.display = 'none';
-        document.getElementById('actionBtn').innerText = '退出登录';
-        document.getElementById('actionBtn').onclick = async () => {
-          await supabase.auth.signOut();
-          location.reload();
-        };
-        document.getElementById('toggleBtn').style.display = 'none';
-        updateUserIcon(true);
-      }
-    }
-
-    function updateUserIcon(isLoggedIn) {
-      const icon = document.getElementById('userIcon');
-      if (isLoggedIn) {
-        icon.classList.add('user-avatar-active');
-      } else {
-        icon.classList.remove('user-avatar-active');
-      }
-    }
-
-    // --- Gallery Logic ---
     let allImages = [];
+    let currentSlideIndex = 0;
+    let slideInterval;
 
     async function loadGallery() {
       const contentDiv = document.getElementById('gallery-content');
@@ -486,12 +321,17 @@
         
         if (allImages.length === 0) {
           contentDiv.innerHTML = '<div class="loading-state">没有照片</div>';
+          document.getElementById('carouselContainer').style.display = 'none';
           return;
         }
 
         // 按时间倒序排序
         allImages.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
 
+        // 初始化轮播
+        initCarousel();
+
+        // 渲染列表
         renderImages(allImages);
 
       } catch (e) {
@@ -500,34 +340,85 @@
       }
     }
 
+    // --- Carousel Logic ---
+    function initCarousel() {
+      if (allImages.length === 0) return;
+      showSlide(0);
+      // 自动播放
+      startAutoPlay();
+      
+      // 鼠标悬停停止播放
+      const container = document.getElementById('carouselContainer');
+      container.addEventListener('mouseenter', stopAutoPlay);
+      container.addEventListener('mouseleave', startAutoPlay);
+    }
+
+    function showSlide(index) {
+      if (index >= allImages.length) index = 0;
+      if (index < 0) index = allImages.length - 1;
+      
+      currentSlideIndex = index;
+      const imgObj = allImages[currentSlideIndex];
+      const fullUrl = baseUrl + imgObj.url;
+
+      const bgEl = document.getElementById('carouselBg');
+      const imgEl = document.getElementById('carouselImg');
+
+      // 更新背景 (高斯模糊)
+      bgEl.style.backgroundImage = `url('${fullUrl}')`;
+      
+      // 更新前景图
+      // 先淡出
+      imgEl.classList.remove('active');
+      
+      // 短暂延迟后切换源并淡入
+      setTimeout(() => {
+        imgEl.src = fullUrl;
+        imgEl.onload = () => {
+            imgEl.classList.add('active');
+        };
+      }, 200);
+    }
+
+    function nextSlide() {
+      showSlide(currentSlideIndex + 1);
+    }
+
+    function prevSlide() {
+      showSlide(currentSlideIndex - 1);
+    }
+
+    function startAutoPlay() {
+      if (slideInterval) clearInterval(slideInterval);
+      slideInterval = setInterval(nextSlide, 5000); // 5秒切换
+    }
+
+    function stopAutoPlay() {
+      if (slideInterval) clearInterval(slideInterval);
+    }
+
+    // --- Grid Logic ---
     function renderImages(images) {
       const contentDiv = document.getElementById('gallery-content');
       contentDiv.innerHTML = '';
 
-      // 按日期分组
       const groups = {};
       images.forEach(img => {
         const date = new Date(img.uploadedAt);
-        // 格式化日期：2025年12月31日周三
         const dateStr = date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
-        if (!groups[dateStr]) {
-          groups[dateStr] = [];
-        }
+        if (!groups[dateStr]) groups[dateStr] = [];
         groups[dateStr].push(img);
       });
 
-      // 渲染分组
       Object.keys(groups).forEach(dateStr => {
         const groupDiv = document.createElement('div');
         groupDiv.className = 'date-group';
 
-        // Header
         const header = document.createElement('div');
         header.className = 'date-header';
         header.innerText = dateStr;
         groupDiv.appendChild(header);
 
-        // Grid
         const grid = document.createElement('div');
         grid.className = 'photo-grid';
 
@@ -536,7 +427,7 @@
           const item = document.createElement('div');
           item.className = 'photo-item';
           item.innerHTML = `
-            <img src="${fullUrl}" loading="lazy" alt="${img.name}" onclick="window.open('${fullUrl}', '_blank')">
+            <img src="${fullUrl}" loading="lazy" alt="${img.name}" onclick="viewInCarousel('${fullUrl}')">
             <div class="photo-overlay">
               <div class="icon-btn" title="复制链接" onclick="copyLink('${fullUrl}', event)">
                 <span class="material-icons" style="font-size: 18px; color: #3c4043;">link</span>
@@ -551,6 +442,15 @@
       });
     }
 
+    function viewInCarousel(url) {
+        // 点击列表图片，跳转轮播到该图
+        const index = allImages.findIndex(img => (baseUrl + img.url) === url);
+        if (index !== -1) {
+            showSlide(index);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
     function filterImages() {
       const query = document.getElementById('searchInput').value.toLowerCase();
       const filtered = allImages.filter(img => img.name.toLowerCase().includes(query));
@@ -558,22 +458,16 @@
     }
 
     function copyLink(url, event) {
-      event.stopPropagation(); // 防止触发图片点击
+      event.stopPropagation();
       navigator.clipboard.writeText(url).then(() => {
-        // 简单的提示反馈
         const btn = event.currentTarget;
         const originalBg = btn.style.background;
         btn.style.background = '#e6f4ea';
-        setTimeout(() => {
-          btn.style.background = originalBg;
-        }, 500);
+        setTimeout(() => { btn.style.background = originalBg; }, 500);
       });
     }
 
     loadGallery();
-    
-    // Check auth status on load
-    if (supabase) checkUser();
   </script>
 </body>
 </html>
