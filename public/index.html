@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>图库</title>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- 引入 Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --sidebar-width: 256px;
@@ -215,6 +217,73 @@
       color: var(--secondary-text);
     }
 
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-card {
+      background: white;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 360px;
+      padding: 32px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      text-align: center;
+    }
+    .modal-title {
+      font-size: 24px;
+      margin-bottom: 24px;
+      font-weight: 500;
+    }
+    .modal-input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    .modal-btn {
+      width: 100%;
+      padding: 10px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .modal-btn:hover {
+      background: #1765cc;
+    }
+    .modal-btn.secondary {
+      background: white;
+      color: var(--primary-color);
+      margin-top: 12px;
+    }
+    .modal-btn.secondary:hover {
+      background: #f1f3f4;
+    }
+    .status-msg {
+      margin-top: 16px;
+      font-size: 14px;
+      min-height: 20px;
+    }
+    .user-avatar-active {
+      color: var(--primary-color) !important;
+    }
+
     @media (max-width: 600px) {
       .sidebar { display: none; } /* 移动端暂时隐藏侧边栏 */
       .photo-grid {
@@ -253,7 +322,7 @@
         <span class="material-icons">cloud_upload</span>
         <span class="material-icons">help_outline</span>
         <span class="material-icons">settings</span>
-        <span class="material-icons">account_circle</span>
+        <span class="material-icons" id="userIcon" onclick="openAuthModal()">account_circle</span>
       </div>
     </header>
 
@@ -264,11 +333,147 @@
     </div>
   </main>
 
+  <!-- Auth Modal -->
+  <div id="authModal" class="modal-overlay" onclick="closeAuthModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-title" id="modalTitle">登录</div>
+      <input type="email" id="emailInput" class="modal-input" placeholder="邮箱" />
+      <input type="password" id="passwordInput" class="modal-input" placeholder="密码" />
+      
+      <button class="modal-btn" onclick="handleAuthAction()" id="actionBtn">登录</button>
+      <button class="modal-btn secondary" onclick="toggleAuthMode()" id="toggleBtn">创建账号</button>
+      
+      <div class="status-msg" id="statusMsg"></div>
+      
+      <div style="margin-top: 20px; font-size: 12px; color: #666;">
+        ⚠️ 演示功能：无需真实数据
+      </div>
+    </div>
+  </div>
+
   <script>
     // 配置加速域名
     const CDN_HOST = 'love.canz-monkey.cn';
     const baseUrl = CDN_HOST ? `https://${CDN_HOST}` : window.location.origin;
 
+    // Supabase 配置 (请在此填入您的 Supabase URL 和 Anon Key)
+    const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
+    const SUPABASE_KEY = 'YOUR_ANON_KEY';
+    
+    let supabase = null;
+    try {
+      if (SUPABASE_URL.includes('YOUR_PROJECT_ID')) {
+        console.warn('请配置 Supabase URL 和 Key');
+      } else {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch (e) {
+      console.error('Supabase init failed:', e);
+    }
+
+    // Auth State
+    let isLoginMode = true;
+
+    function openAuthModal() {
+      document.getElementById('authModal').style.display = 'flex';
+      checkUser();
+    }
+
+    function closeAuthModal(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('authModal').style.display = 'none';
+      document.getElementById('statusMsg').innerText = '';
+    }
+
+    function toggleAuthMode() {
+      isLoginMode = !isLoginMode;
+      document.getElementById('modalTitle').innerText = isLoginMode ? '登录' : '注册';
+      document.getElementById('actionBtn').innerText = isLoginMode ? '登录' : '注册';
+      document.getElementById('toggleBtn').innerText = isLoginMode ? '创建账号' : '返回登录';
+      document.getElementById('statusMsg').innerText = '';
+    }
+
+    async function handleAuthAction() {
+      if (!supabase) {
+        setStatus('请先在代码中配置 Supabase URL 和 Key', true);
+        return;
+      }
+
+      const email = document.getElementById('emailInput').value;
+      const password = document.getElementById('passwordInput').value;
+      const statusDiv = document.getElementById('statusMsg');
+
+      if (!email || !password) {
+        setStatus('请输入邮箱和密码', true);
+        return;
+      }
+
+      setStatus('处理中...');
+
+      try {
+        let error;
+        if (isLoginMode) {
+          const { data, error: err } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+          error = err;
+          if (!error) {
+            setStatus('登录成功！');
+            setTimeout(closeAuthModal, 1000);
+            updateUserIcon(true);
+          }
+        } else {
+          const { data, error: err } = await supabase.auth.signUp({
+            email,
+            password,
+          });
+          error = err;
+          if (!error) {
+            setStatus('注册成功！请检查邮箱验证。');
+          }
+        }
+
+        if (error) throw error;
+
+      } catch (e) {
+        setStatus(e.message, true);
+      }
+    }
+
+    function setStatus(msg, isError = false) {
+      const el = document.getElementById('statusMsg');
+      el.innerText = msg;
+      el.style.color = isError ? '#d93025' : '#188038';
+    }
+
+    async function checkUser() {
+      if (!supabase) return;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        document.getElementById('modalTitle').innerText = '已登录';
+        document.getElementById('emailInput').style.display = 'none';
+        document.getElementById('passwordInput').style.display = 'none';
+        document.getElementById('actionBtn').innerText = '退出登录';
+        document.getElementById('actionBtn').onclick = async () => {
+          await supabase.auth.signOut();
+          location.reload();
+        };
+        document.getElementById('toggleBtn').style.display = 'none';
+        updateUserIcon(true);
+      }
+    }
+
+    function updateUserIcon(isLoggedIn) {
+      const icon = document.getElementById('userIcon');
+      if (isLoggedIn) {
+        icon.classList.add('user-avatar-active');
+      } else {
+        icon.classList.remove('user-avatar-active');
+      }
+    }
+
+    // --- Gallery Logic ---
     let allImages = [];
 
     async function loadGallery() {
@@ -366,6 +571,9 @@
     }
 
     loadGallery();
+    
+    // Check auth status on load
+    if (supabase) checkUser();
   </script>
 </body>
 </html>
