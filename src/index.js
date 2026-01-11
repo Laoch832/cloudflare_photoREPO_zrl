@@ -19,6 +19,23 @@ export default {
       })
     }
 
+    const url = new URL(request.url)
+
+    // 调试路由：确认请求是否到达 Worker
+    if (url.pathname === '/debug') {
+      return new Response(JSON.stringify({
+        message: 'Hello from Cloudflare Worker!',
+        url: request.url,
+        headers: Object.fromEntries(request.headers),
+        cf: request.cf
+      }, null, 2), {
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
+      })
+    }
+
     try {
       const response = await getAssetFromKV(
         {
