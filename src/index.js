@@ -40,6 +40,20 @@ export default {
       try {
         // 获取消息记录
         let history = await env.CHAT_DATA.get('history', { type: 'json' }) || [];
+        
+        // 如果为空，自动初始化欢迎消息
+        if (history.length === 0) {
+          const welcomeMsg = {
+            id: 'system-welcome',
+            text: '欢迎来到聊天室！这里的所有消息（包括这条）都存储在 Cloudflare KV 中。',
+            senderId: 'system',
+            timestamp: Date.now()
+          };
+          history.push(welcomeMsg);
+          // 异步写入
+          ctx.waitUntil(env.CHAT_DATA.put('history', JSON.stringify(history)));
+        }
+
         // 过滤 1 小时内的消息
         const now = Date.now();
         history = history.filter(msg => now - msg.timestamp < 3600000);
@@ -112,6 +126,7 @@ export default {
     }
 
     // --- 静态资源服务 ---
+    try {
       const customMapRequestToAsset = (req) => {
         const url = new URL(req.url)
         if (url.pathname === '/gallery') {
