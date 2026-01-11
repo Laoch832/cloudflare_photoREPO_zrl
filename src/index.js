@@ -61,9 +61,22 @@ export default {
         }
       )
 
-      // 为正常响应添加 CORS 头
+      // 为正常响应添加 CORS 头和 Cache-Control 头
       const headers = new Headers(response.headers)
       Object.keys(corsHeaders).forEach(key => headers.set(key, corsHeaders[key]))
+
+      // 智能缓存策略
+      const contentType = headers.get('content-type') || ''
+      if (contentType.includes('text/html')) {
+        // HTML: 不缓存或短缓存，确保更新即时生效
+        headers.set('Cache-Control', 'public, max-age=0, must-revalidate')
+      } else if (contentType.includes('application/json') || contentType.includes('application/javascript')) {
+        // JSON/JS: 中等缓存，配合 ETag (KV 自动处理)
+        headers.set('Cache-Control', 'public, max-age=3600, must-revalidate')
+      } else if (contentType.match(/image|font|css/)) {
+        // 静态资源: 长缓存
+        headers.set('Cache-Control', 'public, max-age=86400')
+      }
 
       return new Response(response.body, {
         status: response.status,
