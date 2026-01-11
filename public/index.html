@@ -470,38 +470,10 @@
       </div>
 
       <div class="section-card">
-        <div style="display: flex; gap: 20px; height: 400px;">
-          <!-- Chat Module -->
-          <div class="chat-container" style="flex: 1; height: 100%;">
-            <div class="chat-header">
-              <h2>实时聊天</h2>
-              <div><span class="online-badge"></span><span id="onlineCount">0</span> 在线</div>
-            </div>
-            <div class="chat-messages" id="chatMessages">
-              <div style="text-align:center; color:var(--secondary-text); padding:20px;">连接中...</div>
-            </div>
-            <div class="chat-input-area">
-              <input type="text" class="chat-input" id="chatInput" placeholder="说点什么..." maxlength="100">
-              <button class="chat-send-btn ripple" onclick="sendMessage()">
-                <span class="material-icons">send</span>
-              </button>
-            </div>
-          </div>
-          
-          <!-- Logger Module -->
-          <div class="logger-container" style="flex: 1; height: 100%; display: flex; flex-direction: column; background: #1e1e1e; border-radius: var(--md-sys-shape-corner-medium); overflow: hidden; font-family: 'Consolas', 'Monaco', monospace; font-size: 12px;">
-            <div class="logger-header" style="background: #252526; padding: 8px 12px; color: #cccccc; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;">
-              <span>TERMINAL</span>
-              <div style="display: flex; gap: 12px; font-size: 11px;">
-                <span id="statPing" title="API Latency">Ping: --ms</span>
-                <span id="statTraffic" title="Total Traffic">Data: 0KB</span>
-                <span style="opacity: 0.5; cursor: pointer;" onclick="document.getElementById('loggerContent').innerHTML=''">Clear</span>
-              </div>
-            </div>
-            <div class="logger-content" id="loggerContent" style="flex: 1; overflow-y: auto; padding: 8px; color: #cccccc;">
-              <div class="log-line info"><span class="log-time">[SYSTEM]</span> Logger initialized...</div>
-            </div>
-          </div>
+        <div style="height: 200px; display: flex; align-items: center; justify-content: center; flex-direction: column; color: var(--secondary-text); background: var(--md-sys-color-surface-variant); border-radius: var(--md-sys-shape-corner-medium); opacity: 0.8;">
+          <span class="material-icons" style="font-size: 48px; margin-bottom: 16px;">chat_bubble_outline</span>
+          <div style="font-size: 18px; font-weight: 500;">聊天室功能维护中</div>
+          <div style="font-size: 14px; margin-top: 8px;">Chat system is currently offline</div>
         </div>
       </div>
       
@@ -692,190 +664,18 @@
 
     // --- Logger Logic ---
     function logToTerminal(type, ...args) {
-      const logger = document.getElementById('loggerContent');
-      if (!logger) return;
-      
-      const line = document.createElement('div');
-      line.className = `log-line ${type}`;
-      
-      const time = new Date().toLocaleTimeString([], {hour12: false});
-      const content = args.map(arg => 
-        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-      ).join(' ');
-      
-      line.innerHTML = `<span class="log-time">[${time}]</span> ${content}`;
-      logger.appendChild(line);
-      logger.scrollTop = logger.scrollHeight;
+      // Logger disabled
     }
     
-    // Override console
-    const originalLog = console.log;
-    const originalWarn = console.warn;
-    const originalError = console.error;
-    
-    console.log = (...args) => { originalLog(...args); logToTerminal('info', ...args); };
-    console.warn = (...args) => { originalWarn(...args); logToTerminal('warn', ...args); };
-    console.error = (...args) => { originalError(...args); logToTerminal('error', ...args); };
-
     // --- Chat Logic (Polling) ---
-    const chatMessages = document.getElementById('chatMessages');
-    const chatInput = document.getElementById('chatInput');
-    const onlineCount = document.getElementById('onlineCount');
-    let myId = localStorage.getItem('chat_id') || Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('chat_id', myId);
-    
-    let lastMessageIds = new Set();
-    let isPolling = false;
+    // Disabled
+    function initChat() {}
+    function pollChat() {}
+    function sendHeartbeat() {}
+    function sendMessage() {}
 
-    // Start Chat
-    function initChat() {
-      chatMessages.innerHTML = ''; 
-      addSystemMessage('聊天室已就绪');
-      
-      // Initial fetch
-      pollChat();
-      sendHeartbeat();
-
-      // Start loops
-      setInterval(pollChat, 500); // Poll every 500ms (High frequency)
-      setInterval(sendHeartbeat, 10000); // Heartbeat every 10s
-    }
-
-    async function pollChat() {
-      if (isPolling) return;
-      isPolling = true;
-      try {
-         const res = await fetch('/api/chat/poll');
-         if (!res.ok) throw new Error('Poll failed');
-         const data = await res.json();
-         
-         // Update count
-         if (onlineCount.innerText != data.count) {
-             console.log(`Online count updated: ${data.count}`);
-             onlineCount.innerText = data.count;
-         }
- 
-         // Update messages
-          // Remove temp messages first to avoid visual dupe
-          const temps = document.querySelectorAll('.temp-msg');
-          temps.forEach(el => el.remove());
-          
-          data.messages.forEach(msg => {
-            if (!lastMessageIds.has(msg.id)) {
-              addMessage(msg);
-              lastMessageIds.add(msg.id);
-              console.log(`New message from ${msg.senderId}: ${msg.text}`);
-            }
-          });
-       } catch (e) {
-         console.error('Chat poll error:', e);
-       } finally {
-         isPolling = false;
-       }
-    }
-
-    async function sendHeartbeat() {
-      try {
-        await fetch('/api/chat/heartbeat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: myId })
-        });
-      } catch (e) {}
-    }
-
-    async function sendMessage() {
-      const text = chatInput.value.trim();
-      if (!text) return;
-      
-      const tempId = 'temp-' + Date.now();
-      
-      try {
-        chatInput.value = '';
-        
-        // Show temp message with sending status
-        const tempMsg = { id: tempId, text: text, senderId: myId, isTemp: true };
-        addMessage(tempMsg);
-        
-        await fetch('/api/chat/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            content: text,
-            senderId: myId
-          })
-        });
-        
-        // Success feedback handled by poll (msg will be deduped)
-        // But we can show a toast
-        logToTerminal('info', 'Message sent successfully');
-        
-        // Trigger immediate poll
-        pollChat();
-      } catch (e) {
-        alert('发送失败，请重试');
-        logToTerminal('error', 'Send failed: ' + e.message);
-      }
-    }
-
-    chatInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendMessage();
-    });
-
-    function addMessage(msg) {
-      const div = document.createElement('div');
-      const isSelf = msg.senderId === myId;
-      const isSystem = msg.senderId === 'system';
-      
-      div.className = `chat-message ${isSelf ? 'self' : ''}`;
-      if (isSystem) {
-        div.style.background = 'var(--md-sys-color-surface-variant)';
-        div.style.opacity = '0.8';
-        div.style.textAlign = 'center';
-        div.style.alignSelf = 'center';
-        div.style.maxWidth = '90%';
-        div.style.fontSize = '12px';
-      }
-      
-      const time = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Sending...';
-      
-      let statusIcon = '';
-      if (isSelf && !msg.isTemp) statusIcon = '<span class="material-icons" style="font-size:10px; vertical-align:middle; margin-left:2px;">check</span>';
-      
-      div.innerHTML = `
-        <div>${msg.text}</div>
-        <div style="font-size:10px; opacity:0.6; text-align:right; margin-top:4px;">${time} ${statusIcon}</div>
-      `;
-      
-      // Replace temp message if exists (simple dedup by text? No, poll handles ID)
-      // Here we just append. If we poll the same message back, we should avoid dupes.
-      // Current poll logic: if (!lastMessageIds.has(msg.id)) addMessage(msg);
-      // Temp msg has temp id. Real msg has real id.
-      // So we might see duplicate if we don't remove temp.
-      // Simple fix: Remove all temp messages before adding new ones? Or just let them be "Sending..." then appear as real?
-      // Better: When polling real message, check if matches any temp content? 
-      // For MVP: Just let "Sending..." stay for a split second, then poll adds real one. 
-      // To avoid double visual, we can remove temp msgs when we get new poll data?
-      // Let's implement simple temp cleanup in pollChat.
-      
-      if (msg.isTemp) div.classList.add('temp-msg');
-      
-      chatMessages.appendChild(div);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    function addSystemMessage(text) {
-      const div = document.createElement('div');
-      div.style.textAlign = 'center';
-      div.style.fontSize = '12px';
-      div.style.color = 'var(--secondary-text)';
-      div.style.margin = '8px 0';
-      div.innerText = text;
-      chatMessages.appendChild(div);
-    }
-
-    // Init chat
-    initChat();
+    // Init chat (Disabled)
+    // initChat();
 
     // --- Stats & Notes Logic ---
     Promise.all([
