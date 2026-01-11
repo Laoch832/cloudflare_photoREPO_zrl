@@ -212,6 +212,24 @@
     .download-btn:hover { background: rgba(128,128,128,0.1); }
     .download-btn .material-icons { font-size: 18px; margin-right: 8px; }
 
+    /* View Transitions */
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 0.3s;
+    }
+
+    /* Nav Indicator */
+    .nav-links { position: relative; }
+    .nav-indicator {
+      position: absolute;
+      bottom: -4px;
+      height: 3px;
+      background: var(--md-sys-color-primary);
+      border-radius: 3px 3px 0 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 10;
+    }
+
     /* Dynamic Island Loader */
     .dynamic-loader {
       position: fixed;
@@ -288,6 +306,7 @@
         <a href="/" class="nav-link ripple">首页</a>
         <a href="/gallery" class="nav-link ripple">图库</a>
         <a href="/notes" class="nav-link active ripple">笔记</a>
+        <div class="nav-indicator"></div>
       </div>
     </div>
     <div class="nav-right">

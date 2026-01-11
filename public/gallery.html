@@ -291,6 +291,7 @@
         <a href="/" class="nav-link ripple">首页</a>
         <a href="/gallery" class="nav-link active ripple">图库</a>
         <a href="/notes" class="nav-link ripple">笔记</a>
+        <div class="nav-indicator"></div>
       </div>
     </div>
     <div class="nav-right">
@@ -381,6 +382,18 @@
     initTheme();
     setInterval(updatePing, 30000);
     updatePing(); // Initial call
+
+    // --- Nav Indicator Logic ---
+    function updateNavIndicator() {
+      const activeLink = document.querySelector('.nav-link.active');
+      const indicator = document.querySelector('.nav-indicator');
+      if (activeLink && indicator) {
+        indicator.style.width = `${activeLink.offsetWidth}px`;
+        indicator.style.left = `${activeLink.offsetLeft}px`;
+      }
+    }
+    window.addEventListener('load', updateNavIndicator);
+    window.addEventListener('resize', updateNavIndicator);
 
     // --- Gallery Logic ---
     const CDN_HOST = 'love.canz-monkey.cn';
