@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gallery</title>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://love.canz-monkey.cn">
   <style>
     /* Dynamic Island Loader */
     .dynamic-loader {
@@ -46,25 +48,61 @@
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* CSS Variables for Theme */
+    /* MD3 Color System (Blue Seed) - Light */
     :root {
-      --bg-color: #ffffff;
-      --text-color: #202124;
-      --secondary-text: #5f6368;
-      --nav-bg: rgba(255, 255, 255, 0.8);
-      --card-bg: #ffffff;
-      --card-shadow: rgba(0,0,0,0.1);
-      --accent-color: #1a73e8;
+      --md-sys-color-primary: #0061a4;
+      --md-sys-color-on-primary: #ffffff;
+      --md-sys-color-primary-container: #d1e4ff;
+      --md-sys-color-on-primary-container: #001d36;
+      
+      --md-sys-color-secondary: #535f70;
+      --md-sys-color-on-secondary: #ffffff;
+      --md-sys-color-secondary-container: #d7e3f7;
+      --md-sys-color-on-secondary-container: #101c2b;
+      
+      --md-sys-color-surface: #fdfcff;
+      --md-sys-color-on-surface: #1a1c1e;
+      --md-sys-color-surface-variant: #dfe2eb;
+      --md-sys-color-on-surface-variant: #43474e;
+      
+      --md-sys-color-outline: #73777f;
+      
+      /* Elevation & Shapes */
+      --md-sys-shape-corner-large: 24px;
+      --md-sys-shape-corner-medium: 16px;
+      --md-sys-shape-corner-small: 8px;
+      
+      /* Legacy mapping */
+      --bg-color: var(--md-sys-color-surface);
+      --text-color: var(--md-sys-color-on-surface);
+      --secondary-text: var(--md-sys-color-on-surface-variant);
+      --nav-bg: rgba(253, 252, 255, 0.8);
+      --card-bg: #f0f4f8; /* Surface Container Low */
+      --accent-color: var(--md-sys-color-primary);
     }
 
     [data-theme="dark"] {
-      --bg-color: #202124;
-      --text-color: #e8eaed;
-      --secondary-text: #9aa0a6;
-      --nav-bg: rgba(32, 33, 36, 0.8);
-      --card-bg: #292a2d;
-      --card-shadow: rgba(0,0,0,0.3);
-      --accent-color: #8ab4f8;
+      /* MD3 Color System - Dark */
+      --md-sys-color-primary: #9ecaff;
+      --md-sys-color-on-primary: #003258;
+      --md-sys-color-primary-container: #00497d;
+      --md-sys-color-on-primary-container: #d1e4ff;
+      
+      --md-sys-color-secondary: #bbc7db;
+      --md-sys-color-on-secondary: #253140;
+      --md-sys-color-secondary-container: #3b4858;
+      --md-sys-color-on-secondary-container: #d7e3f7;
+      
+      --md-sys-color-surface: #1a1c1e;
+      --md-sys-color-on-surface: #e2e2e6;
+      --md-sys-color-surface-variant: #43474e;
+      --md-sys-color-on-surface-variant: #c3c7cf;
+      
+      --md-sys-color-outline: #8d9199;
+      
+      /* Legacy mapping */
+      --nav-bg: rgba(26, 28, 30, 0.8);
+      --card-bg: #202326;
     }
 
     * { box-sizing: border-box; }
@@ -102,17 +140,24 @@
       text-decoration: none;
       color: var(--secondary-text);
       font-weight: 500;
-      padding: 8px 12px;
-      border-radius: 4px;
+      padding: 8px 16px;
+      border-radius: 20px; /* Pill shape */
       transition: all 0.2s;
     }
-    .nav-link:hover { background: rgba(128,128,128,0.1); color: var(--text-color); }
-    .nav-link.active { color: var(--accent-color); background: rgba(26, 115, 232, 0.1); }
+    .nav-link:hover { 
+      background: rgba(0,0,0,0.05); 
+      color: var(--text-color); 
+    }
+    .nav-link.active { 
+      color: var(--md-sys-color-on-secondary-container); 
+      background: var(--md-sys-color-secondary-container); 
+      font-weight: 600;
+    }
 
     .nav-right { display: flex; align-items: center; gap: 16px; font-size: 14px; color: var(--secondary-text); }
     .ping-display { font-family: monospace; }
     .theme-toggle { cursor: pointer; padding: 8px; border-radius: 50%; display: flex; }
-    .theme-toggle:hover { background: rgba(128,128,128,0.1); }
+    .theme-toggle:hover { background: rgba(0,0,0,0.05); }
 
     /* --- Hero Carousel --- */
     .hero-carousel {
@@ -120,7 +165,7 @@
       width: 100%;
       height: 85vh;
       overflow: hidden;
-      background: #000;
+      background: var(--md-sys-color-surface);
       margin-top: 64px; /* Offset for fixed nav */
     }
     .hero-slide {
@@ -147,10 +192,11 @@
     .main-content { padding: 40px 24px; max-width: 1600px; margin: 0 auto; }
     .date-header {
       font-size: 24px;
-      color: var(--text-color);
+      color: var(--md-sys-color-primary);
+      font-weight: 500;
       margin: 40px 0 20px 0;
       padding-bottom: 10px;
-      border-bottom: 1px solid rgba(128,128,128,0.1);
+      border-bottom: 1px solid var(--md-sys-color-outline);
       position: sticky;
       top: 64px;
       background: var(--bg-color);
@@ -162,14 +208,18 @@
       break-inside: avoid;
       margin-bottom: 16px;
       position: relative;
-      border-radius: 12px;
+      border-radius: var(--md-sys-shape-corner-medium);
       overflow: hidden;
       cursor: pointer;
-      box-shadow: 0 2px 5px var(--card-shadow);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
       transition: transform 0.3s;
     }
-    .photo-item:hover { transform: translateY(-4px); z-index: 2; }
-    .photo-item img { width: 100%; display: block; border-radius: 12px; }
+    .photo-item:hover { 
+        transform: translateY(-4px); 
+        z-index: 2; 
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .photo-item img { width: 100%; display: block; border-radius: var(--md-sys-shape-corner-medium); }
 
     @media (max-width: 1200px) { .masonry-grid { column-count: 3; } }
     @media (max-width: 800px) { .masonry-grid { column-count: 2; } .hero-carousel { height: 60vh; } }
