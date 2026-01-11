@@ -20,3 +20,13 @@ bucket = "./public"
 [vars]
 # 这里的配置对于静态站点可能用处不大，但可以保留
 GALLERY_TITLE = "My Static Gallery"
+
+# Durable Objects 配置
+[durable_objects]
+bindings = [
+  { name = "CHAT_ROOM", class_name = "ChatRoom" }
+]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["ChatRoom"]

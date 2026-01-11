@@ -3,6 +3,82 @@ import manifestJSON from '__STATIC_CONTENT_MANIFEST'
 
 const assetManifest = JSON.parse(manifestJSON)
 
+// ChatRoom Durable Object
+export class ChatRoom {
+  constructor(state, env) {
+    this.state = state;
+    this.env = env;
+    this.sessions = new Set();
+    this.history = []; // Simple in-memory history
+  }
+
+  async fetch(request) {
+    // 处理 WebSocket 升级请求
+    if (request.headers.get("Upgrade") !== "websocket") {
+      return new Response("Expected Upgrade: websocket", { status: 426 });
+    }
+
+    const { 0: client, 1: server } = new WebSocketPair();
+    
+    // 处理连接
+    this.handleSession(server);
+
+    return new Response(null, { status: 101, webSocket: client });
+  }
+
+  handleSession(webSocket) {
+    // 接受连接
+    webSocket.accept();
+    this.sessions.add(webSocket);
+
+    // 发送历史记录 (过滤 1 小时内的)
+    const now = Date.now();
+    this.history = this.history.filter(msg => now - msg.timestamp < 3600000);
+    webSocket.send(JSON.stringify({ type: 'history', messages: this.history }));
+    
+    // 广播在线人数
+    this.broadcast({ type: 'count', count: this.sessions.size });
+
+    // 监听消息
+    webSocket.addEventListener("message", async msg => {
+      try {
+        const data = JSON.parse(msg.data);
+        if (data.type === 'message') {
+          const message = {
+            id: crypto.randomUUID(),
+            text: data.content,
+            timestamp: Date.now(),
+            senderId: data.senderId // Pass through senderId
+          };
+          this.history.push(message);
+          this.broadcast({ type: 'message', message });
+        }
+      } catch (err) {
+        // ignore malformed
+      }
+    });
+
+    // 监听关闭
+    const closeOrError = () => {
+      this.sessions.delete(webSocket);
+      this.broadcast({ type: 'count', count: this.sessions.size });
+    };
+    webSocket.addEventListener("close", closeOrError);
+    webSocket.addEventListener("error", closeOrError);
+  }
+
+  broadcast(message) {
+    const msgStr = JSON.stringify(message);
+    for (const session of this.sessions) {
+      try {
+        session.send(msgStr);
+      } catch (err) {
+        this.sessions.delete(session);
+      }
+    }
+  }
+}
+
 export default {
   async fetch(request, env, ctx) {
     // 允许跨域
@@ -34,6 +110,15 @@ export default {
           ...corsHeaders
         }
       })
+    }
+
+    // 聊天室 WebSocket 路由
+    if (url.pathname === '/api/chat') {
+      // 获取 Durable Object 实例
+      // 使用固定 ID 'global-chat' 确保所有用户连接到同一个房间
+      const id = env.CHAT_ROOM.idFromName('global-chat');
+      const obj = env.CHAT_ROOM.get(id);
+      return obj.fetch(request);
     }
 
     try {
