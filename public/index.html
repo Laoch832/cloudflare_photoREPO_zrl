@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home | zrl</title>
+  <title>Home</title>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
     /* CSS Variables for Theme */
@@ -54,7 +54,6 @@
     }
 
     .nav-left { display: flex; align-items: center; gap: 32px; }
-    .logo { font-weight: bold; font-size: 20px; color: var(--text-color); text-decoration: none; }
     
     .nav-links { display: flex; gap: 24px; }
     .nav-link {
@@ -126,6 +125,21 @@
     .feature-card:hover { transform: translateX(5px); }
     .feature-icon { margin-right: 16px; color: var(--accent-color); }
 
+    /* Notes Module */
+    .notes-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .note-item {
+      padding: 16px;
+      background: var(--bg-color);
+      border-radius: 12px;
+      border-left: 4px solid var(--accent-color);
+    }
+    .note-date { font-size: 12px; color: var(--secondary-text); margin-bottom: 4px; }
+    .note-content { font-size: 14px; color: var(--text-color); }
+
     @media (max-width: 800px) {
       .container { grid-template-columns: 1fr; }
     }
@@ -136,7 +150,6 @@
   <!-- Navigation -->
   <nav class="top-bar">
     <div class="nav-left">
-      <a href="/" class="logo">zrl</a>
       <div class="nav-links">
         <a href="/" class="nav-link active">首页</a>
         <a href="/gallery" class="nav-link">图库</a>
@@ -152,20 +165,17 @@
 
   <!-- Main Content -->
   <div class="container">
-    <!-- Left Column: Intro -->
+    <!-- Left Column: Intro & Carousel Placeholder -->
     <div class="main-column">
       <div class="section-card">
-        <h1>欢迎来到 zrl</h1>
-        <p>这里是 zrl 的个人信息聚合中心。目前主要用于展示摄影作品，未来将集成更多关于技术、生活和创意的模块。</p>
-        <p style="margin-top: 16px;">
-          网站采用 Cloudflare Workers + KV 构建，全站静态化，边缘分发，极致快速。
-        </p>
+        <h1>这里展示轮播图片(随机)</h1>
       </div>
 
       <div class="section-card">
-        <h2>最新动态</h2>
-        <p>• 2025-01-11: 网站重构上线，新增暗黑模式和图库瀑布流。</p>
-        <p>• 2024-12-30: 接入 EdgeOne 加速，优化图片加载体验。</p>
+        <h2>小笔记</h2>
+        <div id="notes-container" class="notes-list">
+          <div style="text-align: center; color: var(--secondary-text);">加载中...</div>
+        </div>
       </div>
     </div>
 
@@ -195,7 +205,6 @@
               <div style="font-size: 12px; color: var(--secondary-text);">浏览我的摄影作品</div>
             </div>
           </a>
-          <!-- More features placeholders -->
           <div class="feature-card" style="opacity: 0.5; cursor: default;">
             <span class="material-icons feature-icon">code</span>
             <div>
@@ -242,13 +251,37 @@
     setInterval(updatePing, 30000);
     updatePing();
 
-    // --- Stats Logic ---
-    fetch('/images.json')
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById('imgCount').innerText = data.length;
-      })
-      .catch(e => console.error(e));
+    // --- Stats & Notes Logic ---
+    Promise.all([
+      fetch('/images.json').then(res => res.json()),
+      fetch('/notes.json').then(res => res.json())
+    ]).then(([images, notes]) => {
+      // Stats
+      document.getElementById('imgCount').innerText = images.length;
+      
+      // Notes
+      const notesContainer = document.getElementById('notes-container');
+      if (notes.length === 0) {
+        notesContainer.innerHTML = '<div style="text-align: center; color: var(--secondary-text);">暂无笔记</div>';
+      } else {
+        notesContainer.innerHTML = '';
+        // Sort notes by date desc
+        notes.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        notes.forEach(note => {
+          const item = document.createElement('div');
+          item.className = 'note-item';
+          item.innerHTML = `
+            <div class="note-date">${new Date(note.date).toLocaleDateString()}</div>
+            <div class="note-content">${note.content}</div>
+          `;
+          notesContainer.appendChild(item);
+        });
+      }
+    }).catch(e => {
+      console.error(e);
+      document.getElementById('notes-container').innerHTML = '加载失败';
+    });
   </script>
 </body>
 </html>

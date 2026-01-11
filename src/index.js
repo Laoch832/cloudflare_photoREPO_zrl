@@ -1,4 +1,4 @@
-import { getAssetFromKV } from '@cloudflare/kv-asset-handler'
+import { getAssetFromKV, mapRequestToAsset } from '@cloudflare/kv-asset-handler'
 import manifestJSON from '__STATIC_CONTENT_MANIFEST'
 
 const assetManifest = JSON.parse(manifestJSON)
@@ -21,7 +21,7 @@ export default {
 
     const url = new URL(request.url)
 
-    // 调试路由：确认请求是否到达 Worker
+    // 调试路由
     if (url.pathname === '/debug') {
       return new Response(JSON.stringify({
         message: 'Hello from Cloudflare Worker!',
@@ -37,6 +37,15 @@ export default {
     }
 
     try {
+      // 自定义路由映射逻辑
+      const customMapRequestToAsset = (req) => {
+        const url = new URL(req.url)
+        if (url.pathname === '/gallery') {
+          return new Request(`${url.origin}/gallery.html`, req)
+        }
+        return mapRequestToAsset(req)
+      }
+
       const response = await getAssetFromKV(
         {
           request,
@@ -45,6 +54,7 @@ export default {
         {
           ASSET_NAMESPACE: env.__STATIC_CONTENT,
           ASSET_MANIFEST: assetManifest,
+          mapRequestToAsset: customMapRequestToAsset,
         }
       )
 
