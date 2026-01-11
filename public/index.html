@@ -431,7 +431,7 @@
   <!-- Initial Loading Mask -->
   <div class="loading-mask" id="loadingMask">
     <div class="mask-content">
-      <div class="mask-logo">zrl</div>
+      <div class="mask-logo">暗恋日记</div>
       <div class="mask-spinner"></div>
     </div>
   </div>
@@ -469,22 +469,48 @@
       </div>
 
       <div class="section-card">
-        <div class="chat-container">
-          <div class="chat-header">
-            <h2>实时聊天</h2>
-            <div><span class="online-badge"></span><span id="onlineCount">0</span> 在线</div>
+        <div style="display: flex; gap: 20px; height: 400px;">
+          <!-- Chat Module -->
+          <div class="chat-container" style="flex: 1; height: 100%;">
+            <div class="chat-header">
+              <h2>实时聊天</h2>
+              <div><span class="online-badge"></span><span id="onlineCount">0</span> 在线</div>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+              <div style="text-align:center; color:var(--secondary-text); padding:20px;">连接中...</div>
+            </div>
+            <div class="chat-input-area">
+              <input type="text" class="chat-input" id="chatInput" placeholder="说点什么..." maxlength="100">
+              <button class="chat-send-btn ripple" onclick="sendMessage()">
+                <span class="material-icons">send</span>
+              </button>
+            </div>
           </div>
-          <div class="chat-messages" id="chatMessages">
-            <div style="text-align:center; color:var(--secondary-text); padding:20px;">连接中...</div>
-          </div>
-          <div class="chat-input-area">
-            <input type="text" class="chat-input" id="chatInput" placeholder="说点什么..." maxlength="100">
-            <button class="chat-send-btn ripple" onclick="sendMessage()">
-              <span class="material-icons">send</span>
-            </button>
+          
+          <!-- Logger Module -->
+          <div class="logger-container" style="flex: 1; height: 100%; display: flex; flex-direction: column; background: #1e1e1e; border-radius: var(--md-sys-shape-corner-medium); overflow: hidden; font-family: 'Consolas', 'Monaco', monospace; font-size: 12px;">
+            <div class="logger-header" style="background: #252526; padding: 8px 12px; color: #cccccc; border-bottom: 1px solid #333; display: flex; justify-content: space-between;">
+              <span>TERMINAL</span>
+              <span style="opacity: 0.5; cursor: pointer;" onclick="document.getElementById('loggerContent').innerHTML=''">Clear</span>
+            </div>
+            <div class="logger-content" id="loggerContent" style="flex: 1; overflow-y: auto; padding: 8px; color: #cccccc;">
+              <div class="log-line info"><span class="log-time">[SYSTEM]</span> Logger initialized...</div>
+            </div>
           </div>
         </div>
       </div>
+      
+      <style>
+        .log-line { margin-bottom: 4px; line-height: 1.4; word-break: break-all; }
+        .log-time { color: #569cd6; margin-right: 6px; }
+        .log-line.info { color: #cccccc; }
+        .log-line.warn { color: #ce9178; }
+        .log-line.error { color: #f48771; }
+        @media (max-width: 800px) {
+           .section-card > div { flex-direction: column; height: auto !important; }
+           .logger-container { height: 200px !important; margin-top: 20px; }
+        }
+      </style>
 
       <div class="section-card">
         <h2>小笔记</h2>
@@ -562,12 +588,15 @@
     // Intercept Fetch
     const originalFetch = window.fetch;
     window.fetch = async (...args) => {
-      showLoader();
+      const url = args[0].toString();
+      const isChatPoll = url.includes('/api/chat/poll') || url.includes('/api/chat/heartbeat');
+      
+      if (!isChatPoll) showLoader();
       try {
         const response = await originalFetch(...args);
         return response;
       } finally {
-        hideLoader();
+        if (!isChatPoll) hideLoader();
       }
     };
 
@@ -633,6 +662,33 @@
     window.addEventListener('load', updateNavIndicator);
     window.addEventListener('resize', updateNavIndicator);
 
+    // --- Logger Logic ---
+    function logToTerminal(type, ...args) {
+      const logger = document.getElementById('loggerContent');
+      if (!logger) return;
+      
+      const line = document.createElement('div');
+      line.className = `log-line ${type}`;
+      
+      const time = new Date().toLocaleTimeString([], {hour12: false});
+      const content = args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+      ).join(' ');
+      
+      line.innerHTML = `<span class="log-time">[${time}]</span> ${content}`;
+      logger.appendChild(line);
+      logger.scrollTop = logger.scrollHeight;
+    }
+    
+    // Override console
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+    const originalError = console.error;
+    
+    console.log = (...args) => { originalLog(...args); logToTerminal('info', ...args); };
+    console.warn = (...args) => { originalWarn(...args); logToTerminal('warn', ...args); };
+    console.error = (...args) => { originalError(...args); logToTerminal('error', ...args); };
+
     // --- Chat Logic (Polling) ---
     const chatMessages = document.getElementById('chatMessages');
     const chatInput = document.getElementById('chatInput');
@@ -661,25 +717,29 @@
       if (isPolling) return;
       isPolling = true;
       try {
-        const res = await fetch('/api/chat/poll');
-        if (!res.ok) throw new Error('Poll failed');
-        const data = await res.json();
-        
-        // Update count
-        onlineCount.innerText = data.count;
-
-        // Update messages
-        data.messages.forEach(msg => {
-          if (!lastMessageIds.has(msg.id)) {
-            addMessage(msg);
-            lastMessageIds.add(msg.id);
-          }
-        });
-      } catch (e) {
-        console.error('Chat poll error:', e);
-      } finally {
-        isPolling = false;
-      }
+         const res = await fetch('/api/chat/poll');
+         if (!res.ok) throw new Error('Poll failed');
+         const data = await res.json();
+         
+         // Update count
+         if (onlineCount.innerText != data.count) {
+             console.log(`Online count updated: ${data.count}`);
+             onlineCount.innerText = data.count;
+         }
+ 
+         // Update messages
+         data.messages.forEach(msg => {
+           if (!lastMessageIds.has(msg.id)) {
+             addMessage(msg);
+             lastMessageIds.add(msg.id);
+             console.log(`New message from ${msg.senderId}: ${msg.text}`);
+           }
+         });
+       } catch (e) {
+         console.error('Chat poll error:', e);
+       } finally {
+         isPolling = false;
+       }
     }
 
     async function sendHeartbeat() {
