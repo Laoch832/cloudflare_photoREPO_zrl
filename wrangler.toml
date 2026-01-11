@@ -1,6 +1,11 @@
-name = "cloudflare-static-gallery"
+name = "zrlcollections"
 main = "src/index.js"
 compatibility_date = "2024-01-01"
+
+# 自定义域名配置
+routes = [
+	{ pattern = "cdn.120505.xyz", custom_domain = true }
+]
 
 # 配置静态资源目录 (Worker Sites)
 # Wrangler 会自动将 public 目录下的文件上传到 KV
