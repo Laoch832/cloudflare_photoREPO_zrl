@@ -228,7 +228,7 @@
       <div class="section-card">
         <h2>小笔记</h2>
         <div id="notes-container" class="notes-list">
-          <div style="text-align: center; color: var(--secondary-text);">加载中...</div>
+          <div style="text-align: center; color: var(--secondary-text);">Loading...</div>
         </div>
       </div>
     </div>
@@ -360,15 +360,21 @@
         // Sort notes by date desc
         notes.sort((a, b) => new Date(b.date) - new Date(a.date));
         
-        notes.forEach(note => {
-          const item = document.createElement('div');
-          item.className = 'note-item';
-          item.innerHTML = `
-            <div class="note-date">${new Date(note.date).toLocaleDateString()}</div>
-            <div class="note-content">${note.content}</div>
-          `;
-          notesContainer.appendChild(item);
-        });
+        // Show only latest note summary
+        const note = notes[0];
+        const item = document.createElement('div');
+        item.className = 'note-item';
+        item.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-weight:500;">${note.filename.replace('.docx', '')}</div>
+            <div class="note-date" style="margin:0;">${note.date}</div>
+          </div>
+          <div class="note-content" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+            ${note.summary}
+          </div>
+          <a href="/notes#${note.id}" style="display:inline-block; margin-top:12px; font-size:14px; color:var(--accent-color); text-decoration:none;">阅读全文 →</a>
+        `;
+        notesContainer.appendChild(item);
       }
     }).catch(e => {
       console.error(e);
