@@ -24,5 +24,5 @@ GALLERY_TITLE = "My Static Gallery"
 # KV 命名空间
 [[kv_namespaces]]
 binding = "CHAT_DATA"
-id = "e3b5626b11744fc5be1bbe5179d21ad2" # 替换为真实的 KV ID，本地开发会自动处理
-preview_id = "CHAT_DATA_PREVIEW_ID"
+id = "9d7798d93e6141dc8e3d328439fcc1a2"
+preview_id = "9d7798d93e6141dc8e3d328439fcc1a2" # Preview 使用相同的 ID 方便测试
