@@ -1,106 +1,27 @@
 import { getAssetFromKV, mapRequestToAsset } from '@cloudflare/kv-asset-handler'
 import manifestJSON from '__STATIC_CONTENT_MANIFEST'
-
 const assetManifest = JSON.parse(manifestJSON)
-
-// ChatRoom Durable Object
-export class ChatRoom {
-  constructor(state, env) {
-    this.state = state;
-    this.env = env;
-    this.sessions = new Set();
-    this.history = []; // Simple in-memory history
-  }
-
-  async fetch(request) {
-    // 处理 WebSocket 升级请求
-    if (request.headers.get("Upgrade") !== "websocket") {
-      return new Response("Expected Upgrade: websocket", { status: 426 });
-    }
-
-    const { 0: client, 1: server } = new WebSocketPair();
-    
-    // 处理连接
-    this.handleSession(server);
-
-    return new Response(null, { status: 101, webSocket: client });
-  }
-
-  handleSession(webSocket) {
-    // 接受连接
-    webSocket.accept();
-    this.sessions.add(webSocket);
-
-    // 发送历史记录 (过滤 1 小时内的)
-    const now = Date.now();
-    this.history = this.history.filter(msg => now - msg.timestamp < 3600000);
-    webSocket.send(JSON.stringify({ type: 'history', messages: this.history }));
-    
-    // 广播在线人数
-    this.broadcast({ type: 'count', count: this.sessions.size });
-
-    // 监听消息
-    webSocket.addEventListener("message", async msg => {
-      try {
-        const data = JSON.parse(msg.data);
-        if (data.type === 'message') {
-          const message = {
-            id: crypto.randomUUID(),
-            text: data.content,
-            timestamp: Date.now(),
-            senderId: data.senderId // Pass through senderId
-          };
-          this.history.push(message);
-          this.broadcast({ type: 'message', message });
-        }
-      } catch (err) {
-        // ignore malformed
-      }
-    });
-
-    // 监听关闭
-    const closeOrError = () => {
-      this.sessions.delete(webSocket);
-      this.broadcast({ type: 'count', count: this.sessions.size });
-    };
-    webSocket.addEventListener("close", closeOrError);
-    webSocket.addEventListener("error", closeOrError);
-  }
-
-  broadcast(message) {
-    const msgStr = JSON.stringify(message);
-    for (const session of this.sessions) {
-      try {
-        session.send(msgStr);
-      } catch (err) {
-        this.sessions.delete(session);
-      }
-    }
-  }
-}
 
 export default {
   async fetch(request, env, ctx) {
     // 允许跨域
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-      'Access-Control-Allow-Headers': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
     }
 
-    // 处理 OPTIONS 请求
     if (request.method === 'OPTIONS') {
-      return new Response(null, {
-        headers: corsHeaders,
-      })
+      return new Response('OK', { headers: corsHeaders })
     }
 
     const url = new URL(request.url)
+    const pathname = url.pathname
 
     // 调试路由
     if (url.pathname === '/debug') {
       return new Response(JSON.stringify({
-        message: 'Hello from Cloudflare Worker!',
+        message: 'Hello from Cloudflare Worker (KV Chat)!',
         url: request.url,
         headers: Object.fromEntries(request.headers),
         cf: request.cf
@@ -112,17 +33,85 @@ export default {
       })
     }
 
-    // 聊天室 WebSocket 路由
-    if (url.pathname === '/api/chat') {
-      // 获取 Durable Object 实例
-      // 使用固定 ID 'global-chat' 确保所有用户连接到同一个房间
-      const id = env.CHAT_ROOM.idFromName('global-chat');
-      const obj = env.CHAT_ROOM.get(id);
-      return obj.fetch(request);
+    // --- KV 聊天室 API ---
+
+    // 1. 获取消息和在线人数 (轮询)
+    if (url.pathname === '/api/chat/poll') {
+      try {
+        // 获取消息记录
+        let history = await env.CHAT_DATA.get('history', { type: 'json' }) || [];
+        // 过滤 1 小时内的消息
+        const now = Date.now();
+        history = history.filter(msg => now - msg.timestamp < 3600000);
+        
+        // 获取在线用户 (心跳)
+        let heartbeats = await env.CHAT_DATA.get('heartbeats', { type: 'json' }) || {};
+        // 清理超过 30秒 无心跳的用户
+        let activeCount = 0;
+        const newHeartbeats = {};
+        for (const [id, timestamp] of Object.entries(heartbeats)) {
+          if (now - timestamp < 30000) {
+            newHeartbeats[id] = timestamp;
+            activeCount++;
+          }
+        }
+        
+        // 异步更新清理后的心跳 (不阻塞响应)
+        ctx.waitUntil(env.CHAT_DATA.put('heartbeats', JSON.stringify(newHeartbeats)));
+
+        return new Response(JSON.stringify({
+          messages: history,
+          count: activeCount
+        }), { headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
+      }
     }
 
-    try {
-      // 自定义路由映射逻辑
+    // 2. 发送消息
+    if (url.pathname === '/api/chat/send' && request.method === 'POST') {
+      try {
+        const body = await request.json();
+        const newMessage = {
+          id: crypto.randomUUID(),
+          text: body.content,
+          senderId: body.senderId,
+          timestamp: Date.now()
+        };
+
+        // 获取并更新历史记录
+        let history = await env.CHAT_DATA.get('history', { type: 'json' }) || [];
+        history.push(newMessage);
+        // 保持最近 50 条，且过滤过期
+        const now = Date.now();
+        history = history.filter(msg => now - msg.timestamp < 3600000).slice(-50);
+        
+        await env.CHAT_DATA.put('history', JSON.stringify(history));
+
+        return new Response(JSON.stringify({ success: true }), { headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
+      }
+    }
+
+    // 3. 发送心跳
+    if (url.pathname === '/api/chat/heartbeat' && request.method === 'POST') {
+      try {
+        const body = await request.json();
+        const userId = body.userId;
+        
+        let heartbeats = await env.CHAT_DATA.get('heartbeats', { type: 'json' }) || {};
+        heartbeats[userId] = Date.now();
+        
+        await env.CHAT_DATA.put('heartbeats', JSON.stringify(heartbeats));
+        
+        return new Response(JSON.stringify({ success: true }), { headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
+      }
+    }
+
+    // --- 静态资源服务 ---
       const customMapRequestToAsset = (req) => {
         const url = new URL(req.url)
         if (url.pathname === '/gallery') {
