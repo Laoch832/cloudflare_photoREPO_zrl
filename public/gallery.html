@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gallery | zrl</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    /* CSS Variables for Theme */
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #202124;
+      --secondary-text: #5f6368;
+      --nav-bg: rgba(255, 255, 255, 0.8);
+      --card-bg: #ffffff;
+      --card-shadow: rgba(0,0,0,0.1);
+      --accent-color: #1a73e8;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #202124;
+      --text-color: #e8eaed;
+      --secondary-text: #9aa0a6;
+      --nav-bg: rgba(32, 33, 36, 0.8);
+      --card-bg: #292a2d;
+      --card-shadow: rgba(0,0,0,0.3);
+      --accent-color: #8ab4f8;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Google Sans', 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* --- Navigation --- */
+    .top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      justify-content: space-between;
+      z-index: 100;
+      background: var(--nav-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(128,128,128,0.1);
+    }
+
+    .nav-left { display: flex; align-items: center; gap: 32px; }
+    .logo { font-weight: bold; font-size: 20px; color: var(--text-color); text-decoration: none; }
+    
+    .nav-links { display: flex; gap: 24px; }
+    .nav-link {
+      text-decoration: none;
+      color: var(--secondary-text);
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .nav-link:hover { background: rgba(128,128,128,0.1); color: var(--text-color); }
+    .nav-link.active { color: var(--accent-color); background: rgba(26, 115, 232, 0.1); }
+
+    .nav-right { display: flex; align-items: center; gap: 16px; font-size: 14px; color: var(--secondary-text); }
+    .ping-display { font-family: monospace; }
+    .theme-toggle { cursor: pointer; padding: 8px; border-radius: 50%; display: flex; }
+    .theme-toggle:hover { background: rgba(128,128,128,0.1); }
+
+    /* --- Hero Carousel --- */
+    .hero-carousel {
+      position: relative;
+      width: 100%;
+      height: 85vh;
+      overflow: hidden;
+      background: #000;
+      margin-top: 64px; /* Offset for fixed nav */
+    }
+    .hero-slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+      z-index: 1;
+    }
+    .hero-slide.active { opacity: 1; z-index: 2; }
+    .hero-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(1);
+      transition: transform 6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .hero-slide.active .hero-img { transform: scale(1.1); }
+
+    /* --- Masonry Grid --- */
+    .main-content { padding: 40px 24px; max-width: 1600px; margin: 0 auto; }
+    .date-header {
+      font-size: 24px;
+      color: var(--text-color);
+      margin: 40px 0 20px 0;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(128,128,128,0.1);
+      position: sticky;
+      top: 64px;
+      background: var(--bg-color);
+      z-index: 50;
+      opacity: 0.95;
+    }
+    .masonry-grid { column-count: 4; column-gap: 16px; }
+    .photo-item {
+      break-inside: avoid;
+      margin-bottom: 16px;
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      box-shadow: 0 2px 5px var(--card-shadow);
+      transition: transform 0.3s;
+    }
+    .photo-item:hover { transform: translateY(-4px); z-index: 2; }
+    .photo-item img { width: 100%; display: block; border-radius: 12px; }
+
+    @media (max-width: 1200px) { .masonry-grid { column-count: 3; } }
+    @media (max-width: 800px) { .masonry-grid { column-count: 2; } .hero-carousel { height: 60vh; } }
+    @media (max-width: 500px) { .masonry-grid { column-count: 1; } }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="top-bar">
+    <div class="nav-left">
+      <a href="/" class="logo">zrl</a>
+      <div class="nav-links">
+        <a href="/" class="nav-link">首页</a>
+        <a href="/gallery" class="nav-link active">图库</a>
+      </div>
+    </div>
+    <div class="nav-right">
+      <div class="ping-display" id="pingDisplay">Ping: --ms</div>
+      <div class="theme-toggle" onclick="toggleTheme()">
+        <span class="material-icons" id="themeIcon">dark_mode</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Carousel -->
+  <div class="hero-carousel" id="heroCarousel">
+    <!-- Slides injected via JS -->
+  </div>
+
+  <!-- Masonry Content -->
+  <main class="main-content">
+    <div id="gallery-content"></div>
+  </main>
+
+  <script>
+    // --- Common Logic (Theme & Ping) ---
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeIcon(savedTheme);
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      updateThemeIcon(next);
+    }
+
+    function updateThemeIcon(theme) {
+      document.getElementById('themeIcon').innerText = theme === 'light' ? 'dark_mode' : 'light_mode';
+    }
+
+    function updatePing() {
+      const start = performance.now();
+      fetch('/cdn-cgi/trace').then(() => {
+        const duration = Math.round(performance.now() - start);
+        document.getElementById('pingDisplay').innerText = `Ping: ${duration}ms`;
+      }).catch(() => {
+        document.getElementById('pingDisplay').innerText = 'Ping: Timeout';
+      });
+    }
+
+    initTheme();
+    setInterval(updatePing, 30000);
+    updatePing(); // Initial call
+
+    // --- Gallery Logic ---
+    const CDN_HOST = 'love.canz-monkey.cn';
+    const baseUrl = CDN_HOST ? `https://${CDN_HOST}` : window.location.origin;
+    let allImages = [];
+    let currentSlide = 0;
+
+    async function loadGallery() {
+      try {
+        const response = await fetch('/images.json');
+        if (!response.ok) throw new Error('Failed');
+        allImages = await response.json();
+        
+        if (allImages.length === 0) return;
+
+        allImages.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+        initCarousel();
+        renderMasonry(allImages);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function initCarousel() {
+      const container = document.getElementById('heroCarousel');
+      const heroImages = allImages.slice(0, 10); // Top 10
+      
+      heroImages.forEach((img, index) => {
+        const div = document.createElement('div');
+        div.className = `hero-slide ${index === 0 ? 'active' : ''}`;
+        div.innerHTML = `<img src="${baseUrl + img.url}" class="hero-img" alt="${img.name}">`;
+        container.appendChild(div);
+      });
+
+      setInterval(() => {
+        const slides = document.querySelectorAll('.hero-slide');
+        if (!slides.length) return;
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].classList.add('active');
+      }, 6000);
+    }
+
+    function renderMasonry(images) {
+      const container = document.getElementById('gallery-content');
+      const groups = {};
+      
+      images.forEach(img => {
+        const dateStr = new Date(img.uploadedAt).toLocaleDateString('zh-CN');
+        if (!groups[dateStr]) groups[dateStr] = [];
+        groups[dateStr].push(img);
+      });
+
+      Object.keys(groups).forEach(dateStr => {
+        const header = document.createElement('div');
+        header.className = 'date-header';
+        header.innerText = dateStr;
+        container.appendChild(header);
+
+        const grid = document.createElement('div');
+        grid.className = 'masonry-grid';
+
+        groups[dateStr].forEach(img => {
+          const item = document.createElement('div');
+          item.className = 'photo-item';
+          item.innerHTML = `<img src="${baseUrl + img.url}" loading="lazy">`;
+          item.onclick = () => window.open(baseUrl + img.url, '_blank');
+          grid.appendChild(item);
+        });
+        container.appendChild(grid);
+      });
+    }
+
+    loadGallery();
+  </script>
+</body>
+</html>

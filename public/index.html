@@ -3,14 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>图库</title>
+  <title>Home | zrl</title>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
+    /* CSS Variables for Theme */
     :root {
-      --top-bar-height: 70px;
       --bg-color: #ffffff;
       --text-color: #202124;
       --secondary-text: #5f6368;
+      --nav-bg: rgba(255, 255, 255, 0.8);
+      --card-bg: #f8f9fa;
+      --accent-color: #1a73e8;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #202124;
+      --text-color: #e8eaed;
+      --secondary-text: #9aa0a6;
+      --nav-bg: rgba(32, 33, 36, 0.8);
+      --card-bg: #292a2d;
+      --accent-color: #8ab4f8;
     }
 
     * { box-sizing: border-box; }
@@ -20,461 +32,223 @@
       padding: 0;
       background-color: var(--bg-color);
       color: var(--text-color);
-      overflow-x: hidden;
+      transition: background-color 0.3s, color 0.3s;
     }
 
-    /* --- Navigation Bar (Glassmorphism) --- */
+    /* --- Navigation --- */
     .top-bar {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
-      height: var(--top-bar-height);
+      height: 64px;
       display: flex;
       align-items: center;
       padding: 0 24px;
       justify-content: space-between;
       z-index: 100;
-      background: rgba(255, 255, 255, 0.1);
+      background: var(--nav-bg);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      transition: background 0.3s;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    .top-bar:hover, .top-bar.scrolled {
-      background: rgba(255, 255, 255, 0.9);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    
-    .logo-area {
-      display: flex;
-      align-items: center;
-      font-size: 22px;
-      color: #333;
-      font-weight: 500;
-      text-shadow: 0 0 10px rgba(255,255,255,0.5);
-    }
-    .logo-icon {
-      font-size: 28px;
-      color: #fbbc04;
-      margin-right: 8px;
+      border-bottom: 1px solid rgba(128,128,128,0.1);
     }
 
-    .search-box {
-      background: rgba(255,255,255,0.2);
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 24px;
-      height: 44px;
-      display: flex;
-      align-items: center;
-      padding: 0 16px;
-      flex-grow: 1;
-      max-width: 600px;
-      margin: 0 20px;
+    .nav-left { display: flex; align-items: center; gap: 32px; }
+    .logo { font-weight: bold; font-size: 20px; color: var(--text-color); text-decoration: none; }
+    
+    .nav-links { display: flex; gap: 24px; }
+    .nav-link {
+      text-decoration: none;
+      color: var(--secondary-text);
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 4px;
       transition: all 0.2s;
     }
-    .top-bar.scrolled .search-box, .top-bar:hover .search-box {
-      background: #f1f3f4;
-      border-color: transparent;
-    }
-    .search-box:focus-within {
-      background: #fff !important;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    }
-    .search-box input {
-      border: none;
-      background: transparent;
-      flex-grow: 1;
-      height: 100%;
-      font-size: 16px;
-      margin-left: 10px;
-      outline: none;
-      color: #333;
-    }
-    .top-actions .material-icons {
-      padding: 8px;
-      cursor: pointer;
-      color: #555;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.3);
-      transition: 0.2s;
-    }
-    .top-actions .material-icons:hover {
-      background: rgba(0,0,0,0.1);
+    .nav-link:hover { background: rgba(128,128,128,0.1); color: var(--text-color); }
+    .nav-link.active { color: var(--accent-color); background: rgba(26, 115, 232, 0.1); }
+
+    .nav-right { display: flex; align-items: center; gap: 16px; font-size: 14px; color: var(--secondary-text); }
+    .ping-display { font-family: monospace; }
+    .theme-toggle { cursor: pointer; padding: 8px; border-radius: 50%; display: flex; }
+    .theme-toggle:hover { background: rgba(128,128,128,0.1); }
+
+    /* --- Home Content --- */
+    .container {
+      max-width: 1200px;
+      margin: 100px auto 40px;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 32px;
     }
 
-    /* --- Hero Carousel (Immersive & Alive) --- */
-    .hero-carousel {
-      position: relative;
-      width: 100%;
-      height: 85vh; /* Taller */
-      overflow: hidden;
-      background: #000;
-    }
-    
-    .hero-slide {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      transition: opacity 1s ease-in-out;
-      z-index: 1;
-    }
-    .hero-slide.active {
-      opacity: 1;
-      z-index: 2;
+    .section-card {
+      background: var(--card-bg);
+      padding: 32px;
+      border-radius: 16px;
+      margin-bottom: 32px;
     }
 
-    .hero-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover; /* Fill the screen */
-      transform: scale(1);
-      transition: transform 6s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Ken Burns Effect */
-    }
-    .hero-slide.active .hero-img {
-      transform: scale(1.1); /* Slow zoom in */
-    }
+    h1 { font-size: 32px; margin-bottom: 16px; font-weight: 400; }
+    h2 { font-size: 20px; margin-bottom: 16px; color: var(--secondary-text); font-weight: 500; }
+    p { line-height: 1.6; color: var(--secondary-text); }
 
-    /* Navigation Arrows (Minimalist) */
-    .nav-btn {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background: transparent;
-      color: rgba(255,255,255,0.7);
-      border: none;
-      cursor: pointer;
-      z-index: 10;
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .stat-item {
+      background: var(--bg-color);
       padding: 20px;
-      transition: all 0.3s;
-    }
-    .nav-btn:hover {
-      color: #fff;
-      transform: translateY(-50%) scale(1.2);
-      text-shadow: 0 0 10px rgba(0,0,0,0.5);
-    }
-    .prev-btn { left: 10px; }
-    .next-btn { right: 10px; }
-    .nav-btn .material-icons { font-size: 48px; }
-
-    /* --- Masonry Gallery Layout --- */
-    .main-content {
-      padding: 40px 24px;
-      background: #fff;
-    }
-
-    .date-header {
-      font-size: 24px;
-      font-weight: 400;
-      color: #333;
-      margin: 40px 0 20px 0;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #eee;
-      position: sticky;
-      top: 70px;
-      background: rgba(255,255,255,0.95);
-      z-index: 50;
-      backdrop-filter: blur(5px);
-    }
-
-    .masonry-grid {
-      column-count: 4; /* Default columns */
-      column-gap: 16px;
-    }
-    
-    .photo-item {
-      break-inside: avoid;
-      margin-bottom: 16px;
-      position: relative;
       border-radius: 12px;
-      overflow: hidden;
-      cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-      transition: transform 0.3s, box-shadow 0.3s;
+      text-align: center;
     }
-    .photo-item:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-      z-index: 2;
-    }
+    .stat-value { font-size: 24px; font-weight: bold; color: var(--accent-color); }
+    .stat-label { font-size: 14px; color: var(--secondary-text); margin-top: 4px; }
 
-    .photo-item img {
-      width: 100%;
-      display: block;
-      border-radius: 12px;
-    }
-
-    .photo-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 30%);
-      opacity: 0;
-      transition: opacity 0.3s;
+    .feature-list {
       display: flex;
-      justify-content: flex-end;
-      padding: 10px;
+      flex-direction: column;
+      gap: 16px;
     }
-    .photo-item:hover .photo-overlay {
-      opacity: 1;
-    }
-
-    .icon-btn {
-      color: white;
-      background: rgba(0,0,0,0.3);
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
+    .feature-card {
       display: flex;
       align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(4px);
-      transition: background 0.2s;
+      padding: 16px;
+      background: var(--bg-color);
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--text-color);
+      transition: transform 0.2s;
     }
-    .icon-btn:hover {
-      background: rgba(0,0,0,0.6);
-    }
+    .feature-card:hover { transform: translateX(5px); }
+    .feature-icon { margin-right: 16px; color: var(--accent-color); }
 
-    .loading-state {
-      text-align: center;
-      padding: 50px;
-      font-size: 18px;
-      color: #888;
-    }
-
-    /* Responsive */
-    @media (max-width: 1200px) {
-      .masonry-grid { column-count: 3; }
-    }
     @media (max-width: 800px) {
-      .masonry-grid { column-count: 2; }
-      .hero-carousel { height: 60vh; }
-      .top-bar { background: rgba(255,255,255,0.9); } /* Mobile opaque navbar */
-      .date-header { top: 60px; font-size: 18px; }
-      .logo-area span { display: none; }
-    }
-    @media (max-width: 500px) {
-      .masonry-grid { column-count: 1; }
+      .container { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
   <!-- Navigation -->
-  <header class="top-bar" id="topBar">
-    <div class="logo-area">
-      <span class="material-icons logo-icon" style="color:#fbbc04;">photo_library</span>
-      <span>Gallery</span>
-    </div>
-    <div class="search-box">
-      <span class="material-icons" style="color: #5f6368;">search</span>
-      <input type="text" id="searchInput" placeholder="搜索记忆..." onkeyup="filterImages()">
-    </div>
-    <div class="top-actions">
-      <span class="material-icons">settings</span>
-    </div>
-  </header>
-
-  <!-- Hero Carousel -->
-  <div class="hero-carousel" id="heroCarousel">
-    <!-- Slides will be injected here -->
-    <button class="nav-btn prev-btn" onclick="prevSlide()"><span class="material-icons">arrow_back_ios</span></button>
-    <button class="nav-btn next-btn" onclick="nextSlide()"><span class="material-icons">arrow_forward_ios</span></button>
-  </div>
-
-  <!-- Masonry Content -->
-  <main class="main-content">
-    <div id="gallery-content">
-      <div class="loading-state">
-        <span class="material-icons" style="font-size: 48px; margin-bottom: 10px; display:block;">hourglass_empty</span>
-        正在唤醒回忆...
+  <nav class="top-bar">
+    <div class="nav-left">
+      <a href="/" class="logo">zrl</a>
+      <div class="nav-links">
+        <a href="/" class="nav-link active">首页</a>
+        <a href="/gallery" class="nav-link">图库</a>
       </div>
     </div>
-  </main>
+    <div class="nav-right">
+      <div class="ping-display" id="pingDisplay">Ping: --ms</div>
+      <div class="theme-toggle" onclick="toggleTheme()">
+        <span class="material-icons" id="themeIcon">dark_mode</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Left Column: Intro -->
+    <div class="main-column">
+      <div class="section-card">
+        <h1>欢迎来到 zrl</h1>
+        <p>这里是 zrl 的个人信息聚合中心。目前主要用于展示摄影作品，未来将集成更多关于技术、生活和创意的模块。</p>
+        <p style="margin-top: 16px;">
+          网站采用 Cloudflare Workers + KV 构建，全站静态化，边缘分发，极致快速。
+        </p>
+      </div>
+
+      <div class="section-card">
+        <h2>最新动态</h2>
+        <p>• 2025-01-11: 网站重构上线，新增暗黑模式和图库瀑布流。</p>
+        <p>• 2024-12-30: 接入 EdgeOne 加速，优化图片加载体验。</p>
+      </div>
+    </div>
+
+    <!-- Right Column: Stats & Links -->
+    <aside class="side-column">
+      <div class="section-card">
+        <h2>数据统计</h2>
+        <div class="stat-grid">
+          <div class="stat-item">
+            <div class="stat-value" id="imgCount">--</div>
+            <div class="stat-label">照片数量</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">1</div>
+            <div class="stat-label">运行天数</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h2>功能模块</h2>
+        <div class="feature-list">
+          <a href="/gallery" class="feature-card">
+            <span class="material-icons feature-icon">photo_library</span>
+            <div>
+              <div style="font-weight: 500;">图库</div>
+              <div style="font-size: 12px; color: var(--secondary-text);">浏览我的摄影作品</div>
+            </div>
+          </a>
+          <!-- More features placeholders -->
+          <div class="feature-card" style="opacity: 0.5; cursor: default;">
+            <span class="material-icons feature-icon">code</span>
+            <div>
+              <div style="font-weight: 500;">博客</div>
+              <div style="font-size: 12px; color: var(--secondary-text);">开发中...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
 
   <script>
-    const CDN_HOST = 'love.canz-monkey.cn';
-    const baseUrl = CDN_HOST ? `https://${CDN_HOST}` : window.location.origin;
-
-    let allImages = [];
-    let currentSlide = 0;
-    let slideInterval;
-    const heroContainer = document.getElementById('heroCarousel');
-
-    // Navbar scroll effect
-    window.addEventListener('scroll', () => {
-      const topBar = document.getElementById('topBar');
-      if (window.scrollY > 50) {
-        topBar.classList.add('scrolled');
-      } else {
-        topBar.classList.remove('scrolled');
-      }
-    });
-
-    async function loadGallery() {
-      try {
-        const response = await fetch('/images.json');
-        if (!response.ok) throw new Error('Failed');
-        allImages = await response.json();
-        
-        if (allImages.length === 0) {
-          document.getElementById('gallery-content').innerHTML = '<div class="loading-state">暂无照片</div>';
-          heroContainer.style.display = 'none';
-          return;
-        }
-
-        // Sort by date desc
-        allImages.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
-
-        initCarousel();
-        renderMasonry(allImages);
-
-      } catch (e) {
-        console.error(e);
-        document.getElementById('gallery-content').innerHTML = '<div class="loading-state">加载失败</div>';
-      }
+    // --- Common Logic (Theme & Ping) ---
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeIcon(savedTheme);
     }
 
-    // --- Hero Carousel Logic ---
-    function initCarousel() {
-      // Pick top 5 latest images for hero, or random? Let's use top 5 latest for high quality feel.
-      // Or just all images? If too many, DOM might be heavy. Let's limit to top 10 for carousel.
-      const heroImages = allImages.slice(0, 10);
-      
-      // Clear existing slides (except buttons)
-      const buttons = heroContainer.querySelectorAll('button');
-      heroContainer.innerHTML = '';
-      buttons.forEach(btn => heroContainer.appendChild(btn));
-
-      heroImages.forEach((img, index) => {
-        const div = document.createElement('div');
-        div.className = `hero-slide ${index === 0 ? 'active' : ''}`;
-        div.innerHTML = `<img src="${baseUrl + img.url}" class="hero-img" alt="${img.name}" loading="${index === 0 ? 'eager' : 'lazy'}">`;
-        heroContainer.appendChild(div);
-      });
-
-      startAutoPlay();
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      updateThemeIcon(next);
     }
 
-    function showSlide(index) {
-      const slides = document.querySelectorAll('.hero-slide');
-      if (slides.length === 0) return;
-
-      if (index >= slides.length) index = 0;
-      if (index < 0) index = slides.length - 1;
-
-      slides[currentSlide].classList.remove('active');
-      currentSlide = index;
-      slides[currentSlide].classList.add('active');
+    function updateThemeIcon(theme) {
+      document.getElementById('themeIcon').innerText = theme === 'light' ? 'dark_mode' : 'light_mode';
     }
 
-    function nextSlide() {
-      showSlide(currentSlide + 1);
-      resetAutoPlay();
-    }
-
-    function prevSlide() {
-      showSlide(currentSlide - 1);
-      resetAutoPlay();
-    }
-
-    function startAutoPlay() {
-      slideInterval = setInterval(() => {
-        showSlide(currentSlide + 1);
-      }, 6000); // Slower for Ken Burns effect
-    }
-
-    function resetAutoPlay() {
-      clearInterval(slideInterval);
-      startAutoPlay();
-    }
-
-    // --- Masonry Grid Logic ---
-    function renderMasonry(images) {
-      const contentDiv = document.getElementById('gallery-content');
-      contentDiv.innerHTML = '';
-
-      const groups = {};
-      images.forEach(img => {
-        const date = new Date(img.uploadedAt);
-        const dateStr = date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
-        if (!groups[dateStr]) groups[dateStr] = [];
-        groups[dateStr].push(img);
-      });
-
-      Object.keys(groups).forEach(dateStr => {
-        // Date Header
-        const header = document.createElement('div');
-        header.className = 'date-header';
-        header.innerText = dateStr;
-        contentDiv.appendChild(header);
-
-        // Grid Container
-        const grid = document.createElement('div');
-        grid.className = 'masonry-grid';
-
-        groups[dateStr].forEach(img => {
-          const fullUrl = baseUrl + img.url;
-          const item = document.createElement('div');
-          item.className = 'photo-item';
-          item.onclick = () => jumpToHero(fullUrl); // Click to view in hero
-          
-          item.innerHTML = `
-            <img src="${fullUrl}" loading="lazy" alt="${img.name}">
-            <div class="photo-overlay">
-              <div class="icon-btn" title="复制链接" onclick="copyLink('${fullUrl}', event)">
-                <span class="material-icons" style="font-size: 20px;">link</span>
-              </div>
-            </div>
-          `;
-          grid.appendChild(item);
-        });
-
-        contentDiv.appendChild(grid);
+    function updatePing() {
+      const start = performance.now();
+      fetch('/cdn-cgi/trace').then(() => {
+        const duration = Math.round(performance.now() - start);
+        document.getElementById('pingDisplay').innerText = `Ping: ${duration}ms`;
+      }).catch(() => {
+        document.getElementById('pingDisplay').innerText = 'Ping: Timeout';
       });
     }
 
-    function jumpToHero(url) {
-      // Find if image is in hero slides
-      const slides = document.querySelectorAll('.hero-slide img');
-      let foundIndex = -1;
-      slides.forEach((img, idx) => {
-        if (img.src === url) foundIndex = idx;
-      });
+    initTheme();
+    setInterval(updatePing, 30000);
+    updatePing();
 
-      if (foundIndex !== -1) {
-        showSlide(foundIndex);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        resetAutoPlay();
-      } else {
-        // If not in top 10, maybe just open in new tab or create a modal? 
-        // For simplicity, just open in new tab if not in hero.
-        window.open(url, '_blank');
-      }
-    }
-
-    function filterImages() {
-      const query = document.getElementById('searchInput').value.toLowerCase();
-      const filtered = allImages.filter(img => img.name.toLowerCase().includes(query));
-      renderMasonry(filtered);
-    }
-
-    function copyLink(url, event) {
-      event.stopPropagation();
-      navigator.clipboard.writeText(url).then(() => {
-        // Subtle feedback
-        const btn = event.currentTarget;
-        btn.style.background = '#4caf50';
-        setTimeout(() => { btn.style.background = 'rgba(0,0,0,0.3)'; }, 800);
-      });
-    }
-
-    loadGallery();
+    // --- Stats Logic ---
+    fetch('/images.json')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('imgCount').innerText = data.length;
+      })
+      .catch(e => console.error(e));
   </script>
 </body>
 </html>
