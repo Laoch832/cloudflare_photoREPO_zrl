@@ -187,6 +187,12 @@
 </head>
 <body>
 
+  <!-- Dynamic Loader -->
+  <div class="dynamic-loader" id="dynamicLoader">
+    <div class="loader-spinner"></div>
+    <div class="loader-text">Loading...</div>
+  </div>
+
   <!-- Navigation -->
   <nav class="top-bar">
     <div class="nav-left">
@@ -258,6 +264,44 @@
   </div>
 
   <script>
+    // --- Loader Logic ---
+    const loader = document.getElementById('dynamicLoader');
+    let activeRequests = 0;
+
+    function showLoader() {
+      activeRequests++;
+      if (activeRequests > 0) loader.classList.add('active');
+    }
+
+    function hideLoader() {
+      activeRequests--;
+      if (activeRequests <= 0) {
+        activeRequests = 0;
+        setTimeout(() => {
+          if (activeRequests <= 0) loader.classList.remove('active');
+        }, 500);
+      }
+    }
+
+    // Intercept Fetch
+    const originalFetch = window.fetch;
+    window.fetch = async (...args) => {
+      showLoader();
+      try {
+        const response = await originalFetch(...args);
+        return response;
+      } finally {
+        hideLoader();
+      }
+    };
+
+    // Monitor Image Loading (Initial Load)
+    document.addEventListener('DOMContentLoaded', () => {
+      // Add manual delay to show animation (optional)
+      showLoader();
+      setTimeout(hideLoader, 800);
+    });
+
     // --- Common Logic (Theme & Ping) ---
     function initTheme() {
       const savedTheme = localStorage.getItem('theme') || 'light';
