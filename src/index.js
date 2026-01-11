@@ -87,8 +87,27 @@ export default {
     } catch (e) {
       let pathname = new URL(request.url).pathname
       
-      // 如果是 404 错误（KV 中找不到文件），返回 404
+      // 如果是 404 错误（KV 中找不到文件），返回 404 页面
       if (e.message.includes('could not find')) {
+        // 尝试获取自定义 404 页面
+        try {
+          const notFoundResponse = await getAssetFromKV(
+            {
+              request: new Request(new URL('/404.html', request.url), request),
+              waitUntil: ctx.waitUntil.bind(ctx),
+            },
+            {
+              ASSET_NAMESPACE: env.__STATIC_CONTENT,
+              ASSET_MANIFEST: assetManifest,
+            }
+          )
+          return new Response(notFoundResponse.body, {
+            status: 404,
+            statusText: 'Not Found',
+            headers: notFoundResponse.headers,
+          })
+        } catch (ignore) {}
+
         return new Response(`"${pathname}" not found`, {
           status: 404,
           statusText: 'not found',
