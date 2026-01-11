@@ -22,6 +22,11 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      - name: Inject Build Info
+        run: |
+          SHA_SHORT=$(git rev-parse --short HEAD)
+          sed -i "s/<!-- BUILD_REF_START -->.*<!-- BUILD_REF_END -->/$SHA_SHORT/" public/index.html
+
       - name: Build
         run: npm run build
 
