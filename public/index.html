@@ -6,6 +6,46 @@
   <title>Home</title>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
+    /* Dynamic Island Loader */
+    .dynamic-loader {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 36px;
+      background: #000;
+      border-radius: 18px;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+      width: 0;
+      opacity: 0;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .dynamic-loader.active {
+      width: 120px;
+      opacity: 1;
+    }
+    .loader-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top: 2px solid #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    .loader-text {
+      color: #fff;
+      font-size: 14px;
+      font-weight: 500;
+      margin-left: 8px;
+      white-space: nowrap;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
     /* CSS Variables for Theme */
     :root {
       --bg-color: #ffffff;
