@@ -5,7 +5,7 @@ compatibility_date = "2024-01-01"
 # 自定义域名配置
 routes = [
 	{ pattern = "cdn.120505.xyz", custom_domain = true },
-    { pattern = "love.canz-monkey.cn", custom_domain = true }
+    { pattern = "love.canz-monkey.cn", custom_domain = true },
     { pattern = "zrl.canz-monkey.cn", custom_domain = true }
 ]
 
