@@ -366,6 +366,18 @@
     }
     initTheme(); setInterval(updatePing, 30000); updatePing();
 
+    // --- Nav Indicator Logic ---
+    function updateNavIndicator() {
+      const activeLink = document.querySelector('.nav-link.active');
+      const indicator = document.querySelector('.nav-indicator');
+      if (activeLink && indicator) {
+        indicator.style.width = `${activeLink.offsetWidth}px`;
+        indicator.style.left = `${activeLink.offsetLeft}px`;
+      }
+    }
+    window.addEventListener('load', updateNavIndicator);
+    window.addEventListener('resize', updateNavIndicator);
+
     // --- Notes Logic ---
     let allNotes = [];
 
