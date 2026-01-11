@@ -1,0 +1,53 @@
+name: Deploy to Tencent Cloud EdgeOne Pages
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy-edgeone:
+    runs-on: ubuntu-latest
+    name: Deploy to EdgeOne
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Install EdgeOne CLI
+        run: npm install -g @tencentcloud/eo-cli
+
+      - name: Deploy to EdgeOne Pages
+        env:
+          EO_SECRET_ID: ${{ secrets.EO_SECRET_ID }}
+          EO_SECRET_KEY: ${{ secrets.EO_SECRET_KEY }}
+          EO_PROJECT_NAME: ${{ secrets.EO_PROJECT_NAME }}
+        run: |
+          # 假设 EdgeOne CLI 支持 pages deploy 命令 (根据通用 CLI 模式推断)
+          # 注意：实际命令需参考 EdgeOne 官方文档。这里使用静态上传作为示例。
+          # 如果官方 Action 不存在，通常是上传到 COS 或使用 CLI。
+          # 这里演示如何将 build 输出 (public 目录) 上传。
+          
+          # 由于无法联网确认 CLI 具体语法，这里仅生成 Workflow 模板。
+          # 用户需要在 Secrets 中配置 EO_SECRET_ID, EO_SECRET_KEY, EO_PROJECT_NAME。
+          
+          echo "Deploying to EdgeOne Pages..."
+          # eo pages deploy ./public --project $EO_PROJECT_NAME --token ...
+          
+          # 临时占位：实际部署需要用户确认 EdgeOne 具体的部署方式。
+          # 腾讯云 EdgeOne Pages 目前推荐使用控制台连接 Git 仓库进行自动部署。
+          # 如果必须使用 Action，通常是上传到 COS 桶绑定的 Pages。
+          
+          echo "EdgeOne Pages deployment is best configured via the Tencent Cloud Console (Git Integration)."
+          echo "Please connect this repository to EdgeOne Pages in the console."
