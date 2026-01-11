@@ -7,6 +7,9 @@ routes = [
 	{ pattern = "cdn.120505.xyz", custom_domain = true }
 ]
 
+[observability]
+enabled = false
+
 # 配置静态资源目录 (Worker Sites)
 # Wrangler 会自动将 public 目录下的文件上传到 KV
 [site]
