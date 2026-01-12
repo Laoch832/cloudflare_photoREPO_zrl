@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const mammoth = require('mammoth');
-// this is a rubbish
 const NOTES_DIR = path.join(__dirname, '../public/notes');
 const OUTPUT_FILE = path.join(__dirname, '../public/notes.json');
 
