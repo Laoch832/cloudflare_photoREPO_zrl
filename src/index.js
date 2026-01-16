@@ -8,18 +8,43 @@ const assetOptions = {
 // 处理静态资源请求
 async function handleStaticAsset(request) {
   try {
+    // 自定义资产映射，支持单页应用路由
+    const url = new URL(request.url);
+    let pathname = url.pathname;
+    
+    // 如果路径不是以文件扩展名结尾，并且不是根路径，尝试映射到index.html
+    if (!pathname.endsWith('/') && !pathname.includes('.')) {
+      pathname = '/';
+    }
+    
+    // 创建一个新的请求，使用修改后的路径
+    const modifiedRequest = new Request(
+      new URL(pathname + url.search + url.hash, request.url),
+      request
+    );
+    
     // 将请求映射到静态资产
-    const mappedRequest = mapRequestToAsset(request);
+    const mappedRequest = mapRequestToAsset(modifiedRequest);
     // 从KV获取资产
     return await getAssetFromKV(mappedRequest, assetOptions);
   } catch (e) {
-    // 如果找不到资产，返回404
-    return new Response('404 Not Found', {
-      status: 404,
-      headers: {
-        'content-type': 'text/plain',
-      },
-    });
+    try {
+      // 如果找不到资产，尝试返回index.html（单页应用路由支持）
+      const indexRequest = new Request(
+        new URL('/', request.url),
+        request
+      );
+      const mappedIndexRequest = mapRequestToAsset(indexRequest);
+      return await getAssetFromKV(mappedIndexRequest, assetOptions);
+    } catch (indexError) {
+      // 如果index.html也找不到，返回404
+      return new Response('404 Not Found', {
+        status: 404,
+        headers: {
+          'content-type': 'text/plain',
+        },
+      });
+    }
   }
 }
 
