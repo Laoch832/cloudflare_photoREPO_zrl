@@ -2,22 +2,10 @@ name = "mygril"
 compatibility_date = "2026-01-16"
 compatibility_flags = []
 
-type = "webpack"
-
 main = "src/index.js"
-assets = "dist"
-
-kv_namespaces = [
-  {
-    binding = "VIEW_COUNTER",
-    id = "",
-    preview_id = ""
-  }
-]
 
 [site]
 bucket = "dist"
-entry-point = "src/index.js"
 
 [env.production]
 name = "mygril"
