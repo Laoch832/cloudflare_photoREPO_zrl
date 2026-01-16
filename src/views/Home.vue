@@ -28,7 +28,12 @@
         
         <div class="photo-card" v-if="randomPhoto">
           <div class="photo-wrapper">
-            <img :src="randomPhoto.url" :alt="randomPhoto.name" loading="lazy">
+            <ProgressiveImage 
+              :src="randomPhoto.url" 
+              :thumbnail="randomPhoto.thumbnail" 
+              :alt="randomPhoto.name"
+              :delay="500" 
+            />
             <div class="photo-overlay">
               <span>{{ formatDate(randomPhoto.uploadedAt) }}</span>
             </div>
@@ -64,8 +69,10 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import ProgressiveImage from '../components/ProgressiveImage.vue'
 
 const loading = ref(true)
+// ... rest of script unchanged
 const images = ref([])
 const notes = ref([])
 const randomPhoto = ref(null)

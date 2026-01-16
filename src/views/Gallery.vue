@@ -25,7 +25,12 @@
         >
           <div class="polaroid">
             <div class="image-wrapper">
-              <img :src="image.url" :alt="image.name" loading="lazy">
+              <ProgressiveImage 
+                :src="image.url" 
+                :thumbnail="image.thumbnail" 
+                :alt="image.name"
+                :delay="index * 50" 
+              />
             </div>
             <div class="caption">
               <span class="date">{{ formatDate(image.uploadedAt) }}</span>
@@ -52,8 +57,10 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import ProgressiveImage from '../components/ProgressiveImage.vue'
 
 const loading = ref(true)
+// ... rest of script unchanged
 const images = ref([])
 const showModal = ref(false)
 const modalImageUrl = ref('')
