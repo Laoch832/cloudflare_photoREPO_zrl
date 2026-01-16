@@ -33,79 +33,25 @@ export default {
       })
     }
 
-    // --- KV 聊天室 API ---
+    // --- KV 浏览次数统计 ---
 
-    // 1. 获取消息和在线人数 (轮询)
-    if (url.pathname === '/api/chat/poll') {
+    // 获取浏览次数
+    if (url.pathname === '/api/views') {
       try {
-        // 获取消息记录
-        let history = await env.CHAT_DATA.get('history', { type: 'json' }) || [];
-        // 过滤 1 小时内的消息
-        const now = Date.now();
-        history = history.filter(msg => now - msg.timestamp < 3600000);
-        
-        // 获取在线用户 (心跳)
-        let heartbeats = await env.CHAT_DATA.get('heartbeats', { type: 'json' }) || {};
-        // 清理超过 30秒 无心跳的用户
-        let activeCount = 0;
-        const newHeartbeats = {};
-        for (const [id, timestamp] of Object.entries(heartbeats)) {
-          if (now - timestamp < 30000) {
-            newHeartbeats[id] = timestamp;
-            activeCount++;
-          }
-        }
-        
-        // 异步更新清理后的心跳 (不阻塞响应)
-        ctx.waitUntil(env.CHAT_DATA.put('heartbeats', JSON.stringify(newHeartbeats)));
-
-        return new Response(JSON.stringify({
-          messages: history,
-          count: activeCount
-        }), { headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+        let views = await env.CHAT_DATA.get('views', { type: 'json' }) || 0;
+        return new Response(JSON.stringify({ views }), { headers: { 'Content-Type': 'application/json', ...corsHeaders } });
       } catch (e) {
         return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
       }
     }
 
-    // 2. 发送消息
-    if (url.pathname === '/api/chat/send' && request.method === 'POST') {
+    // 增加浏览次数
+    if (url.pathname === '/api/views/increment' && request.method === 'POST') {
       try {
-        const body = await request.json();
-        const newMessage = {
-          id: crypto.randomUUID(),
-          text: body.content,
-          senderId: body.senderId,
-          timestamp: Date.now()
-        };
-
-        // 获取并更新历史记录
-        let history = await env.CHAT_DATA.get('history', { type: 'json' }) || [];
-        history.push(newMessage);
-        // 保持最近 50 条，且过滤过期
-        const now = Date.now();
-        history = history.filter(msg => now - msg.timestamp < 3600000).slice(-50);
-        
-        await env.CHAT_DATA.put('history', JSON.stringify(history));
-
-        return new Response(JSON.stringify({ success: true }), { headers: { 'Content-Type': 'application/json', ...corsHeaders } });
-      } catch (e) {
-        return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
-      }
-    }
-
-    // 3. 发送心跳
-    if (url.pathname === '/api/chat/heartbeat' && request.method === 'POST') {
-      try {
-        const body = await request.json();
-        const userId = body.userId;
-        
-        let heartbeats = await env.CHAT_DATA.get('heartbeats', { type: 'json' }) || {};
-        heartbeats[userId] = Date.now();
-        
-        await env.CHAT_DATA.put('heartbeats', JSON.stringify(heartbeats));
-        
-        return new Response(JSON.stringify({ success: true }), { headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+        let views = await env.CHAT_DATA.get('views', { type: 'json' }) || 0;
+        views++;
+        await env.CHAT_DATA.put('views', views);
+        return new Response(JSON.stringify({ views, success: true }), { headers: { 'Content-Type': 'application/json', ...corsHeaders } });
       } catch (e) {
         return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
       }

@@ -15,6 +15,34 @@
       animation-duration: 0.3s;
     }
 
+    /* Floating View Counter */
+    .view-counter {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--md-sys-color-primary-container);
+      color: var(--md-sys-color-on-primary-container);
+      padding: 16px 24px;
+      border-radius: var(--md-sys-shape-corner-medium);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      font-weight: 600;
+      font-size: 16px;
+      z-index: 1000;
+      animation: fadeInUp 0.3s ease-out;
+      border: 2px solid var(--md-sys-color-primary);
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     /* Nav Indicator */
     .nav-links { position: relative; }
     .nav-indicator {
@@ -467,6 +495,11 @@
     Build: <!-- BUILD_REF_START -->DEV<!-- BUILD_REF_END -->
   </div>
 
+  <!-- Floating View Counter -->
+  <div class="view-counter" id="viewCounter">
+    你已经看了她 <span id="viewsCount">--</span> 眼了
+  </div>
+
   <script>
     // --- Loader Logic ---
     const loader = document.getElementById('dynamicLoader');
@@ -599,6 +632,47 @@
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       return diffDays;
     }
+
+    // --- View Counter Logic ---
+    async function fetchViews() {
+      try {
+        const response = await fetch('/api/views');
+        const data = await response.json();
+        return data.views;
+      } catch (error) {
+        console.error('Failed to fetch views:', error);
+        return 0;
+      }
+    }
+
+    async function incrementViews() {
+      try {
+        const response = await fetch('/api/views/increment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        const data = await response.json();
+        return data.views;
+      } catch (error) {
+        console.error('Failed to increment views:', error);
+        return 0;
+      }
+    }
+
+    async function updateViewCounter() {
+      // First increment view count
+      const views = await incrementViews();
+      // Then update display
+      const viewsCount = document.getElementById('viewsCount');
+      if (viewsCount) {
+        viewsCount.textContent = views;
+      }
+    }
+
+    // Update view counter on page load
+    updateViewCounter();
 
     // --- Stats & Notes & Random Photo Logic ---
     Promise.all([
