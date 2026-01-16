@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node scripts/build-index.js && vite",
-    "build": "node scripts/build-index.js && vite build",
+    "dev": "node scripts/build-index.js && node scripts/build-music-index.js && vite",
+    "build": "node scripts/build-index.js && node scripts/build-music-index.js && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.1",
+    "music-metadata": "^11.10.6",
     "sharp": "^0.34.5",
     "vite": "^7.2.4",
     "wrangler": "^4.59.2"

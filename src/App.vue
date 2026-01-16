@@ -50,6 +50,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import SakuraBackground from './components/SakuraBackground.vue'
+import MusicPlayer from './components/MusicPlayer.vue'
 
 // Theme management
 const theme = ref(localStorage.getItem('theme') || 'light')
