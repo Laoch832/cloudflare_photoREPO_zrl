@@ -1,18 +1,18 @@
 <template>
   <div class="gallery-page container">
     <div class="header fade-in">
-      <h1 class="cursive page-title">Our Memories</h1>
-      <p class="subtitle">Every moment with you is a treasure</p>
+      <h1 class="cursive page-title">珍藏回忆</h1>
+      <p class="subtitle">每一个瞬间，都值得被铭记</p>
     </div>
 
     <div class="gallery-container fade-in" style="animation-delay: 0.2s">
       <div v-if="loading" class="loading-state">
         <span class="material-icons spin">favorite</span>
-        <p>Loading sweet memories...</p>
+        <p>正在加载美好的回忆...</p>
       </div>
       
       <div v-else-if="images.length === 0" class="empty-state">
-        <p>No photos yet. Let's make some memories!</p>
+        <p>还没有照片，期待未来的点点滴滴...</p>
       </div>
 
       <div v-else class="masonry-grid">
@@ -60,8 +60,8 @@ const modalImageUrl = ref('')
 
 // Format date
 const formatDate = (dateString) => {
-  if (!dateString) return 'Unforgotten'
-  return new Date(dateString).toLocaleDateString()
+  if (!dateString) return '未遗忘的时光'
+  return new Date(dateString).toLocaleDateString('zh-CN')
 }
 
 // Open modal
@@ -115,7 +115,7 @@ onUnmounted(() => {
 }
 
 .page-title {
-  font-size: 4rem;
+  font-size: 3.5rem;
   color: var(--primary-dark);
   margin-bottom: 10px;
 }
@@ -123,6 +123,7 @@ onUnmounted(() => {
 .subtitle {
   color: var(--text-light);
   font-size: 1.1rem;
+  letter-spacing: 2px;
 }
 
 .loading-state, .empty-state {
@@ -146,12 +147,12 @@ onUnmounted(() => {
 /* Masonry Grid */
 .masonry-grid {
   column-count: 3;
-  column-gap: 24px;
+  column-gap: 32px;
 }
 
 .gallery-item {
   break-inside: avoid;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
   opacity: 0;
   animation: fadeInUp 0.6s ease forwards;
   cursor: pointer;
@@ -172,9 +173,18 @@ onUnmounted(() => {
   background: white;
   padding: 12px 12px 40px 12px;
   box-shadow: var(--shadow-sm);
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
   border-radius: 2px;
+  transform: rotate(0deg);
+}
+
+.gallery-item:nth-child(2n) .polaroid {
+  transform: rotate(1deg);
+}
+
+.gallery-item:nth-child(3n) .polaroid {
+  transform: rotate(-1deg);
 }
 
 [data-theme="dark"] .polaroid {
@@ -182,7 +192,7 @@ onUnmounted(() => {
 }
 
 .polaroid:hover {
-  transform: translateY(-5px) rotate(1deg);
+  transform: translateY(-8px) rotate(0) scale(1.02) !important;
   box-shadow: var(--shadow-lg);
   z-index: 10;
 }
@@ -230,7 +240,7 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(8px);
   z-index: 2000;
   display: flex;
   align-items: center;
@@ -241,13 +251,19 @@ onUnmounted(() => {
 .modal-content {
   max-width: 90%;
   max-height: 90vh;
+  animation: zoomIn 0.3s ease;
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 .modal-content img {
   max-width: 100%;
   max-height: 90vh;
   object-fit: contain;
-  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  box-shadow: 0 0 30px rgba(0,0,0,0.5);
   border-radius: 4px;
 }
 
@@ -261,10 +277,15 @@ onUnmounted(() => {
   cursor: pointer;
   padding: 10px;
   z-index: 2001;
+  transition: transform 0.2s;
+}
+
+.close-btn:hover {
+  transform: rotate(90deg);
 }
 
 .close-btn span {
-  font-size: 32px;
+  font-size: 36px;
 }
 
 .modal-enter-active,
@@ -289,7 +310,7 @@ onUnmounted(() => {
   }
   
   .page-title {
-    font-size: 3rem;
+    font-size: 2.5rem;
   }
 }
 </style>

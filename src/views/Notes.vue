@@ -1,15 +1,15 @@
 <template>
   <div class="notes-page container">
     <div class="header fade-in">
-      <h1 class="cursive page-title">Love Letters</h1>
-      <p class="subtitle">Words from the heart</p>
+      <h1 class="cursive page-title">心事日记</h1>
+      <p class="subtitle">写给你的，也是写给我的</p>
     </div>
 
     <div class="notes-container fade-in" style="animation-delay: 0.2s">
       <!-- Notes List (Sidebar) -->
       <div class="notes-sidebar" :class="{ 'mobile-hidden': selectedNote && isMobile }">
-        <div v-if="loading" class="loading-text">Loading letters...</div>
-        <div v-else-if="notes.length === 0" class="empty-text">No letters yet...</div>
+        <div v-if="loading" class="loading-text">正在整理心绪...</div>
+        <div v-else-if="notes.length === 0" class="empty-text">还没有写下心事...</div>
         
         <div 
           v-else
@@ -34,7 +34,7 @@
       <div class="note-content-area" :class="{ 'mobile-visible': selectedNote && isMobile }">
         <div v-if="selectedNote" class="letter-paper slide-up">
           <button class="back-btn mobile-only" @click="selectedNote = null">
-            <span class="material-icons">arrow_back</span> Back
+            <span class="material-icons">arrow_back</span> 返回列表
           </button>
           
           <div class="letter-header">
@@ -46,13 +46,13 @@
           <div class="letter-body" v-html="selectedNote.content"></div>
           
           <div class="letter-footer cursive">
-            With Love
+            你的名字，我的心事
           </div>
         </div>
         
         <div v-else class="empty-selection mobile-hidden">
           <span class="material-icons big-icon">mark_email_unread</span>
-          <p>Select a letter to read</p>
+          <p>选择一篇日记阅读</p>
         </div>
       </div>
     </div>
@@ -131,7 +131,7 @@ onUnmounted(() => {
 }
 
 .page-title {
-  font-size: 4rem;
+  font-size: 3.5rem;
   color: var(--primary-dark);
   margin-bottom: 10px;
 }
@@ -139,6 +139,7 @@ onUnmounted(() => {
 .subtitle {
   color: var(--text-light);
   font-size: 1.1rem;
+  letter-spacing: 2px;
 }
 
 .notes-container {
@@ -271,7 +272,7 @@ onUnmounted(() => {
 }
 
 .letter-title {
-  font-size: 3rem;
+  font-size: 2.5rem;
   text-align: center;
   margin-bottom: 40px;
   color: var(--primary-dark);
@@ -286,7 +287,7 @@ onUnmounted(() => {
 
 .letter-footer {
   text-align: right;
-  font-size: 2rem;
+  font-size: 1.8rem;
   color: var(--text-light);
   margin-top: 40px;
 }
