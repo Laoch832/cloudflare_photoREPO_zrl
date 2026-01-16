@@ -66,11 +66,13 @@ const updatePing = async () => {
 // Fetch views count
 const fetchViews = async () => {
   try {
-    const response = await fetch('/api/views')
+    const response = await fetch('/api/view-count')
     const data = await response.json()
-    views.value = data.views
+    views.value = data.count
   } catch (error) {
     console.error('Failed to fetch views:', error)
+    // Fallback to local storage if API fails
+    views.value = parseInt(localStorage.getItem('local_views')) || 0
   }
 }
 
