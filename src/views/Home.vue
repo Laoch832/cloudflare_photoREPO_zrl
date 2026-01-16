@@ -104,36 +104,11 @@ const fetchNotes = async () => {
 // Fetch views count
 const fetchViews = async () => {
   try {
-    const response = await fetch('/api/views')
+    const response = await fetch('/api/view-count')
     const data = await response.json()
-    views.value = data.views
+    views.value = data.count
   } catch (error) {
     console.error('Failed to fetch views:', error)
-  }
-}
-
-// Increment views count
-const incrementViews = async () => {
-  try {
-    const response = await fetch('/api/views/increment', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-    const data = await response.json()
-    views.value = data.views
-  } catch (error) {
-    console.error('Failed to increment views:', error)
-  }
-}
-
-// Update view counter with low priority
-const updateViewCounter = () => {
-  if ('requestIdleCallback' in window) {
-    requestIdleCallback(incrementViews, { timeout: 2000 })
-  } else {
-    setTimeout(incrementViews, 1000)
   }
 }
 
@@ -149,9 +124,6 @@ onMounted(async () => {
   
   // Load views count
   fetchViews()
-  
-  // Update view counter with low priority
-  updateViewCounter()
   
   loading.value = false
 })
