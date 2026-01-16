@@ -1,0 +1,21 @@
+{
+  "name": "cloudflare-photo-gallery",
+  "version": "1.0.0",
+  "description": "A static photo gallery powered by Cloudflare Workers",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "node scripts/build-index.js && node scripts/build-notes.js",
+    "deploy": "npm run build && wrangler deploy",
+    "dev": "npm run build && wrangler dev"
+  },
+  "dependencies": {
+    "@cloudflare/kv-asset-handler": "^0.3.0",
+    "mammoth": "^1.8.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241126.0",
+    "wrangler": "^3.75.0"
+  },
+  "author": "",
+  "license": "MIT"
+}
