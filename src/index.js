@@ -98,21 +98,27 @@ export default {
       if (contentType.includes('text/html')) {
         // HTML: 短缓存，确保更新即时生效，同时利用 ETag 进行验证
         headers.set('Cache-Control', 'public, max-age=60, must-revalidate, stale-while-revalidate=300')
+        headers.set('Vary', 'Accept-Encoding')
       } else if (contentType.includes('application/json')) {
         // JSON: 中等缓存，配合 ETag
         headers.set('Cache-Control', 'public, max-age=3600, must-revalidate, stale-while-revalidate=7200')
+        headers.set('Vary', 'Accept-Encoding')
       } else if (contentType.includes('application/javascript')) {
         // JS: 较长缓存，适合频繁使用的脚本
-        headers.set('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800')
+        headers.set('Cache-Control', 'public, max-age=31536000, immutable, stale-while-revalidate=604800')
+        headers.set('Vary', 'Accept-Encoding')
       } else if (contentType.match(/image|font/)) {
         // 图片和字体: 长缓存，适合不经常变化的资源
         headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+        headers.set('Vary', 'Accept-Encoding')
       } else if (contentType.includes('text/css')) {
         // CSS: 长缓存，适合不经常变化的样式表
-        headers.set('Cache-Control', 'public, max-age=604800, stale-while-revalidate=2592000')
+        headers.set('Cache-Control', 'public, max-age=31536000, immutable, stale-while-revalidate=2592000')
+        headers.set('Vary', 'Accept-Encoding')
       } else {
         // 其他资源: 默认缓存策略
         headers.set('Cache-Control', 'public, max-age=86400, must-revalidate')
+        headers.set('Vary', 'Accept-Encoding')
       }
 
       // 启用 Brotli 压缩

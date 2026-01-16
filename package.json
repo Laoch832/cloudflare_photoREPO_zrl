@@ -4,7 +4,7 @@
   "description": "A static photo gallery powered by Cloudflare Workers",
   "main": "src/index.js",
   "scripts": {
-    "build": "node scripts/build-index.js && node scripts/build-notes.js",
+    "build": "node scripts/build-index.js && node scripts/build-notes.js && node scripts/compress-resources.js",
     "deploy": "npm run build && wrangler deploy",
     "dev": "npm run build && wrangler dev"
   },
@@ -13,6 +13,9 @@
     "mammoth": "^1.11.0"
   },
   "devDependencies": {
+    "clean-css": "^5.3.3",
+    "html-minifier-terser": "^7.2.0",
+    "terser": "^5.46.0",
     "wrangler": "^3.0.0"
   },
   "author": "",
