@@ -12,3 +12,10 @@ name = "mygril"
 
 [env.development]
 name = "mygril-dev"
+
+# KV Namespace 绑定配置
+# 请在 Cloudflare Dashboard 中创建一个 KV Namespace，并将 ID 填入下方
+# 命令: npx wrangler kv:namespace create VIEW_COUNTER
+# [[kv_namespaces]]
+# binding = "VIEW_COUNTER"
+# id = "your_kv_namespace_id"

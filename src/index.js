@@ -30,23 +30,27 @@ async function handleViewCount(request, env) {
   let count = 0;
   if (env && env.VIEW_COUNTER) {
     try {
-      count = await env.VIEW_COUNTER.get('view_count');
-      count = count ? parseInt(count) + 1 : 1;
+      const value = await env.VIEW_COUNTER.get('view_count');
+      // 如果没有值，初始化为 1
+      count = value ? parseInt(value) + 1 : 1;
       await env.VIEW_COUNTER.put('view_count', count.toString());
     } catch (error) {
       console.error('KV error:', error);
-      // 如果KV不可用，返回一个随机数作为fallback
-      count = Math.floor(Math.random() * 1000) + 1;
+      // KV 出错时，尽量不返回随机数，而是返回错误或0
+      // 这里我们可以选择返回 1 或者 0，或者保留之前的错误处理但去掉随机数
+      count = 0; 
     }
   } else {
-    // 如果没有KV绑定，返回一个随机数作为fallback
-    count = Math.floor(Math.random() * 1000) + 1;
+    console.warn('VIEW_COUNTER KV binding not found');
+    // 没有绑定 KV 时返回 0，提示用户配置
+    count = 0;
   }
   
   return new Response(JSON.stringify({ count }), {
     status: 200,
     headers: {
       'content-type': 'application/json',
+      'Access-Control-Allow-Origin': '*', // 允许跨域以便调试
     },
   });
 }
