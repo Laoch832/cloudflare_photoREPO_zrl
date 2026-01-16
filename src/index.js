@@ -112,6 +112,7 @@ export default {
     }
 
     // --- 静态资源服务 ---
+    try {
       const customMapRequestToAsset = (req) => {
         const url = new URL(req.url)
         if (url.pathname === '/gallery') {
