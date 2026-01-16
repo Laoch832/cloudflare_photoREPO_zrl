@@ -15,26 +15,34 @@
         <p>还没有照片，期待未来的点点滴滴...</p>
       </div>
 
-      <div v-else class="masonry-grid">
-        <div 
-          v-for="(image, index) in images" 
-          :key="image.name" 
-          class="gallery-item"
-          :style="{ animationDelay: `${index * 0.05}s` }"
-          @click="openModal(image.url)"
-        >
-          <div class="polaroid">
-            <div class="image-wrapper">
-              <ProgressiveImage 
-                :src="image.url" 
-                :thumbnail="image.thumbnail" 
-                :alt="image.name"
-                :delay="index * 50" 
-              />
-            </div>
-            <div class="caption">
-              <span class="date">{{ formatDate(image.uploadedAt) }}</span>
-              <span class="heart-icon">❤</span>
+      <div v-else class="timeline-view">
+        <div v-for="(group, dateKey) in groupedImages" :key="dateKey" class="timeline-group">
+          <div class="timeline-header sticky-header">
+            <h3 class="date-title">
+              <span class="month">{{ formatMonth(dateKey) }}</span>
+              <span class="year">{{ formatYear(dateKey) }}</span>
+            </h3>
+            <div class="timeline-line"></div>
+          </div>
+          
+          <div class="photo-grid">
+            <div 
+              v-for="(image, index) in group" 
+              :key="image.name" 
+              class="photo-item"
+              @click="openModal(image.url)"
+            >
+              <div class="photo-wrapper">
+                <ProgressiveImage 
+                  :src="image.url" 
+                  :thumbnail="image.thumbnail" 
+                  :alt="image.name"
+                  :delay="index * 20" 
+                />
+                <div class="hover-overlay">
+                  <span class="material-icons">zoom_in</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -56,20 +64,48 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import ProgressiveImage from '../components/ProgressiveImage.vue'
 
 const loading = ref(true)
-// ... rest of script unchanged
 const images = ref([])
 const showModal = ref(false)
 const modalImageUrl = ref('')
 
-// Format date
-const formatDate = (dateString) => {
-  if (!dateString) return '未遗忘的时光'
-  return new Date(dateString).toLocaleDateString('zh-CN')
+// Format headers
+const formatMonth = (dateKey) => {
+  const [year, month] = dateKey.split('-')
+  const date = new Date(parseInt(year), parseInt(month) - 1)
+  return date.toLocaleDateString('zh-CN', { month: 'long' })
 }
+
+const formatYear = (dateKey) => {
+  const [year] = dateKey.split('-')
+  return year
+}
+
+// Group images by YYYY-MM
+const groupedImages = computed(() => {
+  const groups = {}
+  
+  // Sort images by date descending first
+  const sorted = [...images.value].sort((a, b) => {
+    return new Date(b.uploadedAt) - new Date(a.uploadedAt)
+  })
+
+  sorted.forEach(image => {
+    if (!image.uploadedAt) return
+    const date = new Date(image.uploadedAt)
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+    
+    if (!groups[key]) {
+      groups[key] = []
+    }
+    groups[key].push(image)
+  })
+  
+  return groups
+})
 
 // Open modal
 const openModal = (imageUrl) => {
@@ -91,9 +127,8 @@ const closeModal = () => {
 const fetchImages = async () => {
   try {
     const response = await fetch('/images.json')
+    if (!response.ok) throw new Error('Failed to load index')
     const data = await response.json()
-    // Sort by date descending if possible, assuming data has dates or use filename
-    // data.sort(...) 
     images.value = data
   } catch (error) {
     console.error('Failed to fetch images:', error)
@@ -151,92 +186,113 @@ onUnmounted(() => {
   to { transform: rotate(360deg); }
 }
 
-/* Masonry Grid */
-.masonry-grid {
-  column-count: 3;
-  column-gap: 32px;
+/* Timeline Layout */
+.timeline-view {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.gallery-item {
-  break-inside: avoid;
-  margin-bottom: 32px;
-  opacity: 0;
-  animation: fadeInUp 0.6s ease forwards;
-  cursor: pointer;
+.timeline-group {
+  margin-bottom: 48px;
 }
 
-@keyframes fadeInUp {
-  from { 
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to { 
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.polaroid {
-  background: white;
-  padding: 12px 12px 40px 12px;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  position: relative;
-  border-radius: 2px;
-  transform: rotate(0deg);
-}
-
-.gallery-item:nth-child(2n) .polaroid {
-  transform: rotate(1deg);
-}
-
-.gallery-item:nth-child(3n) .polaroid {
-  transform: rotate(-1deg);
-}
-
-[data-theme="dark"] .polaroid {
-  background: var(--card-bg);
-}
-
-.polaroid:hover {
-  transform: translateY(-8px) rotate(0) scale(1.02) !important;
-  box-shadow: var(--shadow-lg);
+.timeline-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-top: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
   z-index: 10;
+  top: 60px; /* Adjust based on navbar height */
 }
 
-.image-wrapper {
-  width: 100%;
+.sticky-header {
+  position: sticky;
+}
+
+[data-theme="dark"] .timeline-header {
+  background: rgba(43, 10, 18, 0.9);
+}
+
+.date-title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 150px;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.month {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--primary-dark);
+}
+
+.year {
+  font-size: 1.2rem;
+  color: var(--text-light);
+  font-weight: 400;
+}
+
+.timeline-line {
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(to right, var(--primary-color), transparent);
+  opacity: 0.3;
+  margin-left: 16px;
+}
+
+/* Google Photos Grid Style */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 4px; /* Minimal gap like Google Photos */
+}
+
+.photo-item {
+  aspect-ratio: 1; /* Square tiles */
+  cursor: pointer;
   overflow: hidden;
+  position: relative;
   background: #f0f0f0;
 }
 
-.image-wrapper img {
+.photo-wrapper {
   width: 100%;
-  display: block;
-  transition: transform 0.5s ease;
+  height: 100%;
+  transition: transform 0.3s ease;
 }
 
-.polaroid:hover img {
-  transform: scale(1.05);
-}
-
-.caption {
+/* Hover Effect */
+.hover-overlay {
   position: absolute;
-  bottom: 10px;
+  top: 0;
   left: 0;
   width: 100%;
-  text-align: center;
-  font-family: 'Indie Flower', cursive; /* Fallback to cursive */
-  color: var(--text-main);
+  height: 100%;
+  background: rgba(0, 0, 0, 0.2);
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
-.heart-icon {
-  color: var(--primary-color);
-  font-size: 14px;
+.hover-overlay .material-icons {
+  color: white;
+  font-size: 32px;
+  transform: scale(0.8);
+  transition: transform 0.2s ease;
+}
+
+.photo-item:hover .hover-overlay {
+  opacity: 1;
+}
+
+.photo-item:hover .material-icons {
+  transform: scale(1);
 }
 
 /* Modal */
@@ -246,53 +302,46 @@ onUnmounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.95); /* Darker background */
   z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 0;
 }
 
 .modal-content {
-  max-width: 90%;
-  max-height: 90vh;
-  animation: zoomIn 0.3s ease;
-}
-
-@keyframes zoomIn {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-content img {
   max-width: 100%;
-  max-height: 90vh;
+  max-height: 100%;
   object-fit: contain;
-  box-shadow: 0 0 30px rgba(0,0,0,0.5);
-  border-radius: 4px;
+  box-shadow: none;
 }
 
 .close-btn {
   position: absolute;
   top: 20px;
   right: 20px;
-  background: transparent;
+  background: rgba(255, 255, 255, 0.1);
   border: none;
   color: white;
   cursor: pointer;
-  padding: 10px;
+  padding: 12px;
   z-index: 2001;
-  transition: transform 0.2s;
+  border-radius: 50%;
+  display: flex;
+  transition: background 0.2s;
 }
 
 .close-btn:hover {
-  transform: rotate(90deg);
-}
-
-.close-btn span {
-  font-size: 36px;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .modal-enter-active,
@@ -305,19 +354,22 @@ onUnmounted(() => {
   opacity: 0;
 }
 
-@media (max-width: 900px) {
-  .masonry-grid {
-    column-count: 2;
-  }
-}
-
-@media (max-width: 600px) {
-  .masonry-grid {
-    column-count: 1;
+@media (max-width: 768px) {
+  .photo-grid {
+    grid-template-columns: repeat(3, 1fr); /* 3 columns on mobile */
+    gap: 2px;
   }
   
-  .page-title {
-    font-size: 2.5rem;
+  .timeline-header {
+    top: 50px;
+  }
+  
+  .month {
+    font-size: 1.4rem;
+  }
+  
+  .year {
+    font-size: 1rem;
   }
 }
 </style>
