@@ -1,4 +1,6 @@
 import { getAssetFromKV, mapRequestToAsset } from '@cloudflare/kv-asset-handler';
+import manifestJSON from '__STATIC_CONTENT_MANIFEST';
+const assetManifest = JSON.parse(manifestJSON);
 
 // 自定义资产映射函数，支持单页应用路由
 const customMapRequestToAsset = request => {
@@ -20,11 +22,6 @@ const customMapRequestToAsset = request => {
   // 否则，映射到index.html，支持单页应用路由
   parsedUrl.pathname = '/index.html';
   return new Request(parsedUrl, request);
-};
-
-// 配置KV资产处理
-const assetOptions = {
-  mapRequestToAsset: customMapRequestToAsset
 };
 
 // 处理视图计数请求
@@ -64,12 +61,25 @@ export default {
       return handleViewCount(request, env);
     }
     
+    // 配置KV资产处理
+    const assetOptions = {
+      ASSET_NAMESPACE: env.__STATIC_CONTENT,
+      ASSET_MANIFEST: assetManifest,
+      mapRequestToAsset: customMapRequestToAsset
+    };
+    
     // 处理所有其他请求，包括静态资源和单页应用路由
     try {
-      return await getAssetFromKV(request, assetOptions);
+      return await getAssetFromKV(
+        {
+          request,
+          waitUntil: ctx.waitUntil.bind(ctx),
+        },
+        assetOptions
+      );
     } catch (error) {
       // 如果出现错误，返回404页面
-      return new Response('404 Not Found', {
+      return new Response('404 Not Found: ' + error.message, {
         status: 404,
         headers: {
           'content-type': 'text/plain',
