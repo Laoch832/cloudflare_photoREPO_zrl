@@ -93,11 +93,13 @@ img {
 
 /* 通用动画类 */
 .fade-in {
-  animation: fadeIn 0.8s ease-out forwards;
+  opacity: 0;
+  animation: fadeIn 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .slide-up {
-  animation: slideUp 0.8s ease-out forwards;
+  opacity: 0;
+  animation: slideUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes fadeIn {
@@ -108,7 +110,7 @@ img {
 @keyframes slideUp {
   from { 
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(40px);
   }
   to { 
     opacity: 1;

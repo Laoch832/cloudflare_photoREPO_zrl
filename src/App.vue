@@ -153,6 +153,7 @@ onUnmounted(() => {
   font-weight: bold;
   color: var(--primary-dark);
   text-shadow: 0 2px 4px rgba(255, 77, 109, 0.1);
+  text-decoration: none; /* Ensure no underline */
 }
 
 .nav-links {
@@ -164,6 +165,7 @@ onUnmounted(() => {
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.4);
   box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 [data-theme="dark"] .nav-links {

@@ -1,25 +1,26 @@
 <template>
   <div class="home">
     <!-- Hero Section -->
-    <section class="hero fade-in">
+    <section class="hero">
       <div class="hero-content">
-        <h1 class="cursive title">我喜欢你，默默地</h1>
-        <div class="days-counter">
-          <p>这份心意已经藏了</p>
+        <h1 class="cursive title slide-up" style="animation-delay: 0.1s">我喜欢你，默默地</h1>
+        <div class="days-counter slide-up" style="animation-delay: 0.3s">
+          <p class="counter-label">这份心意已经藏了</p>
           <div class="days-number">{{ loveDays }}</div>
-          <p>天</p>
+          <p class="counter-label">天</p>
         </div>
-        <div class="scroll-hint">
+        <div class="scroll-hint fade-in" style="animation-delay: 1.5s">
           <span>关于你的点滴</span>
-          <span class="material-icons">expand_more</span>
+          <span class="material-icons bounce">expand_more</span>
         </div>
       </div>
       <div class="hero-bg" :style="heroBgStyle"></div>
+      <div class="hero-overlay"></div>
     </section>
 
     <div class="container content-grid">
       <!-- Latest Photo -->
-      <section class="section slide-up" style="animation-delay: 0.2s">
+      <section class="section slide-up" style="animation-delay: 0.5s">
         <div class="section-header">
           <h2 class="cursive">定格瞬间</h2>
           <router-link to="/gallery" class="view-all">查看更多 <span class="material-icons">arrow_forward</span></router-link>
@@ -39,7 +40,7 @@
       </section>
 
       <!-- Latest Note -->
-      <section class="section slide-up" style="animation-delay: 0.4s">
+      <section class="section slide-up" style="animation-delay: 0.7s">
         <div class="section-header">
           <h2 class="cursive">心事</h2>
           <router-link to="/notes" class="view-all">阅读更多 <span class="material-icons">arrow_forward</span></router-link>
@@ -137,7 +138,7 @@ onMounted(() => {
 
 /* Hero Section */
 .hero {
-  height: 85vh;
+  height: 90vh;
   position: relative;
   display: flex;
   align-items: center;
@@ -156,85 +157,111 @@ onMounted(() => {
   height: 100%;
   background-size: cover;
   background-position: center;
-  opacity: 0.1;
-  z-index: -1;
-  filter: blur(4px);
+  opacity: 0.15;
+  z-index: -2;
+  filter: blur(8px);
+  transform: scale(1.1);
   transition: opacity 1s ease;
-  transform: scale(1.1); /* Prevent white edges from blur */
+}
+
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, transparent 0%, var(--bg-color) 90%);
+  z-index: -1;
 }
 
 [data-theme="dark"] .hero-bg {
-  opacity: 0.08;
+  opacity: 0.1;
 }
 
 .hero-content {
   z-index: 1;
-  padding: 20px;
-  max-width: 800px;
+  padding: 40px;
+  max-width: 900px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .hero-content {
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(255, 255, 255, 0.05);
 }
 
 .title {
-  font-size: 4.5rem;
+  font-size: 5rem;
   color: var(--primary-dark);
-  margin-bottom: 40px;
-  text-shadow: 2px 2px 8px rgba(255, 255, 255, 0.8);
+  margin-bottom: 20px;
+  text-shadow: 0 4px 12px rgba(255, 77, 109, 0.15);
   font-weight: normal;
   line-height: 1.2;
 }
 
 .days-counter {
-  font-size: 1.4rem;
-  color: var(--text-main);
-  opacity: 0.9;
+  margin: 30px 0;
+}
+
+.counter-label {
+  font-size: 1.2rem;
+  color: var(--text-light);
+  letter-spacing: 2px;
+  margin-bottom: 10px;
 }
 
 .days-number {
-  font-size: 5rem;
-  font-weight: bold;
+  font-size: 8rem;
+  font-weight: 300;
   color: var(--accent-color);
-  line-height: 1.1;
+  line-height: 1;
   margin: 10px 0;
-  font-family: var(--font-body); /* Use body font for numbers */
+  font-family: 'Helvetica Neue', sans-serif;
+  text-shadow: 2px 4px 0px rgba(0,0,0,0.05);
 }
 
 .scroll-hint {
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
+  margin-top: 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
   color: var(--text-light);
   opacity: 0.6;
   font-size: 0.9rem;
-  animation: bounce 2s infinite;
   gap: 8px;
 }
 
+.bounce {
+  animation: bounce 2s infinite;
+}
+
 @keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {transform: translateX(-50%) translateY(0);}
-  40% {transform: translateX(-50%) translateY(-10px);}
-  60% {transform: translateX(-50%) translateY(-5px);}
+  0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+  40% {transform: translateY(-10px);}
+  60% {transform: translateY(-5px);}
 }
 
 /* Content Grid */
 .content-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 48px;
-  padding-bottom: 40px;
+  gap: 60px;
+  padding-bottom: 60px;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .section-header h2 {
-  font-size: 2.2rem;
+  font-size: 2.5rem;
   color: var(--primary-dark);
   font-weight: normal;
 }
@@ -242,16 +269,20 @@ onMounted(() => {
 .view-all {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.9rem;
+  gap: 6px;
+  font-size: 1rem;
   font-weight: 500;
   color: var(--text-light);
-  transition: all 0.2s;
+  transition: all 0.3s ease;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .view-all:hover {
-  color: var(--primary-color);
-  gap: 8px;
+  background: var(--primary-color);
+  color: white;
+  transform: translateX(5px);
 }
 
 /* Photo Card */
@@ -261,11 +292,12 @@ onMounted(() => {
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
   transform: rotate(-2deg);
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  cursor: pointer;
 }
 
 .photo-card:hover {
-  transform: rotate(0) scale(1.02);
+  transform: rotate(0) scale(1.02) translateY(-10px);
   box-shadow: var(--shadow-lg);
 }
 
@@ -281,11 +313,11 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s ease;
+  transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .photo-card:hover img {
-  transform: scale(1.05);
+  transform: scale(1.1);
 }
 
 .photo-overlay {
@@ -294,11 +326,11 @@ onMounted(() => {
   left: 0;
   width: 100%;
   padding: 20px;
-  background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+  background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
   color: white;
   font-weight: 500;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.4s ease;
 }
 
 .photo-card:hover .photo-overlay {
@@ -312,36 +344,37 @@ onMounted(() => {
 
 .note-paper {
   background: #fff;
-  padding: 32px;
-  border-radius: 2px;
+  padding: 40px;
+  border-radius: 4px;
   box-shadow: var(--shadow-sm);
   position: relative;
   background-image: linear-gradient(#f1f1f1 1px, transparent 1px);
   background-size: 100% 2em;
   line-height: 2em;
   height: 100%;
-  min-height: 320px;
+  min-height: 350px;
   transform: rotate(1deg);
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .note-paper:hover {
-  transform: rotate(0) translateY(-4px);
-  box-shadow: var(--shadow-md);
+  transform: rotate(0) translateY(-10px);
+  box-shadow: var(--shadow-lg);
 }
 
 .note-date {
   color: var(--text-light);
   font-size: 0.9rem;
   font-weight: 500;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   font-family: monospace;
+  opacity: 0.7;
 }
 
 .note-title {
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   color: var(--text-main);
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   line-height: 1.4;
   font-weight: 600;
 }
@@ -349,11 +382,12 @@ onMounted(() => {
 .note-excerpt {
   color: var(--text-main);
   opacity: 0.8;
-  margin-bottom: 24px;
+  margin-bottom: 30px;
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  font-size: 1.05rem;
 }
 
 .read-btn {
@@ -361,18 +395,19 @@ onMounted(() => {
   color: var(--primary-dark);
   font-weight: 600;
   border-bottom: 2px solid var(--primary-color);
-  padding-bottom: 2px;
-  font-size: 0.95rem;
-  transition: all 0.2s;
+  padding-bottom: 4px;
+  font-size: 1rem;
+  transition: all 0.3s;
 }
 
 .read-btn:hover {
   color: var(--accent-color);
   border-color: var(--accent-color);
+  padding-left: 10px;
 }
 
 .empty-state {
-  padding: 60px;
+  padding: 80px;
   text-align: center;
   background: rgba(255, 255, 255, 0.5);
   border-radius: var(--radius-md);
@@ -392,16 +427,16 @@ onMounted(() => {
 
 @media (max-width: 768px) {
   .title {
-    font-size: 3rem;
+    font-size: 3.5rem;
   }
   
   .days-number {
-    font-size: 4rem;
+    font-size: 5rem;
   }
   
   .content-grid {
     grid-template-columns: 1fr;
-    gap: 60px;
+    gap: 40px;
   }
   
   .photo-card, .note-paper {
@@ -409,7 +444,12 @@ onMounted(() => {
   }
   
   .hero {
-    height: 75vh;
+    height: 80vh;
+  }
+  
+  .hero-content {
+    padding: 20px;
+    margin: 0 16px;
   }
 }
 </style>
