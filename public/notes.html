@@ -346,3 +346,140 @@
       document.documentElement.setAttribute('data-theme', next);
       localStorage.setItem('theme', next);
       updateThemeIcon(next);
+    }
+
+    function updateThemeIcon(theme) {
+      document.getElementById('themeIcon').innerText = theme === 'light' ? 'dark_mode' : 'light_mode';
+    }
+
+    function updatePing() {
+      const start = performance.now();
+      fetch('/cdn-cgi/trace').then(() => {
+        const duration = Math.round(performance.now() - start);
+        document.getElementById('pingDisplay').innerText = `Ping: ${duration}ms`;
+      }).catch(() => {
+        document.getElementById('pingDisplay').innerText = 'Ping: Timeout';
+      });
+    }
+
+    // --- Notes Logic ---
+    let allNotes = [];
+
+    async function loadNotes() {
+      try {
+        const response = await fetch('/notes.json');
+        allNotes = await response.json();
+        allNotes.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        renderNotesList();
+        
+        // Check if we need to show a specific note
+        const hash = window.location.hash;
+        if (hash) {
+          const noteId = hash.substring(1);
+          showNoteDetail(noteId);
+        }
+      } catch (error) {
+        console.error('Failed to load notes:', error);
+        document.getElementById('notes-list').innerHTML = '<div style="text-align: center; color: var(--secondary-text);">加载失败</div>';
+      }
+    }
+
+    function renderNotesList() {
+      const notesList = document.getElementById('notes-list');
+      
+      if (allNotes.length === 0) {
+        notesList.innerHTML = '<div style="text-align: center; color: var(--secondary-text);">暂无笔记</div>';
+        return;
+      }
+      
+      notesList.innerHTML = '';
+      
+      allNotes.forEach(note => {
+        const noteItem = document.createElement('div');
+        noteItem.className = 'note-item ripple';
+        noteItem.innerHTML = `
+          <div class="note-date">${note.date}</div>
+          <div class="note-title">${note.filename.replace('.docx', '')}</div>
+          <div class="note-summary">${note.summary}</div>
+        `;
+        noteItem.onclick = () => showNoteDetail(note.id);
+        notesList.appendChild(noteItem);
+      });
+    }
+
+    function showNoteDetail(noteId) {
+      const note = allNotes.find(n => n.id === noteId);
+      if (!note) return;
+      
+      // Update URL hash
+      window.location.hash = noteId;
+      
+      // Show detail view
+      document.getElementById('notes-list').style.display = 'none';
+      document.getElementById('note-detail').style.display = 'block';
+      
+      // Render note content
+      const noteDetailContent = document.getElementById('note-detail-content');
+      noteDetailContent.innerHTML = `
+        <h3>${note.filename.replace('.docx', '')}</h3>
+        <div class="note-date">${note.date}</div>
+        <div style="margin-top: 24px;">${note.content}</div>
+      `;
+    }
+
+    function showNotesList() {
+      // Update URL hash
+      window.location.hash = '';
+      
+      // Show list view
+      document.getElementById('note-detail').style.display = 'none';
+      document.getElementById('notes-list').style.display = 'flex';
+    }
+
+    // --- View Counter Logic ---
+    async function fetchViews() {
+      try {
+        const response = await fetch('/api/views');
+        const data = await response.json();
+        return data.views;
+      } catch (error) {
+        console.error('Failed to fetch views:', error);
+        return 0;
+      }
+    }
+
+    async function updateViewCounter() {
+      const views = await fetchViews();
+      const viewsCount = document.getElementById('viewsCount');
+      if (viewsCount) {
+        viewsCount.textContent = views;
+      }
+    }
+
+    // Initialize app
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize theme first
+      initTheme();
+      // Start ping updates
+      setInterval(updatePing, 30000);
+      updatePing();
+      // Load notes
+      loadNotes();
+      // Update view counter
+      updateViewCounter();
+      
+      // Handle hash changes
+      window.addEventListener('hashchange', () => {
+        const hash = window.location.hash;
+        if (hash) {
+          const noteId = hash.substring(1);
+          showNoteDetail(noteId);
+        } else {
+          showNotesList();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
