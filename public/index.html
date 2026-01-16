@@ -2,8 +2,14 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#d32f2f">
+  <meta name="description" content="暗恋日记 - 记录美好的暗恋时光">
+  <meta name="robots" content="index, follow">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>暗恋日记</title>
+  <link rel="dns-prefetch" href="https://fonts.loli.net">
   <link rel="preconnect" href="https://fonts.loli.net">
   <link rel="preconnect" href="https://gstatic.loli.net" crossorigin>
   <link href="https://fonts.loli.net/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -500,6 +506,10 @@
     你已经看了她 <span id="viewsCount">--</span> 眼了
   </div>
 
+  <!-- Preload Critical Resources -->
+  <link rel="preconnect" href="https://fonts.loli.net" crossorigin>
+  <link rel="preload" href="/images.json" as="fetch" crossorigin>
+
   <script>
     // --- Loader Logic ---
     const loader = document.getElementById('dynamicLoader');
@@ -633,7 +643,7 @@
       return diffDays;
     }
 
-    // --- View Counter Logic ---
+    // --- View Counter Logic (Low Priority) ---
     async function fetchViews() {
       try {
         const response = await fetch('/api/views');
@@ -671,59 +681,86 @@
       }
     }
 
-    // Update view counter on page load
-    updateViewCounter();
+    // Update view counter with low priority, after main content loads
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(updateViewCounter, { timeout: 2000 });
+    } else {
+      // Fallback for browsers that don't support requestIdleCallback
+      setTimeout(updateViewCounter, 1000);
+    }
 
-    // --- Stats & Notes & Random Photo Logic ---
-    Promise.all([
-      fetch('/images.json').then(res => res.json()),
-      fetch('/notes.json').then(res => res.json())
-    ]).then(([images, notes]) => {
-      // Stats
-      document.getElementById('imgCount').innerText = images.length;
-      
-      // Calculate and display love days
-      const loveDays = calculateLoveDays();
-      document.getElementById('loveDays').innerText = loveDays;
-      
-      // Random Photo
-      if (images.length > 0) {
-        const randomIndex = Math.floor(Math.random() * images.length);
-        const randomPhoto = images[randomIndex];
-        const photoElement = document.getElementById('randomPhoto');
-        photoElement.src = randomPhoto.url;
-        photoElement.alt = randomPhoto.name;
-      }
-      
-      // Notes
-      const notesContainer = document.getElementById('notes-container');
-      if (notes.length === 0) {
-        notesContainer.innerHTML = '<div style="text-align: center; color: var(--secondary-text);">暂无笔记</div>';
-      } else {
-        notesContainer.innerHTML = '';
-        // Sort notes by date desc
-        notes.sort((a, b) => new Date(b.date) - new Date(a.date));
+    // --- Optimized Data Fetching Logic ---
+    async function loadPageData() {
+      // Prioritize critical resources
+      try {
+        // Load images data first (critical for hero image)
+        const imagesResponse = await fetch('/images.json');
+        const images = await imagesResponse.json();
         
-        // Show only latest note summary
-        const note = notes[0];
-        const item = document.createElement('div');
-        item.className = 'note-item';
-        item.innerHTML = `
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <div style="font-weight:500;">${note.filename.replace('.docx', '')}</div>
-            <div class="note-date" style="margin:0;">${note.date}</div>
-          </div>
-          <div class="note-content" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
-            ${note.summary}
-          </div>
-          <a href="/notes#${note.id}" style="display:inline-block; margin-top:12px; font-size:14px; color:var(--md-sys-color-primary); text-decoration:none; font-weight: 500;">阅读全文 →</a>
-        `;
-        notesContainer.appendChild(item);
+        // Update stats immediately
+        document.getElementById('imgCount').innerText = images.length;
+        
+        // Load notes data in background
+        const notesPromise = fetch('/notes.json').then(res => res.json());
+        
+        // Load love days (client-side calculation, no network request)
+        const loveDays = calculateLoveDays();
+        document.getElementById('loveDays').innerText = loveDays;
+        
+        // Optimize hero image loading
+        if (images.length > 0) {
+          const randomIndex = Math.floor(Math.random() * images.length);
+          const randomPhoto = images[randomIndex];
+          const photoElement = document.getElementById('randomPhoto');
+          
+          // Use intersection observer for lazy loading (enhanced)
+          const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+              photoElement.src = randomPhoto.url;
+              photoElement.alt = randomPhoto.name;
+              observer.unobserve(photoElement);
+            }
+          }, {
+            threshold: 0.1,
+            rootMargin: '100px 0px'
+          });
+          observer.observe(photoElement);
+        }
+        
+        // Process notes when available
+        const notes = await notesPromise;
+        const notesContainer = document.getElementById('notes-container');
+        if (notes.length === 0) {
+          notesContainer.innerHTML = '<div style="text-align: center; color: var(--secondary-text);">暂无笔记</div>';
+        } else {
+          notesContainer.innerHTML = '';
+          // Sort notes by date desc
+          notes.sort((a, b) => new Date(b.date) - new Date(a.date));
+          
+          // Show only latest note summary
+          const note = notes[0];
+          const item = document.createElement('div');
+          item.className = 'note-item';
+          item.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <div style="font-weight:500;">${note.filename.replace('.docx', '')}</div>
+              <div class="note-date" style="margin:0;">${note.date}</div>
+            </div>
+            <div class="note-content" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+              ${note.summary}
+            </div>
+            <a href="/notes#${note.id}" style="display:inline-block; margin-top:12px; font-size:14px; color:var(--md-sys-color-primary); text-decoration:none; font-weight: 500;">阅读全文 →</a>
+          `;
+          notesContainer.appendChild(item);
+        }
+      } catch (e) {
+        console.error('Failed to load page data:', e);
+        document.getElementById('notes-container').innerHTML = '加载失败';
       }
-    }).catch(e => {
-      console.error(e);
-      document.getElementById('notes-container').innerHTML = '加载失败';
-    });
+    }
+    
+    // Start loading page data
+    loadPageData();
   </script>
 </body>
 </html>

@@ -86,18 +86,37 @@ export default {
       const headers = new Headers(response.headers)
       Object.keys(corsHeaders).forEach(key => headers.set(key, corsHeaders[key]))
 
-      // 智能缓存策略
+      // 增强安全响应头
+      headers.set('X-Content-Type-Options', 'nosniff')
+      headers.set('X-Frame-Options', 'DENY')
+      headers.set('X-XSS-Protection', '1; mode=block')
+      headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+      headers.set('Permissions-Policy', 'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()')
+
+      // 智能缓存策略 - 优化版
       const contentType = headers.get('content-type') || ''
       if (contentType.includes('text/html')) {
-        // HTML: 不缓存或短缓存，确保更新即时生效
-        headers.set('Cache-Control', 'public, max-age=0, must-revalidate')
-      } else if (contentType.includes('application/json') || contentType.includes('application/javascript')) {
-        // JSON/JS: 中等缓存，配合 ETag (KV 自动处理)
-        headers.set('Cache-Control', 'public, max-age=3600, must-revalidate')
-      } else if (contentType.match(/image|font|css/)) {
-        // 静态资源: 长缓存
-        headers.set('Cache-Control', 'public, max-age=86400')
+        // HTML: 短缓存，确保更新即时生效，同时利用 ETag 进行验证
+        headers.set('Cache-Control', 'public, max-age=60, must-revalidate, stale-while-revalidate=300')
+      } else if (contentType.includes('application/json')) {
+        // JSON: 中等缓存，配合 ETag
+        headers.set('Cache-Control', 'public, max-age=3600, must-revalidate, stale-while-revalidate=7200')
+      } else if (contentType.includes('application/javascript')) {
+        // JS: 较长缓存，适合频繁使用的脚本
+        headers.set('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800')
+      } else if (contentType.match(/image|font/)) {
+        // 图片和字体: 长缓存，适合不经常变化的资源
+        headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+      } else if (contentType.includes('text/css')) {
+        // CSS: 长缓存，适合不经常变化的样式表
+        headers.set('Cache-Control', 'public, max-age=604800, stale-while-revalidate=2592000')
+      } else {
+        // 其他资源: 默认缓存策略
+        headers.set('Cache-Control', 'public, max-age=86400, must-revalidate')
       }
+
+      // 启用 Brotli 压缩
+      headers.set('Content-Encoding', headers.get('Content-Encoding') || 'br')
 
       return new Response(response.body, {
         status: response.status,
