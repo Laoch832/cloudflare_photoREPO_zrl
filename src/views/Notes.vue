@@ -1,33 +1,58 @@
 <template>
-  <div class="container">
-    <div class="section-card">
-      <h1>笔记</h1>
-      
-      <!-- Note Detail View -->
-      <div id="note-detail" class="note-detail" v-if="selectedNote">
-        <a href="#" class="back-link" @click.prevent="selectedNote = null">
-          <span class="material-icons" style="font-size: 16px;">arrow_back</span>返回笔记列表
-        </a>
-        <div class="note-detail-content">
-          <h3>{{ selectedNote.filename.replace('.docx', '') }}</h3>
-          <div class="note-date">{{ selectedNote.date }}</div>
-          <div style="margin-top: 24px;" v-html="selectedNote.content"></div>
-        </div>
-      </div>
-      
-      <!-- Notes List View -->
-      <div id="notes-list" class="notes-list" v-else>
-        <div v-if="loading" style="text-align: center; color: var(--secondary-text);">Loading...</div>
-        <div v-else-if="notes.length === 0" style="text-align: center; color: var(--secondary-text);">暂无笔记</div>
+  <div class="notes-page container">
+    <div class="header fade-in">
+      <h1 class="cursive page-title">Love Letters</h1>
+      <p class="subtitle">Words from the heart</p>
+    </div>
+
+    <div class="notes-container fade-in" style="animation-delay: 0.2s">
+      <!-- Notes List (Sidebar) -->
+      <div class="notes-sidebar" :class="{ 'mobile-hidden': selectedNote && isMobile }">
+        <div v-if="loading" class="loading-text">Loading letters...</div>
+        <div v-else-if="notes.length === 0" class="empty-text">No letters yet...</div>
+        
         <div 
+          v-else
           v-for="note in sortedNotes" 
           :key="note.id" 
-          class="note-item ripple"
-          @click="selectedNote = note"
+          class="note-item"
+          :class="{ active: selectedNote && selectedNote.id === note.id }"
+          @click="selectNote(note)"
         >
-          <div class="note-date">{{ note.date }}</div>
-          <div class="note-title">{{ note.filename.replace('.docx', '') }}</div>
-          <div class="note-summary">{{ note.summary }}</div>
+          <div class="note-icon">
+            <span class="material-icons">mail_outline</span>
+          </div>
+          <div class="note-info">
+            <h3 class="note-title">{{ note.filename.replace('.docx', '') }}</h3>
+            <span class="note-date">{{ note.date }}</span>
+            <p class="note-preview">{{ note.summary }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note Detail (Main) -->
+      <div class="note-content-area" :class="{ 'mobile-visible': selectedNote && isMobile }">
+        <div v-if="selectedNote" class="letter-paper slide-up">
+          <button class="back-btn mobile-only" @click="selectedNote = null">
+            <span class="material-icons">arrow_back</span> Back
+          </button>
+          
+          <div class="letter-header">
+            <span class="letter-date">{{ selectedNote.date }}</span>
+          </div>
+          
+          <h2 class="letter-title cursive">{{ selectedNote.filename.replace('.docx', '') }}</h2>
+          
+          <div class="letter-body" v-html="selectedNote.content"></div>
+          
+          <div class="letter-footer cursive">
+            With Love
+          </div>
+        </div>
+        
+        <div v-else class="empty-selection mobile-hidden">
+          <span class="material-icons big-icon">mark_email_unread</span>
+          <p>Select a letter to read</p>
         </div>
       </div>
     </div>
@@ -35,222 +60,295 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 
 const loading = ref(true)
 const notes = ref([])
 const selectedNote = ref(null)
+const isMobile = ref(window.innerWidth <= 768)
 
-// Sort notes by date descending
+// Sort notes
 const sortedNotes = computed(() => {
   return [...notes.value].sort((a, b) => new Date(b.date) - new Date(a.date))
 })
 
-// Fetch notes data
+// Select note
+const selectNote = (note) => {
+  selectedNote.value = note
+  window.location.hash = note.id
+  // Scroll to top of letter
+  if (isMobile.value) {
+    window.scrollTo(0, 0)
+  }
+}
+
+// Handle resize
+const handleResize = () => {
+  isMobile.value = window.innerWidth <= 768
+}
+
+// Fetch notes
 const fetchNotes = async () => {
   try {
     const response = await fetch('/notes.json')
     const data = await response.json()
     notes.value = data
     
-    // Check if we need to show a specific note based on hash
-    const hash = window.location.hash
+    // Check hash
+    const hash = window.location.hash.substring(1)
     if (hash) {
-      const noteId = hash.substring(1)
-      const note = data.find(n => n.id === noteId)
-      if (note) {
-        selectedNote.value = note
-      }
+      const found = data.find(n => n.id === hash)
+      if (found) selectedNote.value = found
+    } else if (!isMobile.value && data.length > 0) {
+      // Auto select first note on desktop
+      selectedNote.value = data[0]
     }
   } catch (error) {
-    console.error('Failed to load notes:', error)
+    console.error('Failed to fetch notes:', error)
   } finally {
     loading.value = false
   }
 }
 
-// Watch hash changes
-const handleHashChange = () => {
-  const hash = window.location.hash
-  if (hash) {
-    const noteId = hash.substring(1)
-    const note = notes.value.find(n => n.id === noteId)
-    if (note) {
-      selectedNote.value = note
-    }
-  } else {
-    selectedNote.value = null
-  }
-}
-
-// Watch selectedNote changes and update hash
-watch(selectedNote, (newNote) => {
-  if (newNote) {
-    window.location.hash = newNote.id
-  } else {
-    window.location.hash = ''
-  }
-})
-
-// Initialize component
 onMounted(() => {
   fetchNotes()
-  window.addEventListener('hashchange', handleHashChange)
+  window.addEventListener('resize', handleResize)
 })
 
-// Cleanup event listener
 onUnmounted(() => {
-  window.removeEventListener('hashchange', handleHashChange)
+  window.removeEventListener('resize', handleResize)
 })
 </script>
 
 <style scoped>
-.container {
-  max-width: 1200px;
-  margin: 100px auto 40px;
-  padding: 0 24px;
+.notes-page {
+  min-height: 80vh;
 }
 
-.section-card {
-  background: var(--card-bg);
-  padding: 32px;
-  border-radius: var(--md-sys-shape-corner-large);
-  margin-bottom: 32px;
-  /* Soft shadow for elevation */
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  border: 1px solid transparent; /* Prepare for outline */
+.header {
+  text-align: center;
+  margin-bottom: 40px;
 }
 
-h1 {
-  font-size: 32px;
-  margin-bottom: 16px;
-  font-weight: 400;
-  color: var(--text-color);
+.page-title {
+  font-size: 4rem;
+  color: var(--primary-dark);
+  margin-bottom: 10px;
 }
 
-h2 {
-  font-size: 20px;
-  margin-bottom: 16px;
-  color: var(--md-sys-color-primary);
-  font-weight: 500;
+.subtitle {
+  color: var(--text-light);
+  font-size: 1.1rem;
 }
 
-h3 {
-  font-size: 18px;
-  margin-bottom: 12px;
-  color: var(--md-sys-color-on-surface);
-  font-weight: 500;
-  margin-top: 0;
+.notes-container {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 40px;
+  height: calc(100vh - 250px);
+  min-height: 500px;
 }
 
-p {
-  line-height: 1.6;
-  color: var(--secondary-text);
-  margin-bottom: 16px;
+/* Sidebar */
+.notes-sidebar {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  scrollbar-width: thin;
 }
 
-/* Notes List */
-.notes-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+[data-theme="dark"] .notes-sidebar {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .note-item {
-  padding: 24px;
-  background: var(--bg-color);
-  border-radius: var(--md-sys-shape-corner-medium);
-  border-left: 4px solid var(--md-sys-color-primary);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  transition: all 0.2s;
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 12px;
+  border-left: 3px solid transparent;
 }
 
 .note-item:hover {
-  background: var(--md-sys-color-surface-variant);
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.6);
+  transform: translateX(4px);
 }
 
-.note-date {
-  font-size: 14px;
-  color: var(--secondary-text);
-  margin-bottom: 8px;
-  font-weight: 500;
+.note-item.active {
+  background: white;
+  border-left-color: var(--primary-color);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .note-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .note-item.active {
+  background: var(--card-bg);
+}
+
+.note-icon {
+  color: var(--primary-color);
+  display: flex;
+  align-items: flex-start;
+  padding-top: 4px;
+}
+
+.note-info {
+  flex: 1;
+  overflow: hidden;
 }
 
 .note-title {
-  font-size: 18px;
-  color: var(--text-color);
-  margin-bottom: 12px;
+  font-size: 1rem;
   font-weight: 600;
-}
-
-.note-summary {
-  font-size: 14px;
-  color: var(--secondary-text);
-  line-height: 1.6;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
+  margin-bottom: 4px;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Note Detail */
-.note-detail {
+.note-date {
+  font-size: 0.8rem;
+  color: var(--text-light);
   display: block;
+  margin-bottom: 8px;
 }
 
-.note-detail-content {
-  background: var(--bg-color);
-  padding: 24px;
-  border-radius: var(--md-sys-shape-corner-medium);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  margin-top: 16px;
+.note-preview {
+  font-size: 0.85rem;
+  color: var(--text-main);
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  text-decoration: none;
-  color: var(--md-sys-color-primary);
-  font-weight: 500;
-  margin-bottom: 16px;
-  padding: 8px 16px;
-  border-radius: 20px;
-  transition: all 0.2s;
-}
-
-.back-link:hover {
-  background: var(--md-sys-color-primary-container);
-  color: var(--md-sys-color-on-primary-container);
-}
-
-/* Ripple Effect */
-.ripple {
+/* Letter Content */
+.note-content-area {
   position: relative;
-  overflow: hidden;
-  transform: translate3d(0, 0, 0);
-}
-.ripple:after {
-  content: "";
-  display: block;
-  position: absolute;
-  width: 100%;
   height: 100%;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  background-image: radial-gradient(circle, #000 10%, transparent 10.01%);
-  background-repeat: no-repeat;
-  background-position: 50%;
-  transform: scale(10, 10);
-  opacity: 0;
-  transition: transform .5s, opacity 1s;
 }
-.ripple:active:after {
-  transform: scale(0, 0);
-  opacity: .2;
-  transition: 0s;
+
+.letter-paper {
+  background: #fff;
+  padding: 60px;
+  height: 100%;
+  overflow-y: auto;
+  box-shadow: var(--shadow-md);
+  border-radius: 2px;
+  position: relative;
+  background-image: 
+    linear-gradient(#f1f1f1 1px, transparent 1px),
+    linear-gradient(90deg, transparent 59px, #ffccd5 60px, transparent 61px);
+  background-size: 100% 2em, 100% 100%;
+  line-height: 2em;
+}
+
+[data-theme="dark"] .letter-paper {
+  background-color: var(--card-bg);
+  background-image: 
+    linear-gradient(#3a3a3a 1px, transparent 1px),
+    linear-gradient(90deg, transparent 59px, #590d22 60px, transparent 61px);
+}
+
+.letter-header {
+  text-align: right;
+  margin-bottom: 40px;
+}
+
+.letter-date {
+  font-family: 'Courier New', monospace;
+  color: var(--text-light);
+}
+
+.letter-title {
+  font-size: 3rem;
+  text-align: center;
+  margin-bottom: 40px;
+  color: var(--primary-dark);
+}
+
+.letter-body {
+  font-size: 1.1rem;
+  font-family: var(--font-body);
+  color: var(--text-main);
+  margin-bottom: 60px;
+}
+
+.letter-footer {
+  text-align: right;
+  font-size: 2rem;
+  color: var(--text-light);
+  margin-top: 40px;
+}
+
+.empty-selection {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-light);
+  opacity: 0.5;
+}
+
+.big-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .notes-container {
+    display: block;
+    height: auto;
+  }
+  
+  .notes-sidebar.mobile-hidden {
+    display: none;
+  }
+  
+  .note-content-area {
+    display: none;
+  }
+  
+  .note-content-area.mobile-visible {
+    display: block;
+    height: auto;
+    min-height: 80vh;
+  }
+  
+  .letter-paper {
+    padding: 30px 20px;
+    background-image: linear-gradient(#f1f1f1 1px, transparent 1px); /* Remove vertical line on mobile */
+  }
+  
+  .mobile-only {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 20px;
+    cursor: pointer;
+  }
+  
+  .page-title {
+    font-size: 3rem;
+  }
 }
 </style>

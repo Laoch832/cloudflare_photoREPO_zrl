@@ -1,79 +1,131 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* 浪漫配色方案 */
+  --primary-color: #ff8fa3;
+  --primary-dark: #ff4d6d;
+  --secondary-color: #ffccd5;
+  --accent-color: #c9184a;
+  
+  --bg-color: #fff0f3;
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --text-main: #590d22;
+  --text-light: #800f2f;
+  
+  --font-heading: 'Great Vibes', cursive;
+  --font-body: 'Montserrat', sans-serif;
+  
+  --shadow-sm: 0 2px 8px rgba(255, 77, 109, 0.15);
+  --shadow-md: 0 4px 16px rgba(255, 77, 109, 0.2);
+  --shadow-lg: 0 8px 30px rgba(255, 77, 109, 0.25);
+  
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+[data-theme="dark"] {
+  --primary-color: #ffb3c1;
+  --primary-dark: #ff8fa3;
+  --secondary-color: #590d22;
+  --accent-color: #ffccd5;
+  
+  --bg-color: #2b0a12;
+  --card-bg: rgba(43, 10, 18, 0.8);
+  --text-main: #fff0f3;
+  --text-light: #ffccd5;
+  
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.5);
 }
-a:hover {
-  color: #535bf2;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  font-family: var(--font-body);
+  background-color: var(--bg-color);
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(255, 204, 213, 0.4) 0%, transparent 20%),
+    radial-gradient(circle at 90% 80%, rgba(255, 143, 163, 0.4) 0%, transparent 20%);
+  background-attachment: fixed;
+  color: var(--text-main);
+  line-height: 1.6;
   min-height: 100vh;
+  transition: all 0.3s ease;
+  overflow-x: hidden;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.3s ease;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+ul {
+  list-style: none;
 }
 
-.card {
-  padding: 2em;
+img {
+  max-width: 100%;
+  display: block;
 }
 
-#app {
-  max-width: 1280px;
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}
+
+/* 通用动画类 */
+.fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+.slide-up {
+  animation: slideUp 0.8s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.container {
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  padding: 0 20px;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+h1, h2, h3 {
+  font-weight: 600;
+}
+
+.cursive {
+  font-family: var(--font-heading);
 }

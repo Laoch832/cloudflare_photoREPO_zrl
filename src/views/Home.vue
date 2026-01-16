@@ -1,49 +1,63 @@
 <template>
-  <div class="container">
-    <!-- Left Column: Intro & Carousel Placeholder -->
-    <div class="main-column">
-      <div class="section-card">
-        <h1>暗恋日记</h1>
-        <div class="photo-frame">
-          <img v-if="randomPhoto" :src="randomPhoto.url" :alt="randomPhoto.name" loading="lazy">
+  <div class="home">
+    <!-- Hero Section -->
+    <section class="hero fade-in">
+      <div class="hero-content">
+        <h1 class="cursive title">Our Love Story</h1>
+        <div class="days-counter">
+          <p>We have been in love for</p>
+          <div class="days-number">{{ loveDays }}</div>
+          <p>days</p>
+        </div>
+        <div class="scroll-hint">
+          <span>Scroll to explore</span>
+          <span class="material-icons">expand_more</span>
         </div>
       </div>
+      <div class="hero-bg" :style="heroBgStyle"></div>
+    </section>
 
-      <div class="section-card">
-        <h2>小笔记</h2>
-        <div id="notes-container" class="notes-list">
-          <div v-if="loading" style="text-align: center; color: var(--secondary-text);">Loading...</div>
-          <div v-else-if="latestNote" class="note-item">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <div style="font-weight:500;">{{ latestNote.filename.replace('.docx', '') }}</div>
-              <div class="note-date" style="margin:0;">{{ latestNote.date }}</div>
-            </div>
-            <div class="note-content" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
-              {{ latestNote.summary }}
-            </div>
-            <router-link :to="'/notes#' + latestNote.id" style="display:inline-block; margin-top:12px; font-size:14px; color:var(--md-sys-color-primary); text-decoration:none; font-weight: 500;">阅读全文 →</router-link>
-          </div>
-          <div v-else style="text-align: center; color: var(--secondary-text);">暂无笔记</div>
+    <div class="container content-grid">
+      <!-- Latest Photo -->
+      <section class="section slide-up" style="animation-delay: 0.2s">
+        <div class="section-header">
+          <h2 class="cursive">Latest Moment</h2>
+          <router-link to="/gallery" class="view-all">View All <span class="material-icons">arrow_forward</span></router-link>
         </div>
-      </div>
+        
+        <div class="photo-card" v-if="randomPhoto">
+          <div class="photo-wrapper">
+            <img :src="randomPhoto.url" :alt="randomPhoto.name" loading="lazy">
+            <div class="photo-overlay">
+              <span>{{ formatDate(randomPhoto.uploadedAt) }}</span>
+            </div>
+          </div>
+        </div>
+        <div v-else class="empty-state">
+          Waiting for our first photo...
+        </div>
+      </section>
+
+      <!-- Latest Note -->
+      <section class="section slide-up" style="animation-delay: 0.4s">
+        <div class="section-header">
+          <h2 class="cursive">Her Thoughts</h2>
+          <router-link to="/notes" class="view-all">Read More <span class="material-icons">arrow_forward</span></router-link>
+        </div>
+
+        <div class="note-card" v-if="latestNote">
+          <div class="note-paper">
+            <div class="note-date">{{ latestNote.date }}</div>
+            <h3 class="note-title">{{ latestNote.filename.replace('.docx', '') }}</h3>
+            <p class="note-excerpt">{{ latestNote.summary }}</p>
+            <router-link :to="'/notes#' + latestNote.id" class="read-btn">Read full note</router-link>
+          </div>
+        </div>
+        <div v-else class="empty-state">
+          Waiting for the first note...
+        </div>
+      </section>
     </div>
-
-    <!-- Right Column: Stats & Links -->
-    <aside class="side-column">
-      <div class="section-card">
-        <h2>数据统计</h2>
-        <div class="stat-grid">
-          <div class="stat-item">
-            <div class="stat-value">{{ imageCount }}</div>
-            <div class="stat-label">照片数量</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">{{ loveDays }}</div>
-            <div class="stat-label">暗恋天数</div>
-          </div>
-        </div>
-      </div>
-    </aside>
   </div>
 </template>
 
@@ -54,18 +68,14 @@ const loading = ref(true)
 const images = ref([])
 const notes = ref([])
 const randomPhoto = ref(null)
-const views = ref(0)
 
 // Calculate love days
 const loveDays = computed(() => {
-  const startDate = new Date('2024-10-01')
+  const startDate = new Date('2024-10-01') // Replace with your date
   const today = new Date()
   const diffTime = Math.abs(today - startDate)
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 })
-
-// Get image count
-const imageCount = computed(() => images.value.length)
 
 // Get latest note
 const latestNote = computed(() => {
@@ -73,181 +83,300 @@ const latestNote = computed(() => {
   return [...notes.value].sort((a, b) => new Date(b.date) - new Date(a.date))[0]
 })
 
-// Fetch images data
-const fetchImages = async () => {
+// Dynamic hero background
+const heroBgStyle = computed(() => {
+  if (randomPhoto.value) {
+    return {
+      backgroundImage: `url(${randomPhoto.value.url})`
+    }
+  }
+  return {}
+})
+
+// Format date
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  return new Date(dateString).toLocaleDateString()
+}
+
+// Fetch data
+const fetchData = async () => {
   try {
-    const response = await fetch('/images.json')
-    const data = await response.json()
-    images.value = data
+    const [imgRes, noteRes] = await Promise.all([
+      fetch('/images.json'),
+      fetch('/notes.json')
+    ])
     
-    // Set random photo
-    if (data.length > 0) {
-      const randomIndex = Math.floor(Math.random() * data.length)
-      randomPhoto.value = data[randomIndex]
+    const imgData = await imgRes.json()
+    const noteData = await noteRes.json()
+    
+    images.value = imgData
+    notes.value = noteData
+    
+    if (imgData.length > 0) {
+      // Pick a random photo for hero bg or display
+      const randomIndex = Math.floor(Math.random() * imgData.length)
+      randomPhoto.value = imgData[randomIndex]
     }
   } catch (error) {
-    console.error('Failed to fetch images:', error)
+    console.error('Failed to fetch data:', error)
+  } finally {
+    loading.value = false
   }
 }
 
-// Fetch notes data
-const fetchNotes = async () => {
-  try {
-    const response = await fetch('/notes.json')
-    const data = await response.json()
-    notes.value = data
-  } catch (error) {
-    console.error('Failed to fetch notes:', error)
-  }
-}
-
-// Fetch views count
-const fetchViews = async () => {
-  try {
-    const response = await fetch('/api/view-count')
-    const data = await response.json()
-    views.value = data.count
-  } catch (error) {
-    console.error('Failed to fetch views:', error)
-  }
-}
-
-// Initialize component
-onMounted(async () => {
-  loading.value = true
-  
-  // Load images first (critical for hero image)
-  await fetchImages()
-  
-  // Load notes in background
-  fetchNotes()
-  
-  // Load views count
-  fetchViews()
-  
-  loading.value = false
+onMounted(() => {
+  fetchData()
 })
 </script>
 
 <style scoped>
-.container {
-  max-width: 1200px;
-  margin: 100px auto 40px;
-  padding: 0 24px;
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 32px;
+.home {
+  min-height: 100vh;
 }
 
-.section-card {
-  background: var(--card-bg);
-  padding: 32px;
-  border-radius: var(--md-sys-shape-corner-large);
-  margin-bottom: 32px;
-  /* Soft shadow for elevation */
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  border: 1px solid transparent; /* Prepare for outline */
-}
-
-.main-column {
-  grid-column: 1;
-}
-
-.side-column {
-  grid-column: 2;
-}
-
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
-
-.stat-item {
-  background: var(--bg-color);
-  padding: 20px;
-  border-radius: var(--md-sys-shape-corner-medium);
-  text-align: center;
-  border: 1px solid var(--md-sys-color-outline);
-}
-
-.stat-value {
-  font-size: 24px;
-  font-weight: bold;
-  color: var(--md-sys-color-primary);
-}
-
-.stat-label {
-  font-size: 14px;
-  color: var(--secondary-text);
-  margin-top: 4px;
-}
-
-.photo-frame {
-  width: 100%;
-  height: 400px;
-  border-radius: var(--md-sys-shape-corner-medium);
-  overflow: hidden;
-  background: var(--md-sys-color-surface-variant);
+/* Hero Section */
+.hero {
+  height: 80vh;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  margin-top: 16px;
-  border: 4px solid var(--md-sys-color-primary-container);
+  text-align: center;
+  overflow: hidden;
+  margin-top: -80px; /* Offset navbar height */
+  margin-bottom: 60px;
 }
 
-.photo-frame img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: cover;
+.hero-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.15;
+  z-index: -1;
+  filter: blur(2px);
+  transition: opacity 1s ease;
+}
+
+[data-theme="dark"] .hero-bg {
+  opacity: 0.1;
+}
+
+.hero-content {
+  z-index: 1;
+  padding: 20px;
+}
+
+.title {
+  font-size: 5rem;
+  color: var(--primary-dark);
+  margin-bottom: 30px;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);
+}
+
+.days-counter {
+  font-size: 1.5rem;
+  color: var(--text-main);
+}
+
+.days-number {
+  font-size: 6rem;
+  font-weight: bold;
+  color: var(--accent-color);
+  line-height: 1;
+  margin: 10px 0;
+  font-family: var(--font-heading);
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text-light);
+  opacity: 0.7;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {transform: translateX(-50%) translateY(0);}
+  40% {transform: translateX(-50%) translateY(-10px);}
+  60% {transform: translateX(-50%) translateY(-5px);}
+}
+
+/* Content Grid */
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.section-header h2 {
+  font-size: 2.5rem;
+  color: var(--primary-dark);
+}
+
+.view-all {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-light);
+}
+
+.view-all:hover {
+  color: var(--primary-color);
+}
+
+/* Photo Card */
+.photo-card {
+  background: white;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  transform: rotate(-2deg);
   transition: transform 0.3s ease;
 }
 
-.photo-frame img:hover {
-  transform: scale(1.02);
+.photo-card:hover {
+  transform: rotate(0) scale(1.02);
 }
 
-.notes-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.photo-wrapper {
+  position: relative;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  aspect-ratio: 4/3;
 }
 
-.note-item {
-  padding: 16px;
-  background: var(--bg-color);
-  border-radius: var(--md-sys-shape-corner-medium);
-  border-left: 4px solid var(--md-sys-color-primary);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  transition: all 0.2s;
+.photo-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.note-item:hover {
-  background: var(--md-sys-color-surface-variant);
-}
-
-.note-date {
-  font-size: 12px;
-  color: var(--secondary-text);
-  margin-bottom: 8px;
+.photo-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 20px;
+  background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+  color: white;
   font-weight: 500;
 }
 
-.note-content {
-  font-size: 14px;
-  color: var(--text-color);
-  line-height: 1.6;
+/* Note Card */
+.note-card {
+  height: 100%;
 }
 
-@media (max-width: 800px) {
-  .container {
-    grid-template-columns: 1fr;
+.note-paper {
+  background: #fff;
+  padding: 30px;
+  border-radius: 2px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  background-image: linear-gradient(#f1f1f1 1px, transparent 1px);
+  background-size: 100% 2em;
+  line-height: 2em;
+  height: 100%;
+  min-height: 300px;
+  transform: rotate(1deg);
+  transition: transform 0.3s ease;
+}
+
+.note-paper:hover {
+  transform: rotate(0) translateY(-5px);
+  box-shadow: var(--shadow-md);
+}
+
+.note-date {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.note-title {
+  font-size: 1.5rem;
+  color: var(--text-main);
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.note-excerpt {
+  color: var(--text-main);
+  opacity: 0.8;
+  margin-bottom: 24px;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.read-btn {
+  display: inline-block;
+  color: var(--primary-dark);
+  font-weight: 600;
+  border-bottom: 2px solid var(--primary-color);
+  padding-bottom: 2px;
+}
+
+.read-btn:hover {
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.empty-state {
+  padding: 40px;
+  text-align: center;
+  background: var(--card-bg);
+  border-radius: var(--radius-md);
+  color: var(--text-light);
+  font-style: italic;
+}
+
+[data-theme="dark"] .photo-card,
+[data-theme="dark"] .note-paper {
+  background-color: var(--card-bg);
+}
+
+[data-theme="dark"] .note-paper {
+  background-image: linear-gradient(#3a3a3a 1px, transparent 1px);
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 3.5rem;
   }
   
-  .main-column,
-  .side-column {
-    grid-column: 1;
+  .days-number {
+    font-size: 4rem;
+  }
+  
+  .content-grid {
+    grid-template-columns: 1fr;
+    gap: 60px;
+  }
+  
+  .photo-card, .note-paper {
+    transform: rotate(0);
   }
 }
 </style>
