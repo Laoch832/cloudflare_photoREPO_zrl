@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@cloudflare/kv-asset-handler": "^0.3.4",
+    "@supabase/supabase-js": "^2.90.1",
     "hls.js": "^1.6.15",
     "vue": "^3.5.24",
     "vue-router": "^4.6.4"

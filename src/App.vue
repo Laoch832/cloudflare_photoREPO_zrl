@@ -28,6 +28,17 @@
           <button class="theme-btn" @click="toggleTheme" title="切换主题">
             <span class="material-icons">{{ themeIcon }}</span>
           </button>
+          
+          <template v-if="user">
+            <button class="theme-btn" @click="handleLogout" title="退出登录">
+              <span class="material-icons">logout</span>
+            </button>
+          </template>
+          <template v-else>
+            <router-link to="/login" class="theme-btn" title="登录">
+              <span class="material-icons">person</span>
+            </router-link>
+          </template>
         </div>
       </div>
     </nav>
@@ -55,6 +66,7 @@
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import SakuraBackground from './components/SakuraBackground.vue'
 import MusicPlayer from './components/MusicPlayer.vue'
+import { supabase } from './lib/supabase'
 
 // Theme management
 const theme = ref(localStorage.getItem('theme') || 'light')
@@ -62,6 +74,7 @@ const isScrolled = ref(false)
 const showNavbar = ref(true)
 const lastScrollTop = ref(0)
 const views = ref(0)
+const user = ref(null)
 
 // Calculate days (Same logic as Home, for footer consistency)
 const days = computed(() => {
@@ -109,10 +122,23 @@ const fetchViews = async () => {
   }
 }
 
+const handleLogout = async () => {
+  await supabase.auth.signOut()
+}
+
 onMounted(() => {
   document.documentElement.setAttribute('data-theme', theme.value)
   window.addEventListener('scroll', handleScroll)
   fetchViews()
+
+  // Auth check
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    user.value = session?.user ?? null
+  })
+
+  supabase.auth.onAuthStateChange((_, session) => {
+    user.value = session?.user ?? null
+  })
 })
 
 onUnmounted(() => {
