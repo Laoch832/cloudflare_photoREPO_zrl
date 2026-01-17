@@ -200,4 +200,30 @@ onMounted(async () => {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-5px); }
 }
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 2.5rem;
+  }
+
+  .cd-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 20px;
+    padding: 15px;
+  }
+
+  .cd-wrapper {
+    width: 130px;
+    height: 130px;
+  }
+
+  .cd-hole {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .track-title {
+    font-size: 0.9rem;
+  }
+}
 </style>

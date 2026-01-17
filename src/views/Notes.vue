@@ -304,6 +304,7 @@ onMounted(() => {
 /* Dashboard */
 .docs-container {
   padding: 24px;
+  padding-bottom: 100px; /* Clear bottom nav */
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -550,6 +551,7 @@ onMounted(() => {
   flex: 1;
   overflow-y: auto;
   padding: 24px;
+  padding-bottom: 100px; /* Clear bottom nav */
   display: flex;
   justify-content: center;
 }

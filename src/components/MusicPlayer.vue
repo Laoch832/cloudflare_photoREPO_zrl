@@ -328,20 +328,39 @@ onMounted(async () => {
 /* Mobile responsive */
 @media (max-width: 768px) {
   .music-player:not(.minimized) {
-    width: calc(100% - 40px);
-    right: 20px;
+    width: 90%;
+    max-width: 350px;
+    right: 50%;
+    transform: translateX(50%);
+    bottom: 100px; /* Above the bottom nav */
+    height: auto;
+    min-height: 400px;
   }
   
   .music-player.minimized {
-    right: 60px; /* Adjust for mobile menu */
-    width: 40px; /* Just show icon on mobile minimized? */
-    padding: 0;
-    justify-content: center;
+    right: 60px; /* Left of theme button */
+    top: 18px; /* Align with navbar center */
+    width: auto;
+    max-width: 140px;
+    padding: 0 8px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
   }
   
-  .music-player.minimized .mini-title,
+  .music-player.minimized .mini-title {
+    display: block; /* Show title */
+    font-size: 0.75rem;
+    max-width: 80px;
+  }
+  
   .music-player.minimized .mini-btn {
-    display: none;
+    display: flex;
+    padding: 2px;
+  }
+  
+  .music-player.minimized .mini-visualizer {
+    display: none; /* Hide visualizer to save space */
   }
 }
 </style>

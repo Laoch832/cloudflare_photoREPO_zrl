@@ -148,7 +148,7 @@ onUnmounted(() => {
 
 <style scoped>
 .gallery-page {
-  padding-bottom: 60px;
+  padding-bottom: 100px;
 }
 
 .header {

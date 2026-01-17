@@ -282,13 +282,17 @@ onUnmounted(() => {
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
-    width: auto;
-    gap: 8px;
-    padding: 8px 16px;
-    justify-content: center;
+    width: 90%; /* Make it wider */
+    max-width: 400px;
+    gap: 0; /* Distribute evenly */
+    padding: 0 16px;
+    justify-content: space-between;
     background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-    z-index: 1000;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    z-index: 900; /* Lower than MusicPlayer */
+    height: 60px;
+    border-radius: 30px;
+    display: flex;
   }
   
   [data-theme="dark"] .nav-links {
@@ -297,17 +301,31 @@ onUnmounted(() => {
   
   .nav-link {
     font-size: 0; /* Hide text */
-    padding: 12px;
-    border-radius: 50%;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   
   .nav-link .material-icons {
-    font-size: 24px;
+    font-size: 26px;
     margin: 0;
   }
 
   .nav-link:hover, .nav-link.active {
-    transform: translateY(-4px);
+    background: transparent;
+    color: var(--primary-color);
+    transform: translateY(0);
+    box-shadow: none;
+  }
+  
+  /* Add indicator for active state if needed, or just color */
+  .nav-link.active .material-icons {
+    transform: scale(1.2);
+    transition: transform 0.2s;
   }
 }
 </style>
