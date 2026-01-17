@@ -7,6 +7,32 @@
     <!-- Navigation -->
     <nav class="navbar" :class="{ 'scrolled': isScrolled, 'navbar-hidden': !showNavbar }">
       <div class="container nav-container">
+        
+        <!-- User Profile Area (Left) -->
+        <div class="user-area">
+          <transition name="user-expand" mode="out-in">
+            <!-- Loading State -->
+            <div v-if="isAuthLoading" class="user-loading" key="loading">
+              <svg class="spinner" viewBox="0 0 50 50">
+                <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+              </svg>
+            </div>
+            
+            <!-- Logged In State -->
+            <div v-else-if="user" class="user-profile expanded" key="profile" @click="handleLogout">
+              <div class="avatar">
+                {{ user.email[0].toUpperCase() }}
+              </div>
+              <span class="username">{{ user.email.split('@')[0] }}</span>
+            </div>
+
+            <!-- Guest State -->
+            <div v-else class="user-profile guest" key="guest" @click="handleLoginClick">
+              <span class="material-icons">person</span>
+            </div>
+          </transition>
+        </div>
+
         <router-link to="/" class="nav-logo cursive">暗恋日记</router-link>
         
         <div class="nav-links">
@@ -28,20 +54,15 @@
           <button class="theme-btn" @click="toggleTheme" title="切换主题">
             <span class="material-icons">{{ themeIcon }}</span>
           </button>
-          
-          <template v-if="user">
-            <button class="theme-btn" @click="handleLogout" title="退出登录">
-              <span class="material-icons">logout</span>
-            </button>
-          </template>
-          <template v-else>
-            <router-link to="/login" class="theme-btn" title="登录">
-              <span class="material-icons">person</span>
-            </router-link>
-          </template>
         </div>
       </div>
     </nav>
+
+    <AuthModal 
+      :is-open="showAuthModal" 
+      @close="showAuthModal = false"
+      @success="handleLoginSuccess"
+    />
 
     <!-- Main Content -->
     <main class="main-content">
@@ -68,6 +89,8 @@ import SakuraBackground from './components/SakuraBackground.vue'
 import MusicPlayer from './components/MusicPlayer.vue'
 import { supabase } from './lib/supabase'
 
+import AuthModal from './components/AuthModal.vue'
+
 // Theme management
 const theme = ref(localStorage.getItem('theme') || 'light')
 const isScrolled = ref(false)
@@ -75,6 +98,8 @@ const showNavbar = ref(true)
 const lastScrollTop = ref(0)
 const views = ref(0)
 const user = ref(null)
+const showAuthModal = ref(false)
+const isAuthLoading = ref(false) // For the "circle" loading state
 
 // Calculate days (Same logic as Home, for footer consistency)
 const days = computed(() => {
@@ -122,8 +147,24 @@ const fetchViews = async () => {
   }
 }
 
+const handleLoginClick = () => {
+  if (!user.value) {
+    showAuthModal.value = true
+  }
+}
+
+const handleLoginSuccess = (userData) => {
+  user.value = userData
+  // Trigger loading animation
+  isAuthLoading.value = true
+  setTimeout(() => {
+    isAuthLoading.value = false
+  }, 1500) // Fake loading time for animation effect
+}
+
 const handleLogout = async () => {
   await supabase.auth.signOut()
+  user.value = null
 }
 
 onMounted(() => {
@@ -173,10 +214,129 @@ onUnmounted(() => {
   background: rgba(43, 10, 18, 0.85);
 }
 
+/* User Profile Area */
+.user-area {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1001;
+}
+
+@media (max-width: 768px) {
+  .user-area {
+    left: 16px;
+  }
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 50px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+  height: 40px;
+}
+
+[data-theme="dark"] .user-profile {
+  background: #202124;
+  color: white;
+}
+
+.user-profile.guest {
+  width: 40px;
+  justify-content: center;
+}
+
+.user-profile.expanded {
+  padding: 0 16px 0 4px;
+  gap: 10px;
+  min-width: 120px;
+}
+
+.user-profile:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  background: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.username {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Loading Spinner */
+.user-loading {
+  width: 40px;
+  height: 40px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+[data-theme="dark"] .user-loading {
+  background: #202124;
+}
+
+.spinner {
+  animation: rotate 2s linear infinite;
+  width: 24px;
+  height: 24px;
+}
+
+.path {
+  stroke: var(--primary-color);
+  stroke-linecap: round;
+  animation: dash 1.5s ease-in-out infinite;
+}
+
+@keyframes rotate {
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes dash {
+  0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
+  50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
+  100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
+}
+
+/* Transition for User Profile */
+.user-expand-enter-active,
+.user-expand-leave-active {
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.user-expand-enter-from,
+.user-expand-leave-to {
+  opacity: 0;
+  transform: scale(0.5);
+  width: 40px;
+}
+
 .nav-container {
   display: flex;
-  justify-content: space-between;
+  justify-content: center; /* Center logo */
   align-items: center;
+  position: relative; /* For absolute positioning of user-area */
 }
 
 .nav-logo {
