@@ -718,6 +718,35 @@ onMounted(() => {
   color: #e3e3e3;
 }
 
+.editor-title-input {
+  font-size: 1.1rem;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  width: 100%;
+  color: inherit;
+  outline: none;
+  border-bottom: 2px solid transparent;
+}
+
+.editor-title-input:focus {
+  border-bottom-color: var(--primary-color);
+}
+
+.paper-textarea {
+  width: 100%;
+  height: 100%;
+  min-height: 800px;
+  border: none;
+  resize: none;
+  font-family: 'Times New Roman', serif;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  outline: none;
+  background: transparent;
+  color: inherit;
+}
+
 .editor-meta {
   display: flex;
   gap: 12px;
