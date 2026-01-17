@@ -205,7 +205,7 @@ onUnmounted(() => {
   padding-top: 80px;
   padding-bottom: 60px;
   background-color: var(--bg-color);
-  color: var(--text-color);
+  color: var(--text-main);
 }
 
 .diary-container {
