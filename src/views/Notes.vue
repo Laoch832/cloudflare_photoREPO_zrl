@@ -285,14 +285,16 @@ onMounted(() => {
 /* Header */
 .docs-header {
   position: sticky;
-  top: 0;
+  top: 70px; /* Adjusted for navbar */
   display: flex;
   align-items: center;
   padding: 8px 16px;
   background: white;
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  z-index: 100;
+  z-index: 90;
   height: 64px;
+  border-radius: 8px;
+  margin-bottom: 20px;
 }
 
 [data-theme="dark"] .docs-header {
@@ -650,7 +652,7 @@ onMounted(() => {
   width: 100%;
   height: 100vh;
   background: #f9fbfd;
-  z-index: 200;
+  z-index: 1100; /* Above navbar */
   display: flex;
   flex-direction: column;
 }
@@ -781,8 +783,23 @@ onMounted(() => {
 
 .paper-content {
   font-family: 'Times New Roman', serif;
-  font-size: 1.1rem;
-  line-height: 1.6;
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: #333;
+}
+
+[data-theme="dark"] .paper-content {
+  color: #e3e3e3;
+}
+
+.paper-content p {
+  margin-bottom: 1.5em;
+}
+
+.paper-content h1, .paper-content h2, .paper-content h3 {
+  margin-top: 1.5em;
+  margin-bottom: 0.8em;
+  line-height: 1.3;
 }
 
 @media (max-width: 768px) {
