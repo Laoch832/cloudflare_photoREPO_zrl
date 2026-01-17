@@ -25,6 +25,28 @@ async function generate() {
       fs.mkdirSync(coversDir, { recursive: true });
     }
 
+    // Auto-rename files to be web-safe
+    const rawFiles = fs.readdirSync(musicDir);
+    for (const file of rawFiles) {
+      if (file === 'covers') continue;
+      // Replace spaces with underscores, remove special chars like ', (, )
+      // But keep Chinese characters if any, as modern browsers handle them well enough usually,
+      // but to be super safe, we can just replace space and dangerous URL chars.
+      // Let's replace spaces with _, and remove anything that is not alphanumeric, dot, underscore or hyphen.
+      const ext = path.extname(file);
+      const name = path.basename(file, ext);
+      const safeName = name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_\u4e00-\u9fa5-]/g, '') + ext;
+      
+      if (file !== safeName) {
+        try {
+            fs.renameSync(path.join(musicDir, file), path.join(musicDir, safeName));
+            console.log(`Renamed: "${file}" -> "${safeName}"`);
+        } catch (e) {
+            console.error(`Failed to rename ${file}:`, e);
+        }
+      }
+    }
+
     const files = fs.readdirSync(musicDir);
     const musicFiles = files.filter(file => {
       const ext = path.extname(file).toLowerCase();
