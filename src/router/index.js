@@ -31,6 +31,11 @@ const routes = [
     path: '/music',
     name: 'Music',
     component: () => import('../views/Music.vue')
+  },
+  {
+    path: '/auth/callback',
+    name: 'AuthCallback',
+    component: () => import('../views/AuthCallback.vue')
   }
 ]
 

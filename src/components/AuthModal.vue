@@ -36,6 +36,16 @@
                 <span class="acc-name">使用其他账号</span>
               </div>
             </div>
+            
+            <div class="account-item sso-login" @click="handleSSOLogin">
+              <div class="acc-avatar icon">
+                <span class="material-icons">fingerprint</span>
+              </div>
+              <div class="acc-info">
+                <span class="acc-name">一键登录 (SSO)</span>
+                <span class="acc-email">angzhic 认证中心</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -50,6 +60,16 @@
           </div>
 
           <div class="auth-form">
+            <div class="sso-section">
+              <button class="sso-btn" @click="handleSSOLogin">
+                <span class="material-icons">fingerprint</span>
+                <span>通过 angzhic 一键登录</span>
+              </button>
+              <div class="divider">
+                <span>或使用邮箱</span>
+              </div>
+            </div>
+            
             <div class="input-group">
               <input 
                 type="email" 
@@ -141,6 +161,12 @@ const useAnotherAccount = () => {
   showAccountChooser.value = false
   email.value = ''
   password.value = ''
+}
+
+const handleSSOLogin = () => {
+  const authCenterUrl = 'https://angzhic.pages.dev/login'
+  const callbackUrl = `${window.location.origin}/auth/callback`
+  window.location.href = `${authCenterUrl}?redirect=${encodeURIComponent(callbackUrl)}`
 }
 
 const handleSubmit = async () => {
@@ -396,6 +422,77 @@ input:not(:placeholder-shown) ~ label {
   opacity: 0;
   transform: scale(0.95);
 }
+/* SSO Button Styles */
+.sso-section {
+  margin-bottom: 24px;
+}
+
+.sso-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  background: white;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  font-weight: 500;
+  color: #3c4043;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: 'Google Sans', 'Roboto', sans-serif;
+}
+
+[data-theme="dark"] .sso-btn {
+  background: #303134;
+  border-color: #5f6368;
+  color: #e8eaed;
+}
+
+.sso-btn:hover {
+  background: #f8f9fa;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+}
+
+[data-theme="dark"] .sso-btn:hover {
+  background: #3c4043;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+  color: #5f6368;
+  font-size: 14px;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid #dadce0;
+}
+
+[data-theme="dark"] .divider::before,
+[data-theme="dark"] .divider::after {
+  border-color: #5f6368;
+}
+
+.divider span {
+  padding: 0 10px;
+}
+
+.sso-login {
+  border-top: 1px solid rgba(0,0,0,0.05);
+  margin-top: 10px;
+  padding-top: 16px;
+}
+
+[data-theme="dark"] .sso-login {
+  border-top-color: rgba(255,255,255,0.05);
+}
+
 /* Account Chooser Styles */
 .account-list {
   width: 100%;
