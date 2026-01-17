@@ -19,40 +19,51 @@
         </button>
       </div>
 
-      <!-- Expanded View (Floating Card) -->
+      <!-- Expanded View (Slim Progress Bar Player) -->
       <div v-else class="expanded-content">
-        <div class="player-header">
-          <button class="minimize-btn" @click.stop="toggleMinimize">
-            <span class="material-icons">expand_more</span>
-          </button>
-        </div>
-        
-        <div class="album-art">
-          <img :src="currentTrack.cover || '/default-cover.png'" alt="Album Art" :class="{ spinning: isPlaying }">
-          <div class="vinyl-center"></div>
-        </div>
-
-        <div class="track-info">
-          <h3>{{ currentTrack.title }}</h3>
-          <p>{{ currentTrack.artist }}</p>
+        <!-- Top: Progress Bar -->
+        <div class="progress-container" @click.stop="seekTo">
+          <div class="progress-bg"></div>
+          <div class="progress-buffer" :style="{ width: bufferPercent + '%' }"></div>
+          <div class="progress-current" :style="{ width: progressPercent + '%' }"></div>
+          <div class="time-tooltip" :style="{ left: progressPercent + '%' }">
+            {{ formatTime(currentTime) }}
+          </div>
         </div>
 
-        <div class="controls">
-          <button class="control-btn small" @click.stop="toggleShuffle" :class="{ active: isShuffled }">
-            <span class="material-icons">shuffle</span>
-          </button>
-          <button class="control-btn" @click.stop="prevTrack">
-            <span class="material-icons">skip_previous</span>
-          </button>
-          <button class="control-btn play-btn" @click.stop="togglePlay">
-            <span class="material-icons">{{ isPlaying ? 'pause' : 'play_arrow' }}</span>
-          </button>
-          <button class="control-btn" @click.stop="nextTrack">
-            <span class="material-icons">skip_next</span>
-          </button>
-          <button class="control-btn small">
-            <span class="material-icons">favorite_border</span>
-          </button>
+        <div class="player-body">
+          <!-- Left: Info -->
+          <div class="track-info-slim">
+            <img :src="currentTrack.cover || '/default-cover.png'" class="mini-cover" :class="{ spinning: isPlaying }">
+            <div class="text-info">
+              <h3 class="track-title">{{ currentTrack.title }}</h3>
+              <p class="track-artist">{{ currentTrack.artist }}</p>
+            </div>
+          </div>
+
+          <!-- Center: Controls -->
+          <div class="controls-slim">
+            <button class="control-btn small" @click.stop="toggleShuffle" :class="{ active: isShuffled }">
+              <span class="material-icons">shuffle</span>
+            </button>
+            <button class="control-btn" @click.stop="prevTrack">
+              <span class="material-icons">skip_previous</span>
+            </button>
+            <button class="control-btn play-btn-slim" @click.stop="togglePlay">
+              <span class="material-icons">{{ isPlaying ? 'pause' : 'play_arrow' }}</span>
+            </button>
+            <button class="control-btn" @click.stop="nextTrack">
+              <span class="material-icons">skip_next</span>
+            </button>
+          </div>
+
+          <!-- Right: Actions -->
+          <div class="actions-slim">
+            <span class="time-display">{{ formatTime(currentTime) }} / {{ formatTime(duration) }}</span>
+            <button class="minimize-btn" @click.stop="toggleMinimize">
+              <span class="material-icons">expand_more</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -60,7 +71,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useMusic } from '../composables/useMusic'
 
 const { 
@@ -68,19 +79,50 @@ const {
   isPlaying, 
   isMinimized, 
   isShuffled,
+  currentTime,
+  duration,
+  buffered,
   togglePlay, 
   nextTrack, 
   prevTrack, 
   toggleMinimize,
   toggleShuffle,
   loadPlaylist,
-  playTrack
+  playTrack,
+  seek
 } = useMusic()
 
 const expandPlayer = () => {
   if (isMinimized.value) {
     toggleMinimize()
   }
+}
+
+// Progress calculations
+const progressPercent = computed(() => {
+  if (!duration.value) return 0
+  return (currentTime.value / duration.value) * 100
+})
+
+const bufferPercent = computed(() => {
+  if (!duration.value) return 0
+  return (buffered.value / duration.value) * 100
+})
+
+const formatTime = (seconds) => {
+  if (!seconds) return '0:00'
+  const mins = Math.floor(seconds / 60)
+  const secs = Math.floor(seconds % 60)
+  return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
+const seekTo = (e) => {
+  const rect = e.currentTarget.getBoundingClientRect()
+  const x = e.clientX - rect.left
+  const width = rect.width
+  const percent = x / width
+  const time = percent * duration.value
+  seek(time)
 }
 
 // Fetch music on mount
@@ -91,10 +133,6 @@ onMounted(async () => {
       const tracks = await res.json()
       if (tracks.length > 0) {
         loadPlaylist(tracks)
-        // Auto play first track (might be blocked by browser policy without interaction, but user asked for it)
-        // We'll try, but usually needs a click.
-        // Actually user said "Open automatically play". 
-        // We'll try to play immediately.
         setTimeout(() => {
            playTrack(0)
         }, 1000)
@@ -116,30 +154,214 @@ onMounted(async () => {
   overflow: hidden;
 }
 
-/* Expanded State */
+/* Expanded State (Slim Bar) */
 .music-player:not(.minimized) {
   bottom: 30px;
-  right: 30px;
-  width: 300px;
-  height: 450px;
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 24px;
+  right: 50%; /* Center horizontally */
+  transform: translateX(50%);
+  width: 600px;
+  height: 80px; /* Slim height */
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.5);
-  padding: 20px;
+  padding: 0;
   display: flex;
   flex-direction: column;
 }
 
 [data-theme="dark"] .music-player:not(.minimized) {
-  background: rgba(30, 30, 30, 0.85);
+  background: rgba(30, 30, 30, 0.95);
   border-color: rgba(255, 255, 255, 0.1);
   color: white;
 }
 
-/* Minimized State */
+/* Progress Bar */
+.progress-container {
+  height: 4px;
+  width: 100%;
+  position: relative;
+  cursor: pointer;
+  background: rgba(0,0,0,0.05);
+}
+
+.progress-container:hover {
+  height: 8px; /* Expand on hover */
+}
+
+.progress-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.progress-buffer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: rgba(0,0,0,0.1);
+  transition: width 0.2s;
+}
+
+[data-theme="dark"] .progress-buffer {
+  background: rgba(255,255,255,0.1);
+}
+
+.progress-current {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--primary-color);
+  transition: width 0.1s linear;
+}
+
+.progress-container:hover .progress-current::after {
+  content: '';
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+.time-tooltip {
+  position: absolute;
+  top: -25px;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.8);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.progress-container:hover .time-tooltip {
+  opacity: 1;
+}
+
+/* Player Body */
+.player-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.track-info-slim {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 30%;
+}
+
+.mini-cover {
+  width: 48px;
+  height: 48px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.text-info {
+  overflow: hidden;
+}
+
+.track-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-artist {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.controls-slim {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.play-btn-slim {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(255, 77, 109, 0.3);
+}
+
+.play-btn-slim:hover {
+  transform: scale(1.1);
+  background: var(--primary-dark);
+}
+
+.control-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+}
+
+.control-btn:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+.control-btn.active {
+  color: var(--primary-color);
+}
+
+.actions-slim {
+  width: 30%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.time-display {
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+.minimize-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  padding: 4px;
+}
+
+/* Minimized State (Keep existing) */
 .music-player.minimized {
-  top: 14px; /* Align with navbar */
-  right: 180px; /* Position next to other nav items */
+  top: 14px;
+  right: 180px;
   width: 180px;
   height: 40px;
   background: rgba(255, 255, 255, 0.9);
@@ -158,121 +380,6 @@ onMounted(async () => {
   color: white;
 }
 
-/* Expanded Content */
-.player-header {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 10px;
-}
-
-.minimize-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: inherit;
-  padding: 4px;
-}
-
-.album-art {
-  width: 220px;
-  height: 220px;
-  margin: 0 auto 20px;
-  position: relative;
-  border-radius: 50%;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-}
-
-.album-art img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  animation: spin 10s linear infinite;
-  animation-play-state: paused;
-}
-
-.album-art img.spinning {
-  animation-play-state: running;
-}
-
-.vinyl-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 40px;
-  height: 40px;
-  background: #1a1a1a;
-  border-radius: 50%;
-  border: 2px solid white;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.track-info {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.track-info h3 {
-  font-size: 1.2rem;
-  margin: 0 0 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.track-info p {
-  font-size: 0.9rem;
-  opacity: 0.7;
-  margin: 0;
-}
-
-.controls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 10px;
-}
-
-.control-btn {
-  background: transparent;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  transition: all 0.2s;
-}
-
-.control-btn:hover {
-  background: rgba(0,0,0,0.05);
-}
-
-.control-btn.active {
-  color: var(--primary-color);
-}
-
-.play-btn {
-  background: var(--primary-color);
-  color: white;
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(255, 77, 109, 0.4);
-}
-
-.play-btn:hover {
-  background: var(--primary-dark);
-  transform: scale(1.1);
-}
-
-/* Minimized Content */
 .minimized-content {
   display: flex;
   align-items: center;
@@ -330,16 +437,43 @@ onMounted(async () => {
   .music-player:not(.minimized) {
     width: 90%;
     max-width: 350px;
-    right: 50%;
-    transform: translateX(50%);
-    bottom: 100px; /* Above the bottom nav */
-    height: auto;
-    min-height: 400px;
+    height: 140px; /* Taller for mobile to stack info */
+    padding: 10px;
+    bottom: 80px; /* Avoid nav */
   }
   
+  .player-body {
+    flex-direction: column;
+    padding: 0;
+    gap: 10px;
+  }
+  
+  .track-info-slim {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .controls-slim {
+    width: 100%;
+    justify-content: center;
+    gap: 24px;
+  }
+  
+  .actions-slim {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: auto;
+  }
+
+  .time-display {
+    display: none; /* Hide time on mobile to save space, tooltip exists */
+  }
+
+  /* Minimized mobile adjustments */
   .music-player.minimized {
-    right: 60px; /* Left of theme button */
-    top: 18px; /* Align with navbar center */
+    right: 60px;
+    top: 18px;
     width: auto;
     max-width: 140px;
     padding: 0 8px;
@@ -349,7 +483,7 @@ onMounted(async () => {
   }
   
   .music-player.minimized .mini-title {
-    display: block; /* Show title */
+    display: block;
     font-size: 0.75rem;
     max-width: 80px;
   }
@@ -360,7 +494,7 @@ onMounted(async () => {
   }
   
   .music-player.minimized .mini-visualizer {
-    display: none; /* Hide visualizer to save space */
+    display: none;
   }
 }
 </style>

@@ -8,6 +8,9 @@ const isMinimized = ref(false)
 const volume = ref(0.5)
 const isShuffled = ref(false)
 const originalPlaylist = ref([]) // To restore after shuffle
+const currentTime = ref(0)
+const duration = ref(0)
+const buffered = ref(0)
 
 // Audio element (not reactive)
 let audio = null
@@ -33,6 +36,20 @@ export function useMusic() {
       
       audio.addEventListener('error', (e) => {
         console.error('Audio playback error:', e)
+      })
+
+      audio.addEventListener('timeupdate', () => {
+        currentTime.value = audio.currentTime
+      })
+
+      audio.addEventListener('loadedmetadata', () => {
+        duration.value = audio.duration
+      })
+
+      audio.addEventListener('progress', () => {
+        if (audio.buffered.length > 0) {
+          buffered.value = audio.buffered.end(audio.buffered.length - 1)
+        }
       })
     }
   }
@@ -123,6 +140,12 @@ export function useMusic() {
     playlist.value = newPlaylist
   }
 
+  const seek = (time) => {
+    if (audio) {
+      audio.currentTime = time
+    }
+  }
+
   return {
     playlist,
     currentTrack,
@@ -130,12 +153,16 @@ export function useMusic() {
     isMinimized,
     volume,
     isShuffled,
+    currentTime,
+    duration,
+    buffered,
     loadPlaylist,
     playTrack,
     togglePlay,
     nextTrack,
     prevTrack,
     toggleMinimize,
-    toggleShuffle
+    toggleShuffle,
+    seek
   }
 }
