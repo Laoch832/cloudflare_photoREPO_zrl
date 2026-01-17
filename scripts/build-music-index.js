@@ -69,7 +69,7 @@ async function generate() {
             fs.writeFileSync(coverPath, picture.data);
             console.log(`Extracted cover for ${file}`);
           }
-          metadata.cover = `/music/covers/${coverName}`;
+          metadata.cover = coverName; // Store filename only temporarily
         }
       } catch (err) {
         console.error(`Error parsing metadata for ${file}:`, err.message);
@@ -78,8 +78,9 @@ async function generate() {
       musicData.push({
         id: Buffer.from(file).toString('base64'), // Simple ID
         filename: file,
-        url: `/music/${file}`,
+        url: `/music/${encodeURIComponent(file)}`,
         ...metadata,
+        cover: metadata.cover ? `/music/covers/${encodeURIComponent(metadata.cover)}` : null,
         uploadedAt: stats.mtime.toISOString()
       });
     }
