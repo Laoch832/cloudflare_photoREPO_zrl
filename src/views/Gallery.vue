@@ -89,6 +89,8 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import ProgressiveImage from '../components/ProgressiveImage.vue'
 
+import { supabase } from '../lib/supabase'
+
 const loading = ref(true)
 const images = ref([])
 const showModal = ref(false)
@@ -163,10 +165,15 @@ const fetchImages = async () => {
     const data = await response.json()
     images.value = data
     
-    // Load featured
-    const stored = localStorage.getItem('featured_images')
-    if (stored) {
-      featuredSet.value = new Set(JSON.parse(stored))
+    // Load featured from Supabase
+    const { data: featuredData, error } = await supabase
+      .from('featured_images')
+      .select('url')
+      
+    if (error) {
+      console.error('Error fetching featured images:', error)
+    } else {
+      featuredSet.value = new Set(featuredData.map(item => item.url))
     }
   } catch (error) {
     console.error('Failed to fetch images:', error)

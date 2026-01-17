@@ -191,10 +191,15 @@ const fetchImages = async () => {
     const res = await fetch('/images.json')
     images.value = await res.json()
     
-    // Load featured from localStorage for now (Simulating DB)
-    const stored = localStorage.getItem('featured_images')
-    if (stored) {
-      featuredImages.value = new Set(JSON.parse(stored))
+    // Load featured from Supabase
+    const { data, error } = await supabase
+      .from('featured_images')
+      .select('url')
+    
+    if (error) {
+      console.error('Error fetching featured images:', error)
+    } else {
+      featuredImages.value = new Set(data.map(item => item.url))
     }
   } catch (e) {
     console.error(e)
@@ -210,14 +215,34 @@ const filteredImages = computed(() => {
 
 const isFeatured = (img) => featuredImages.value.has(img.url)
 
-const toggleFeatured = (img) => {
-  if (featuredImages.value.has(img.url)) {
+const toggleFeatured = async (img) => {
+  const isAlreadyFeatured = featuredImages.value.has(img.url)
+  
+  // Optimistic update
+  if (isAlreadyFeatured) {
     featuredImages.value.delete(img.url)
+    
+    const { error } = await supabase
+      .from('featured_images')
+      .delete()
+      .eq('url', img.url)
+      
+    if (error) {
+      console.error('Failed to unfeature:', error)
+      featuredImages.value.add(img.url) // Revert
+    }
   } else {
     featuredImages.value.add(img.url)
+    
+    const { error } = await supabase
+      .from('featured_images')
+      .insert({ url: img.url })
+      
+    if (error) {
+      console.error('Failed to feature:', error)
+      featuredImages.value.delete(img.url) // Revert
+    }
   }
-  // Save
-  localStorage.setItem('featured_images', JSON.stringify([...featuredImages.value]))
 }
 
 const handleUpload = (e) => {

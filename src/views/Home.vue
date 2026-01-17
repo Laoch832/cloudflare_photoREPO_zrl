@@ -2,18 +2,25 @@
   <div class="home">
     <!-- Hero Section -->
     <section class="hero">
-      <div class="hero-content">
+      <!-- Placeholder to prevent layout shift when content becomes fixed -->
+      <div class="hero-placeholder"></div>
+      
+      <!-- Animated Content Wrapper -->
+      <div class="hero-content" :class="{ 'docked': isDocked }">
         <h1 class="cursive title slide-up" style="animation-delay: 0.1s">我喜欢你，默默地</h1>
         <div class="days-counter slide-up" style="animation-delay: 0.3s">
-          <p class="counter-label">这份心意已经藏了</p>
-          <div class="days-number">{{ loveDays }}</div>
-          <p class="counter-label">天</p>
+          <p class="counter-label" :class="{ 'fade-out': isDocked }">这份心意已经藏了</p>
+          <div class="days-wrapper">
+            <div class="days-number">{{ loveDays }}</div>
+            <p class="counter-label unit-label">天</p>
+          </div>
         </div>
-        <div class="scroll-hint fade-in" style="animation-delay: 1.5s">
+        <div class="scroll-hint fade-in" :class="{ 'hidden': isDocked }" style="animation-delay: 1.5s">
           <span>关于你的点滴</span>
           <span class="material-icons bounce">expand_more</span>
         </div>
       </div>
+
       <div class="hero-bg" :style="heroBgStyle"></div>
       <div class="hero-overlay"></div>
     </section>
@@ -68,10 +75,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import ProgressiveImage from '../components/ProgressiveImage.vue'
 
 const loading = ref(true)
+const isDocked = ref(false)
+
+const handleScroll = () => {
+  const scrollY = window.scrollY
+  // Threshold to trigger docking (adjust based on hero height)
+  isDocked.value = scrollY > 260
+}
+
 // ... rest of script unchanged
 const images = ref([])
 const notes = ref([])
@@ -135,6 +150,11 @@ const fetchData = async () => {
 
 onMounted(() => {
   fetchData()
+  window.addEventListener('scroll', handleScroll, { passive: true })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
 })
 </script>
 
@@ -151,9 +171,107 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   text-align: center;
-  overflow: hidden;
+  /* overflow: hidden; Remove overflow hidden to allow sticky element to escape if needed, though fixed works anyway */
   margin-top: -80px; /* Offset navbar height */
   margin-bottom: 60px;
+}
+
+.hero-placeholder {
+  width: 100%;
+  height: 300px; /* Approximate height of content */
+  display: none; /* Only show when docked */
+}
+
+.hero-content {
+  z-index: 1;
+  padding: 40px;
+  max-width: 900px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: top center;
+  position: relative; /* Default */
+  width: 100%;
+}
+
+.hero-content.docked {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%) scale(0.35); /* Scale down to header size */
+  width: auto;
+  padding: 10px 40px;
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.9); /* Opaque background to cover logo */
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  z-index: 1200;
+  border: 1px solid rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  max-width: none;
+  backdrop-filter: blur(15px);
+}
+
+/* When docked, reveal the placeholder to prevent jump */
+.hero-content.docked ~ .hero-placeholder {
+  display: block;
+}
+
+[data-theme="dark"] .hero-content.docked {
+  background: rgba(43, 10, 18, 0.9);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Adjust inner elements when docked */
+.hero-content.docked .title {
+  margin: 0;
+  font-size: 3rem; /* Will be scaled down further by parent scale */
+  text-shadow: none;
+  white-space: nowrap;
+}
+
+.hero-content.docked .days-counter {
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.hero-content.docked .days-wrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.hero-content.docked .days-number {
+  font-size: 4rem;
+  margin: 0;
+  text-shadow: none;
+}
+
+.hero-content.docked .unit-label {
+  font-size: 1.5rem;
+  margin: 0;
+  opacity: 0.8;
+}
+
+/* Hide elements when docked */
+.fade-out {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  transition: opacity 0.3s;
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .hero-bg {
