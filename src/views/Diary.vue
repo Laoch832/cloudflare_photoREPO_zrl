@@ -70,7 +70,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { supabase } from '../lib/supabase'
 
 const notes = ref([])
@@ -80,11 +80,15 @@ const publishing = ref(false)
 const newTitle = ref('')
 const newContent = ref('')
 
+let authListener = null
+
 // Check Admin
 const checkAdmin = async () => {
   const { data: { user } } = await supabase.auth.getUser()
   if (user && user.email === '2730377018@qq.com') {
     isAdmin.value = true
+  } else {
+    isAdmin.value = false
   }
 }
 
@@ -132,6 +136,7 @@ const publishDiary = async () => {
     
     // Refresh list
     await fetchNotes()
+    alert('发布成功！')
   } catch (error) {
     alert('发布失败: ' + error.message)
   } finally {
@@ -169,6 +174,7 @@ const formatDateMonth = (dateStr) => {
 }
 
 const formatContent = (text) => {
+  if (!text) return ''
   // Simple nl2br
   return text.replace(/\n/g, '<br>')
 }
@@ -176,6 +182,20 @@ const formatContent = (text) => {
 onMounted(() => {
   checkAdmin()
   fetchNotes()
+  
+  // Listen for auth changes (login/logout)
+  const { data } = supabase.auth.onAuthStateChange((event, session) => {
+    if (session?.user?.email === '2730377018@qq.com') {
+      isAdmin.value = true
+    } else {
+      isAdmin.value = false
+    }
+  })
+  authListener = data.subscription
+})
+
+onUnmounted(() => {
+  if (authListener) authListener.unsubscribe()
 })
 </script>
 
