@@ -3,12 +3,18 @@ import Home from '../views/Home.vue'
 import Gallery from '../views/Gallery.vue'
 import Notes from '../views/Notes.vue'
 import Music from '../views/Music.vue'
+import Profile from '../views/Profile.vue'
 
 const routes = [
   {
     path: '/',
     name: 'Home',
     component: Home
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: Profile
   },
   {
     path: '/gallery',

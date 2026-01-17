@@ -2,55 +2,90 @@
   <transition name="auth-fade">
     <div v-if="isOpen" class="auth-overlay">
       <div class="auth-card google-style">
-        <div class="auth-header">
-          <div class="google-logo">
-            <span class="g-blue">G</span>
-            <span class="g-red">o</span>
-            <span class="g-yellow">o</span>
-            <span class="g-blue">g</span>
-            <span class="g-green">l</span>
-            <span class="g-red">e</span>
+        <!-- Account Chooser State -->
+        <div v-if="showAccountChooser" class="account-chooser">
+          <div class="auth-header">
+             <div class="google-logo">
+              <span class="g-blue">G</span><span class="g-red">o</span><span class="g-yellow">o</span><span class="g-blue">g</span><span class="g-green">l</span><span class="g-red">e</span>
+            </div>
+            <h2>选择账号</h2>
           </div>
-          <h2>{{ isRegister ? '创建您的账号' : '登录' }}</h2>
-          <p class="subtext">继续访问 暗恋日记</p>
+          
+          <div class="account-list">
+            <div 
+              v-for="acc in savedAccounts" 
+              :key="acc.email" 
+              class="account-item"
+              @click="selectAccount(acc)"
+            >
+              <div class="acc-avatar">
+                <img v-if="acc.avatar_url" :src="acc.avatar_url">
+                <span v-else>{{ acc.email[0].toUpperCase() }}</span>
+              </div>
+              <div class="acc-info">
+                <span class="acc-name">{{ acc.full_name || acc.email.split('@')[0] }}</span>
+                <span class="acc-email">{{ acc.email }}</span>
+              </div>
+            </div>
+            
+            <div class="account-item add-account" @click="useAnotherAccount">
+              <div class="acc-avatar icon">
+                <span class="material-icons">person_add</span>
+              </div>
+              <div class="acc-info">
+                <span class="acc-name">使用其他账号</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="auth-form">
-          <div class="input-group">
-            <input 
-              type="email" 
-              v-model="email" 
-              required 
-              placeholder=" "
-              id="email"
-            >
-            <label for="email">邮箱</label>
+        <!-- Login/Register Form State -->
+        <div v-else class="login-form-content">
+          <div class="auth-header">
+            <div class="google-logo">
+              <span class="g-blue">G</span><span class="g-red">o</span><span class="g-yellow">o</span><span class="g-blue">g</span><span class="g-green">l</span><span class="g-red">e</span>
+            </div>
+            <h2>{{ isRegister ? '创建您的账号' : '登录' }}</h2>
+            <p class="subtext">继续访问 暗恋日记</p>
           </div>
 
-          <div class="input-group">
-            <input 
-              type="password" 
-              v-model="password" 
-              required 
-              placeholder=" "
-              id="password"
-              @keyup.enter="handleSubmit"
-            >
-            <label for="password">密码</label>
-          </div>
+          <div class="auth-form">
+            <div class="input-group">
+              <input 
+                type="email" 
+                v-model="email" 
+                required 
+                placeholder=" "
+                id="email"
+              >
+              <label for="email">邮箱</label>
+            </div>
 
-          <div v-if="errorMsg" class="error-msg">
-            <span class="material-icons error-icon">error</span>
-            {{ errorMsg }}
-          </div>
+            <div class="input-group">
+              <input 
+                type="password" 
+                v-model="password" 
+                required 
+                placeholder=" "
+                id="password"
+                @keyup.enter="handleSubmit"
+              >
+              <label for="password">密码</label>
+            </div>
 
-          <div class="auth-actions">
-            <button class="text-btn" @click="toggleMode">
-              {{ isRegister ? '已有账号？登录' : '创建账号' }}
-            </button>
-            <button class="next-btn" @click="handleSubmit" :disabled="loading">
-              {{ loading ? '请稍候...' : (isRegister ? '注册' : '下一步') }}
-            </button>
+            <div v-if="errorMsg" class="error-msg">
+              <span class="material-icons error-icon">error</span>
+              {{ errorMsg }}
+            </div>
+
+            <div class="auth-actions">
+              <button class="text-btn" @click="toggleMode">
+                {{ isRegister ? '已有账号？登录' : '创建账号' }}
+              </button>
+              <button class="next-btn" @click="handleSubmit" :disabled="loading">
+                {{ loading ? '请稍候...' : (isRegister ? '注册' : '下一步') }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -77,6 +112,35 @@ const errorMsg = ref('')
 const toggleMode = () => {
   isRegister.value = !isRegister.value
   errorMsg.value = ''
+}
+
+const savedAccounts = ref([])
+const showAccountChooser = ref(false)
+
+// Check for saved accounts on mount
+import { onMounted } from 'vue'
+
+onMounted(() => {
+  const saved = localStorage.getItem('saved_accounts')
+  if (saved) {
+    savedAccounts.value = JSON.parse(saved)
+    if (savedAccounts.value.length > 0) {
+      showAccountChooser.value = true
+    }
+  }
+})
+
+const selectAccount = (account) => {
+  email.value = account.email
+  showAccountChooser.value = false
+  // Focus password input automatically would be nice
+  setTimeout(() => document.getElementById('password')?.focus(), 100)
+}
+
+const useAnotherAccount = () => {
+  showAccountChooser.value = false
+  email.value = ''
+  password.value = ''
 }
 
 const handleSubmit = async () => {
@@ -331,5 +395,91 @@ input:not(:placeholder-shown) ~ label {
 .auth-fade-leave-to {
   opacity: 0;
   transform: scale(0.95);
+}
+/* Account Chooser Styles */
+.account-list {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.account-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: background 0.2s;
+  border-radius: 8px;
+  padding: 10px 16px;
+}
+
+[data-theme="dark"] .account-item {
+  border-bottom-color: rgba(255,255,255,0.05);
+}
+
+.account-item:hover {
+  background: rgba(0,0,0,0.04);
+}
+
+[data-theme="dark"] .account-item:hover {
+  background: rgba(255,255,255,0.04);
+}
+
+.acc-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 18px;
+  margin-right: 16px;
+  overflow: hidden;
+}
+
+.acc-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.acc-avatar.icon {
+  background: transparent;
+  color: #5f6368;
+}
+
+[data-theme="dark"] .acc-avatar.icon {
+  color: #bdc1c6;
+}
+
+.acc-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.acc-name {
+  font-weight: 500;
+  font-size: 15px;
+  color: #202124;
+}
+
+[data-theme="dark"] .acc-name {
+  color: #e8eaed;
+}
+
+.acc-email {
+  font-size: 13px;
+  color: #5f6368;
+}
+
+[data-theme="dark"] .acc-email {
+  color: #9aa0a6;
+}
+
+.login-form-content {
+    width: 100%;
 }
 </style>

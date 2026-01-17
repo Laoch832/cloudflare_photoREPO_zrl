@@ -19,11 +19,12 @@
             </div>
             
             <!-- Logged In State -->
-            <div v-else-if="user" class="user-profile expanded" key="profile" @click="handleLogout">
+            <div v-else-if="user" class="user-profile expanded" key="profile" @click="handleProfileClick">
               <div class="avatar">
-                {{ user.email[0].toUpperCase() }}
+                <img v-if="user.user_metadata.avatar_url" :src="user.user_metadata.avatar_url" class="avatar-img-small">
+                <span v-else>{{ user.email[0].toUpperCase() }}</span>
               </div>
-              <span class="username">{{ user.email.split('@')[0] }}</span>
+              <span class="username">{{ user.user_metadata.full_name || user.email.split('@')[0] }}</span>
             </div>
 
             <!-- Guest State -->
@@ -91,6 +92,9 @@ import { supabase } from './lib/supabase'
 
 import AuthModal from './components/AuthModal.vue'
 
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 // Theme management
 const theme = ref(localStorage.getItem('theme') || 'light')
 const isScrolled = ref(false)
@@ -155,11 +159,29 @@ const handleLoginClick = () => {
 
 const handleLoginSuccess = (userData) => {
   user.value = userData
+  // Save to local storage for "account chooser" persistence
+  const savedAccounts = JSON.parse(localStorage.getItem('saved_accounts') || '[]')
+  const accountInfo = {
+    email: userData.email,
+    avatar_url: userData.user_metadata?.avatar_url,
+    full_name: userData.user_metadata?.full_name,
+    last_login: new Date().toISOString()
+  }
+  
+  // Remove existing entry if any (to update it)
+  const filtered = savedAccounts.filter(acc => acc.email !== userData.email)
+  filtered.unshift(accountInfo) // Add to top
+  localStorage.setItem('saved_accounts', JSON.stringify(filtered))
+
   // Trigger loading animation
   isAuthLoading.value = true
   setTimeout(() => {
     isAuthLoading.value = false
-  }, 1500) // Fake loading time for animation effect
+  }, 1500)
+}
+
+const handleProfileClick = () => {
+  router.push('/profile')
 }
 
 const handleLogout = async () => {
@@ -273,6 +295,13 @@ onUnmounted(() => {
   justify-content: center;
   font-weight: bold;
   font-size: 16px;
+  overflow: hidden; /* Ensure image fits */
+}
+
+.avatar-img-small {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .username {
@@ -322,14 +351,16 @@ onUnmounted(() => {
 /* Transition for User Profile */
 .user-expand-enter-active,
 .user-expand-leave-active {
-  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); /* Smoother bounce */
+  overflow: hidden; /* Hide content during width change */
 }
 
 .user-expand-enter-from,
 .user-expand-leave-to {
+  width: 40px; /* Start/End width same as collapsed/loading */
+  min-width: 40px;
+  padding: 0;
   opacity: 0;
-  transform: scale(0.5);
-  width: 40px;
 }
 
 .nav-container {
