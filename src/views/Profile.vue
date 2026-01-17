@@ -34,7 +34,10 @@
       <div class="divider"></div>
 
       <div class="actions">
-        <button class="logout-btn" @click="handleLogout">
+        <button v-if="isAdmin" class="action-btn primary anim-squash" @click="goToManager" style="margin-right: 12px;">
+          <span class="material-icons">dashboard</span> 管理后台
+        </button>
+        <button class="logout-btn anim-squash" @click="handleLogout">
           <span class="material-icons">logout</span>
           退出登录
         </button>
@@ -54,6 +57,7 @@ const uploading = ref(false)
 const email = ref('')
 const name = ref('')
 const avatarUrl = ref('')
+const isAdmin = ref(false)
 
 onMounted(async () => {
   const { data: { user } } = await supabase.auth.getUser()
@@ -65,7 +69,15 @@ onMounted(async () => {
   email.value = user.email
   name.value = user.user_metadata.full_name || ''
   avatarUrl.value = user.user_metadata.avatar_url || ''
+  
+  if (user.email === '2730377018@qq.com') {
+    isAdmin.value = true
+  }
 })
+
+const goToManager = () => {
+  router.push('/manager')
+}
 
 const updateProfile = async () => {
   try {
@@ -310,12 +322,33 @@ const handleLogout = async () => {
   justify-content: center;
 }
 
-.logout-btn {
-  background: transparent;
-  border: 1px solid rgba(0,0,0,0.1);
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   padding: 10px 24px;
   border-radius: 50px;
-  color: #ff4d4d;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn.primary {
+  background: var(--primary-color);
+  color: white;
+}
+
+.action-btn.primary:hover {
+  background: var(--primary-dark);
+}
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid var(--gray-300);
+  padding: 10px 24px;
+  border-radius: 50px;
+  color: var(--error);
   font-weight: 500;
   cursor: pointer;
   display: flex;
@@ -325,12 +358,12 @@ const handleLogout = async () => {
 }
 
 [data-theme="dark"] .logout-btn {
-  border-color: rgba(255,255,255,0.1);
+  border-color: var(--gray-300);
 }
 
 .logout-btn:hover {
   background: #fff5f5;
-  border-color: #ff4d4d;
+  border-color: var(--error);
 }
 
 [data-theme="dark"] .logout-btn:hover {

@@ -3,26 +3,26 @@
     <!-- Google Docs Header -->
     <header class="docs-header fade-in">
       <div class="header-left">
-        <div class="docs-logo">
+        <div class="docs-logo anim-pulse">
           <span class="material-icons logo-icon">description</span>
         </div>
         <h1 class="docs-title">心事文档</h1>
       </div>
       <div class="header-center">
-        <div class="search-bar">
+        <div class="search-bar smooth-transition">
           <span class="material-icons search-icon">search</span>
           <input type="text" placeholder="搜索心事..." v-model="searchQuery">
         </div>
       </div>
       <div class="header-right">
-        <button v-if="isAdmin" class="create-btn" @click="showCreateModal = true">
+        <button v-if="isAdmin" class="create-btn anim-squash" @click="showCreateModal = true">
           <span class="material-icons">add</span>
           <span>新建</span>
         </button>
-        <button class="icon-btn" title="列表视图" @click="viewMode = viewMode === 'grid' ? 'list' : 'grid'">
+        <button class="icon-btn anim-squash" title="列表视图" @click="viewMode = viewMode === 'grid' ? 'list' : 'grid'">
           <span class="material-icons">{{ viewMode === 'grid' ? 'view_list' : 'grid_view' }}</span>
         </button>
-        <button class="icon-btn" title="排序" @click="toggleSort">
+        <button class="icon-btn anim-squash" title="排序" @click="toggleSort">
           <span class="material-icons">sort_by_alpha</span>
         </button>
       </div>
@@ -32,11 +32,11 @@
     <div v-if="showCreateModal" class="modal-overlay">
       <div class="modal-card">
         <h3>写下新的心事</h3>
-        <input v-model="newNoteTitle" placeholder="标题" class="modal-input">
-        <textarea v-model="newNoteContent" placeholder="内容..." class="modal-textarea"></textarea>
+        <input v-model="newNoteTitle" placeholder="标题" class="modal-input smooth-transition">
+        <textarea v-model="newNoteContent" placeholder="内容..." class="modal-textarea smooth-transition"></textarea>
         <div class="modal-actions">
-          <button @click="showCreateModal = false" class="cancel-btn">取消</button>
-          <button @click="createNote" class="confirm-btn" :disabled="saving">
+          <button @click="showCreateModal = false" class="cancel-btn anim-squash">取消</button>
+          <button @click="createNote" class="confirm-btn anim-squash" :disabled="saving">
             {{ saving ? '发布中...' : '发布' }}
           </button>
         </div>
@@ -65,7 +65,7 @@
           <div 
             v-for="note in filteredNotes" 
             :key="note.id" 
-            class="doc-card"
+            class="doc-card anim-hover-lift"
             @click="openNote(note)"
           >
             <div class="doc-preview">
@@ -87,7 +87,7 @@
       <!-- Document Editor View -->
       <div v-else class="doc-editor slide-up">
         <div class="editor-toolbar">
-          <button class="back-btn" @click="closeNote">
+          <button class="back-btn anim-squash" @click="closeNote">
             <span class="material-icons">arrow_back</span>
           </button>
           <div class="editor-title">
@@ -99,7 +99,7 @@
             </div>
           </div>
           <div class="editor-actions">
-            <button class="share-btn" @click="copyShareLink">
+            <button class="share-btn anim-squash" @click="copyShareLink">
               <span class="material-icons">share</span> 分享
             </button>
           </div>

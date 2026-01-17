@@ -1,8 +1,26 @@
 <template>
   <div class="gallery-page container">
     <div class="header fade-in">
-      <h1 class="cursive page-title">珍藏回忆</h1>
+      <h1 class="cursive page-title anim-pulse">珍藏回忆</h1>
       <p class="subtitle">每一个瞬间，都值得被铭记</p>
+      
+      <!-- Filter Toolbar -->
+      <div class="filter-bar slide-up" style="animation-delay: 0.1s">
+        <button 
+          class="filter-pill anim-squash" 
+          :class="{ active: currentFilter === 'all' }"
+          @click="currentFilter = 'all'"
+        >
+          全部
+        </button>
+        <button 
+          class="filter-pill anim-squash" 
+          :class="{ active: currentFilter === 'featured' }"
+          @click="currentFilter = 'featured'"
+        >
+          <span class="material-icons star-icon">star</span> 精选
+        </button>
+      </div>
     </div>
 
     <div class="gallery-container fade-in" style="animation-delay: 0.2s">
@@ -11,8 +29,9 @@
         <p>正在加载美好的回忆...</p>
       </div>
       
-      <div v-else-if="images.length === 0" class="empty-state">
-        <p>还没有照片，期待未来的点点滴滴...</p>
+      <div v-else-if="Object.keys(groupedImages).length === 0" class="empty-state">
+        <p v-if="currentFilter === 'featured'">还没有精选照片，去管理页面标记一些吧...</p>
+        <p v-else>还没有照片，期待未来的点点滴滴...</p>
       </div>
 
       <div v-else class="timeline-view">
@@ -29,7 +48,7 @@
             <div 
               v-for="(image, index) in group" 
               :key="image.name" 
-              class="photo-item"
+              class="photo-item anim-hover-lift"
               @click="openModal(image.url)"
             >
               <div class="photo-wrapper">
@@ -41,6 +60,9 @@
                 />
                 <div class="hover-overlay">
                   <span class="material-icons">zoom_in</span>
+                </div>
+                <div v-if="isFeatured(image)" class="featured-badge">
+                  <span class="material-icons">star</span>
                 </div>
               </div>
             </div>
@@ -71,6 +93,8 @@ const loading = ref(true)
 const images = ref([])
 const showModal = ref(false)
 const modalImageUrl = ref('')
+const currentFilter = ref('all')
+const featuredSet = ref(new Set())
 
 // Format headers
 const formatMonth = (dateKey) => {
@@ -84,12 +108,20 @@ const formatYear = (dateKey) => {
   return year
 }
 
+const isFeatured = (image) => featuredSet.value.has(image.url)
+
 // Group images by YYYY-MM
 const groupedImages = computed(() => {
   const groups = {}
   
+  // Filter first
+  let filtered = images.value
+  if (currentFilter.value === 'featured') {
+    filtered = images.value.filter(img => featuredSet.value.has(img.url))
+  }
+  
   // Sort images by date descending first
-  const sorted = [...images.value].sort((a, b) => {
+  const sorted = [...filtered].sort((a, b) => {
     return new Date(b.uploadedAt) - new Date(a.uploadedAt)
   })
 
@@ -130,6 +162,12 @@ const fetchImages = async () => {
     if (!response.ok) throw new Error('Failed to load index')
     const data = await response.json()
     images.value = data
+    
+    // Load featured
+    const stored = localStorage.getItem('featured_images')
+    if (stored) {
+      featuredSet.value = new Set(JSON.parse(stored))
+    }
   } catch (error) {
     console.error('Failed to fetch images:', error)
   } finally {
@@ -168,10 +206,71 @@ onUnmounted(() => {
   letter-spacing: 2px;
 }
 
+.filter-bar {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.filter-pill {
+  background: white;
+  border: 1px solid var(--gray-300);
+  padding: 8px 24px;
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+[data-theme="dark"] .filter-pill {
+  background: var(--bg-card);
+  border-color: var(--gray-300);
+}
+
+.filter-pill:hover {
+  background: var(--gray-100);
+  transform: translateY(-1px);
+}
+
+.filter-pill.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.star-icon {
+  font-size: 18px;
+}
+
+.featured-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: #ffc107;
+  background: rgba(255,255,255,0.9);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.featured-badge .material-icons {
+  font-size: 16px;
+}
+
 .loading-state, .empty-state {
   text-align: center;
   padding: 60px;
-  color: var(--text-light);
+  color: var(--text-tertiary);
 }
 
 .spin {

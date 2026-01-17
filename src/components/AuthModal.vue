@@ -15,7 +15,7 @@
             <div 
               v-for="acc in savedAccounts" 
               :key="acc.email" 
-              class="account-item"
+              class="account-item anim-hover-lift anim-squash"
               @click="selectAccount(acc)"
             >
               <div class="acc-avatar">
@@ -28,7 +28,7 @@
               </div>
             </div>
             
-            <div class="account-item add-account" @click="useAnotherAccount">
+            <div class="account-item add-account anim-hover-lift anim-squash" @click="useAnotherAccount">
               <div class="acc-avatar icon">
                 <span class="material-icons">person_add</span>
               </div>
@@ -37,7 +37,7 @@
               </div>
             </div>
             
-            <div class="account-item sso-login" @click="handleSSOLogin">
+            <div class="account-item sso-login anim-hover-lift anim-squash" @click="handleSSOLogin">
               <div class="acc-avatar icon">
                 <span class="material-icons">fingerprint</span>
               </div>
@@ -61,7 +61,7 @@
 
           <div class="auth-form">
             <div class="sso-section">
-              <button class="sso-btn" @click="handleSSOLogin">
+              <button class="sso-btn anim-squash" @click="handleSSOLogin">
                 <span class="material-icons">fingerprint</span>
                 <span>通过 angzhic 一键登录</span>
               </button>
@@ -77,6 +77,7 @@
                 required 
                 placeholder=" "
                 id="email"
+                class="smooth-transition"
               >
               <label for="email">邮箱</label>
             </div>
@@ -89,6 +90,7 @@
                 placeholder=" "
                 id="password"
                 @keyup.enter="handleSubmit"
+                class="smooth-transition"
               >
               <label for="password">密码</label>
             </div>
@@ -99,10 +101,10 @@
             </div>
 
             <div class="auth-actions">
-              <button class="text-btn" @click="toggleMode">
+              <button class="text-btn anim-squash" @click="toggleMode">
                 {{ isRegister ? '已有账号？登录' : '创建账号' }}
               </button>
-              <button class="next-btn" @click="handleSubmit" :disabled="loading">
+              <button class="next-btn anim-squash" @click="handleSubmit" :disabled="loading">
                 {{ loading ? '请稍候...' : (isRegister ? '注册' : '下一步') }}
               </button>
             </div>

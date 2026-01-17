@@ -36,6 +36,12 @@ const routes = [
     path: '/auth/callback',
     name: 'AuthCallback',
     component: () => import('../views/AuthCallback.vue')
+  },
+  {
+    path: '/manager',
+    name: 'Manager',
+    component: () => import('../views/Manager.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

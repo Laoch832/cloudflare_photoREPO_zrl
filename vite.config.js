@@ -9,7 +9,6 @@ export default defineConfig({
       output: {
         manualChunks: {
           'vendor': ['vue', 'vue-router'],
-          'player': ['hls.js'],
         }
       }
     },

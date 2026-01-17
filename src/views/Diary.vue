@@ -10,17 +10,17 @@
       <div v-if="isAdmin" class="post-box slide-up">
         <h3><span class="material-icons">edit_note</span> 写日记</h3>
         <div class="input-group">
-          <input v-model="newTitle" type="text" placeholder="标题（可选）" class="diary-input title-input">
+          <input v-model="newTitle" type="text" placeholder="标题（可选）" class="diary-input title-input smooth-transition">
         </div>
         <div class="input-group">
           <textarea 
             v-model="newContent" 
             placeholder="今天发生了什么..." 
-            class="diary-input content-input"
+            class="diary-input content-input smooth-transition"
           ></textarea>
         </div>
         <div class="post-actions">
-          <button class="post-btn" @click="publishDiary" :disabled="publishing">
+          <button class="post-btn anim-squash" @click="publishDiary" :disabled="publishing">
             <span v-if="publishing" class="spinner-sm"></span>
             {{ publishing ? '发布中...' : '发布日记' }}
           </button>
@@ -46,7 +46,7 @@
             :style="{ animationDelay: `${index * 0.1}s` }"
           >
             <div class="timeline-dot"></div>
-            <div class="diary-card">
+            <div class="diary-card anim-hover-lift">
               <div class="diary-date">
                 <span class="day">{{ formatDateDay(note.created_at) }}</span>
                 <span class="month-year">{{ formatDateMonth(note.created_at) }}</span>
@@ -56,7 +56,7 @@
                 <div class="diary-text" v-html="formatContent(note.content)"></div>
                 
                 <div v-if="isAdmin" class="diary-footer">
-                  <button class="delete-btn" @click="deleteDiary(note.id)">
+                  <button class="delete-btn anim-squash" @click="deleteDiary(note.id)">
                     <span class="material-icons">delete_outline</span> 删除
                   </button>
                 </div>

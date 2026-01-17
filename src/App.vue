@@ -5,7 +5,7 @@
     <MusicPlayer />
 
     <!-- Navigation -->
-    <nav class="navbar" :class="{ 'scrolled': isScrolled, 'navbar-hidden': !showNavbar }">
+    <nav class="navbar" :class="{ 'scrolled': isScrolled, 'navbar-hidden': !showNavbar, 'has-player': currentTrack }">
       <div class="container nav-container">
         
         <!-- User Profile Area (Left) -->
@@ -19,7 +19,7 @@
             </div>
             
             <!-- Logged In State -->
-            <div v-else-if="user" class="user-profile expanded" key="profile" @click="handleProfileClick">
+            <div v-else-if="user" class="user-profile expanded anim-squash" key="profile" @click="handleProfileClick">
               <div class="avatar">
                 <img v-if="user.user_metadata.avatar_url" :src="user.user_metadata.avatar_url" class="avatar-img-small">
                 <span v-else>{{ user.email[0].toUpperCase() }}</span>
@@ -28,34 +28,34 @@
             </div>
 
             <!-- Guest State -->
-            <div v-else class="user-profile guest" key="guest" @click="handleLoginClick">
+            <div v-else class="user-profile guest anim-squash" key="guest" @click="handleLoginClick">
               <span class="material-icons">person</span>
             </div>
           </transition>
         </div>
 
-        <router-link to="/" class="nav-logo cursive">暗恋日记</router-link>
+        <router-link to="/" class="nav-logo cursive anim-pulse">暗恋日记</router-link>
         
         <div class="nav-links">
-          <router-link to="/" class="nav-link" active-class="active">
+          <router-link to="/" class="nav-link anim-hover-lift" active-class="active">
             <span class="material-icons">home</span> 首页
           </router-link>
-          <router-link to="/gallery" class="nav-link" active-class="active">
+          <router-link to="/gallery" class="nav-link anim-hover-lift" active-class="active">
             <span class="material-icons">photo_library</span> 珍藏
           </router-link>
-          <router-link to="/notes" class="nav-link" active-class="active">
+          <router-link to="/notes" class="nav-link anim-hover-lift" active-class="active">
             <span class="material-icons">favorite</span> 心事
           </router-link>
-          <router-link to="/diary" class="nav-link" active-class="active">
+          <router-link to="/diary" class="nav-link anim-hover-lift" active-class="active">
             <span class="material-icons">auto_stories</span> 日记
           </router-link>
-          <router-link to="/music" class="nav-link" active-class="active">
+          <router-link to="/music" class="nav-link anim-hover-lift" active-class="active">
             <span class="material-icons">library_music</span> 音乐
           </router-link>
         </div>
 
         <div class="nav-actions">
-          <button class="theme-btn" @click="toggleTheme" title="切换主题">
+          <button class="theme-btn anim-squash" @click="toggleTheme" title="切换主题">
             <span class="material-icons">{{ themeIcon }}</span>
           </button>
         </div>
@@ -69,7 +69,7 @@
     />
 
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="main-content" :style="{ paddingTop: currentTrack ? '144px' : '80px' }">
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
           <component :is="Component" />
@@ -92,6 +92,7 @@ import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import SakuraBackground from './components/SakuraBackground.vue'
 import MusicPlayer from './components/MusicPlayer.vue'
 import { supabase } from './lib/supabase'
+import { useMusic } from './composables/useMusic' // Import useMusic
 
 import AuthModal from './components/AuthModal.vue'
 
@@ -107,6 +108,8 @@ const views = ref(0)
 const user = ref(null)
 const showAuthModal = ref(false)
 const isAuthLoading = ref(false) // For the "circle" loading state
+
+const { currentTrack } = useMusic() // Get currentTrack
 
 // Calculate days (Same logic as Home, for footer consistency)
 const days = computed(() => {
@@ -224,19 +227,23 @@ onUnmounted(() => {
   transform: translateY(0);
 }
 
+.navbar.has-player {
+  top: 64px;
+}
+
 .navbar.navbar-hidden {
   transform: translateY(-100%);
 }
 
 .navbar.scrolled {
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--bg-card);
   backdrop-filter: blur(12px);
   padding: 12px 0;
   box-shadow: var(--shadow-sm);
 }
 
 [data-theme="dark"] .navbar.scrolled {
-  background: rgba(43, 10, 18, 0.85);
+  background: var(--bg-card);
 }
 
 /* User Profile Area */
@@ -441,8 +448,8 @@ onUnmounted(() => {
 }
 
 .main-content {
-  padding-top: 80px;
   min-height: calc(100vh - 100px);
+  transition: padding-top 0.3s ease;
 }
 
 .footer {

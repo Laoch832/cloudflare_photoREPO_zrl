@@ -1,5 +1,4 @@
 import { ref, computed } from 'vue'
-import Hls from 'hls.js'
 
 // Global state
 const playlist = ref([])
@@ -43,8 +42,8 @@ export function useMusic() {
       })
 
       audio.addEventListener('canplay', () => {
-        console.log('Audio can play')
-        if (duration.value === 0 && audio.duration && audio.duration !== Infinity) {
+        // console.log('Audio can play')
+        if (audio.duration && audio.duration !== Infinity && audio.duration > 0) {
              duration.value = audio.duration
         }
       })
@@ -54,7 +53,9 @@ export function useMusic() {
       })
 
       audio.addEventListener('loadedmetadata', () => {
-        duration.value = audio.duration
+        if (audio.duration && audio.duration !== Infinity && audio.duration > 0) {
+          duration.value = audio.duration
+        }
       })
 
       audio.addEventListener('progress', () => {
@@ -74,7 +75,7 @@ export function useMusic() {
     }
   }
 
-  const playTrack = (index) => {
+  const playTrack = async (index) => {
     if (index >= 0 && index < playlist.value.length) {
       initAudio()
       currentTrackIndex.value = index
@@ -89,24 +90,12 @@ export function useMusic() {
       
       // Handle HLS
       if (track.url.endsWith('.m3u8')) {
-        if (Hls.isSupported()) {
+        // 1. Try Native HLS (Safari)
+        if (audio.canPlayType('application/vnd.apple.mpegurl')) {
           if (hls) {
             hls.destroy()
+            hls = null
           }
-          hls = new Hls()
-          hls.loadSource(track.url)
-          hls.attachMedia(audio)
-          hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            const playPromise = audio.play()
-            if (playPromise !== undefined) {
-              playPromise.then(() => isPlaying.value = true).catch(e => {
-                console.error('HLS Play failed:', e)
-                isPlaying.value = false
-              })
-            }
-          })
-        } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
-          // Native HLS support (Safari)
           audio.src = track.url
           audio.load()
           const playPromise = audio.play()
@@ -116,14 +105,39 @@ export function useMusic() {
               isPlaying.value = false
             })
           }
-        } else {
-          console.error('HLS not supported')
-          // Fallback to original file if available
-          if (track.originalUrl) {
-             console.log('Falling back to original file:', track.originalUrl)
-             audio.src = track.originalUrl
-             audio.load()
-             audio.play().then(() => isPlaying.value = true).catch(e => isPlaying.value = false)
+        } 
+        // 2. Try hls.js
+        else {
+          try {
+            const { default: Hls } = await import('hls.js')
+            if (Hls.isSupported()) {
+              if (hls) {
+                hls.destroy()
+              }
+              hls = new Hls()
+              hls.loadSource(track.url)
+              hls.attachMedia(audio)
+              hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                const playPromise = audio.play()
+                if (playPromise !== undefined) {
+                  playPromise.then(() => isPlaying.value = true).catch(e => {
+                    console.error('HLS Play failed:', e)
+                    isPlaying.value = false
+                  })
+                }
+              })
+            } else {
+              throw new Error('HLS not supported')
+            }
+          } catch (e) {
+            console.error('HLS setup failed:', e)
+            // Fallback to original file if available
+            if (track.originalUrl) {
+               console.log('Falling back to original file:', track.originalUrl)
+               audio.src = track.originalUrl
+               audio.load()
+               audio.play().then(() => isPlaying.value = true).catch(e => isPlaying.value = false)
+            }
           }
         }
       } else {
