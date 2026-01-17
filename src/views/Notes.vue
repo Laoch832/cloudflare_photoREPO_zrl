@@ -91,7 +91,13 @@
             <span class="material-icons">arrow_back</span>
           </button>
           <div class="editor-title">
-            <h2>{{ selectedNote.filename.replace('.docx', '') }}</h2>
+            <input 
+              v-if="isAdmin && selectedNote" 
+              v-model="selectedNote.filename" 
+              class="editor-title-input"
+              @change="updateNote(selectedNote)"
+            >
+            <h2 v-else>{{ selectedNote.filename.replace('.docx', '') }}</h2>
             <div class="editor-meta">
               <span>文件</span>
               <span>编辑</span>
@@ -109,7 +115,13 @@
         
         <div class="editor-content-wrapper">
           <div class="editor-paper">
-            <div class="paper-content" v-html="selectedNote.content"></div>
+            <textarea 
+              v-if="isAdmin && selectedNote"
+              v-model="selectedNote.content"
+              class="paper-textarea"
+              @change="updateNote(selectedNote)"
+            ></textarea>
+            <div v-else class="paper-content" v-html="selectedNote.content"></div>
           </div>
         </div>
       </div>
