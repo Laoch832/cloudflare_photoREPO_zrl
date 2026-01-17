@@ -201,6 +201,25 @@ const createNote = async () => {
   }
 }
 
+const updateNote = async (note) => {
+  if (!note.id || !isAdmin.value) return
+  
+  try {
+    const { error } = await supabase
+      .from('notes')
+      .update({
+        title: note.filename,
+        content: note.content
+      })
+      .eq('id', note.id)
+      
+    if (error) throw error
+    console.log('Saved')
+  } catch (error) {
+    alert('保存失败: ' + error.message)
+  }
+}
+
 const formatDate = (dateStr) => {
   const date = new Date(dateStr)
   return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
