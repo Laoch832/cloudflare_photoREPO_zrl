@@ -8,9 +8,11 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dist
-dist-ssr
+# production
+/dist
+/dist-ssr
 *.local
+.DS_Store
 
 # Editor directories and files
 .vscode/*
@@ -27,4 +29,5 @@ dist-ssr
 public/images/thumbnails
 public/images.json
 public/music/covers
+public/music/hls
 public/music.json

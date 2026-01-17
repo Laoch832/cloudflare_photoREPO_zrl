@@ -164,9 +164,13 @@ const useAnotherAccount = () => {
 }
 
 const handleSSOLogin = () => {
-  const authCenterUrl = 'https://angzhic.pages.dev/login'
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const date = new Date()
+  const domain = `${months[date.getMonth()]}.${date.getDate()}.auth.canz-monkey.cn`
+  const authBaseUrl = `https://${domain}`
+  
   const callbackUrl = `${window.location.origin}/auth/callback`
-  window.location.href = `${authCenterUrl}?redirect=${encodeURIComponent(callbackUrl)}`
+  window.location.href = `${authBaseUrl}/login?redirect=${encodeURIComponent(callbackUrl)}`
 }
 
 const handleSubmit = async () => {
