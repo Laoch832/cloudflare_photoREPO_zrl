@@ -46,6 +46,9 @@
           <router-link to="/notes" class="nav-link" active-class="active">
             <span class="material-icons">favorite</span> 心事
           </router-link>
+          <router-link to="/diary" class="nav-link" active-class="active">
+            <span class="material-icons">auto_stories</span> 日记
+          </router-link>
           <router-link to="/music" class="nav-link" active-class="active">
             <span class="material-icons">library_music</span> 音乐
           </router-link>

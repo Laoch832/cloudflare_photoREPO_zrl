@@ -91,37 +91,23 @@
             <span class="material-icons">arrow_back</span>
           </button>
           <div class="editor-title">
-            <input 
-              v-if="isAdmin && selectedNote" 
-              v-model="selectedNote.filename" 
-              class="editor-title-input"
-              @change="updateNote(selectedNote)"
-            >
-            <h2 v-else>{{ selectedNote.filename.replace('.docx', '') }}</h2>
+            <h2>{{ selectedNote.filename.replace('.docx', '') }}</h2>
             <div class="editor-meta">
               <span>文件</span>
-              <span>编辑</span>
               <span>查看</span>
               <span>帮助</span>
             </div>
           </div>
           <div class="editor-actions">
-            <span class="material-icons">comment</span>
-            <button class="share-btn">
-              <span class="material-icons">lock</span> 仅我可见
+            <button class="share-btn" @click="copyShareLink">
+              <span class="material-icons">share</span> 分享
             </button>
           </div>
         </div>
         
         <div class="editor-content-wrapper">
           <div class="editor-paper">
-            <textarea 
-              v-if="isAdmin && selectedNote"
-              v-model="selectedNote.content"
-              class="paper-textarea"
-              @change="updateNote(selectedNote)"
-            ></textarea>
-            <div v-else class="paper-content" v-html="selectedNote.content"></div>
+            <div class="paper-content" v-html="selectedNote.content"></div>
           </div>
         </div>
       </div>
@@ -201,23 +187,17 @@ const createNote = async () => {
   }
 }
 
-const updateNote = async (note) => {
-  if (!note.id || !isAdmin.value) return
-  
-  try {
-    const { error } = await supabase
-      .from('notes')
-      .update({
-        title: note.filename,
-        content: note.content
-      })
-      .eq('id', note.id)
-      
-    if (error) throw error
-    console.log('Saved')
-  } catch (error) {
-    alert('保存失败: ' + error.message)
-  }
+const deleteNote = async () => {
+  // Removed delete logic from here as it moved to Diary
+}
+
+const copyShareLink = () => {
+  const url = `${window.location.origin}/notes#${selectedNote.value.id}`
+  navigator.clipboard.writeText(url).then(() => {
+    alert('链接已复制到剪贴板！')
+  }).catch(() => {
+    alert('复制失败，请手动复制地址栏链接')
+  })
 }
 
 const formatDate = (dateStr) => {
@@ -718,35 +698,7 @@ onMounted(() => {
   color: #e3e3e3;
 }
 
-.editor-title-input {
-  font-size: 1.1rem;
-  font-weight: 500;
-  border: none;
-  background: transparent;
-  width: 100%;
-  color: inherit;
-  outline: none;
-  border-bottom: 2px solid transparent;
-}
-
-.editor-title-input:focus {
-  border-bottom-color: var(--primary-color);
-}
-
-.paper-textarea {
-  width: 100%;
-  height: 100%;
-  min-height: 800px;
-  border: none;
-  resize: none;
-  font-family: 'Times New Roman', serif;
-  font-size: 1.1rem;
-  line-height: 1.6;
-  outline: none;
-  background: transparent;
-  color: inherit;
-}
-
+/* Removed editor-title-input and paper-textarea styles */
 .editor-meta {
   display: flex;
   gap: 12px;
@@ -786,6 +738,22 @@ onMounted(() => {
 
 .share-btn:hover {
   box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.delete-action {
+  color: #5f6368;
+  margin-right: 8px;
+  transition: all 0.2s;
+}
+
+.delete-action:hover {
+  background: #ffebee;
+  color: #d93025;
+}
+
+[data-theme="dark"] .delete-action:hover {
+  background: rgba(217, 48, 37, 0.15);
+  color: #f28b82;
 }
 
 .editor-content-wrapper {

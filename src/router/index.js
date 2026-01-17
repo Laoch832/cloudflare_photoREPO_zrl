@@ -4,12 +4,18 @@ import Gallery from '../views/Gallery.vue'
 import Notes from '../views/Notes.vue'
 import Music from '../views/Music.vue'
 import Profile from '../views/Profile.vue'
+import Diary from '../views/Diary.vue'
 
 const routes = [
   {
     path: '/',
     name: 'Home',
     component: Home
+  },
+  {
+    path: '/diary',
+    name: 'Diary',
+    component: Diary
   },
   {
     path: '/profile',
