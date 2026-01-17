@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import Hls from 'hls.js'
 
 // Global state
 const playlist = ref([])
@@ -14,6 +15,7 @@ const buffered = ref(0)
 
 // Audio element (not reactive)
 let audio = null
+let hls = null
 
 export function useMusic() {
   
@@ -85,19 +87,65 @@ export function useMusic() {
       duration.value = track.duration || 0 // Use metadata duration if available
       buffered.value = 0
       
-      audio.src = track.url
-      audio.load() // Force reload
-      
-      const playPromise = audio.play()
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            isPlaying.value = true
+      // Handle HLS
+      if (track.url.endsWith('.m3u8')) {
+        if (Hls.isSupported()) {
+          if (hls) {
+            hls.destroy()
+          }
+          hls = new Hls()
+          hls.loadSource(track.url)
+          hls.attachMedia(audio)
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            const playPromise = audio.play()
+            if (playPromise !== undefined) {
+              playPromise.then(() => isPlaying.value = true).catch(e => {
+                console.error('HLS Play failed:', e)
+                isPlaying.value = false
+              })
+            }
           })
-          .catch(e => {
-            console.error('Play failed:', e)
-            isPlaying.value = false
-          })
+        } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
+          // Native HLS support (Safari)
+          audio.src = track.url
+          audio.load()
+          const playPromise = audio.play()
+          if (playPromise !== undefined) {
+            playPromise.then(() => isPlaying.value = true).catch(e => {
+              console.error('Native HLS Play failed:', e)
+              isPlaying.value = false
+            })
+          }
+        } else {
+          console.error('HLS not supported')
+          // Fallback to original file if available
+          if (track.originalUrl) {
+             console.log('Falling back to original file:', track.originalUrl)
+             audio.src = track.originalUrl
+             audio.load()
+             audio.play().then(() => isPlaying.value = true).catch(e => isPlaying.value = false)
+          }
+        }
+      } else {
+        // Standard playback
+        if (hls) {
+          hls.destroy()
+          hls = null
+        }
+        audio.src = track.url
+        audio.load() // Force reload
+        
+        const playPromise = audio.play()
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              isPlaying.value = true
+            })
+            .catch(e => {
+              console.error('Play failed:', e)
+              isPlaying.value = false
+            })
+        }
       }
     }
   }
