@@ -12,7 +12,8 @@ const customMapRequestToAsset = request => {
   }
   
   // 检查请求是否是静态文件
-  const isStaticFile = /\.(js|css|png|jpg|jpeg|gif|webp|svg|ico|json)$/i.test(parsedUrl.pathname);
+  // 添加 .flac, .mp3, .wav, .ogg, .docx, .doc 等格式
+  const isStaticFile = /\.(js|css|png|jpg|jpeg|gif|webp|svg|ico|json|flac|mp3|wav|ogg|docx|doc|pdf)$/i.test(parsedUrl.pathname);
   
   // 如果是静态文件，直接映射
   if (isStaticFile) {
