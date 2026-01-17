@@ -2,6 +2,7 @@
   <div id="app">
     <!-- Sakura Background -->
     <SakuraBackground />
+    <MusicPlayer />
 
     <!-- Navigation -->
     <nav class="navbar" :class="{ 'scrolled': isScrolled, 'navbar-hidden': !showNavbar }">
@@ -17,6 +18,9 @@
           </router-link>
           <router-link to="/notes" class="nav-link" active-class="active">
             <span class="material-icons">favorite</span> 心事
+          </router-link>
+          <router-link to="/music" class="nav-link" active-class="active">
+            <span class="material-icons">library_music</span> 音乐
           </router-link>
         </div>
 
