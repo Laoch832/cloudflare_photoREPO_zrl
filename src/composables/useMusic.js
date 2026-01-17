@@ -36,6 +36,15 @@ export function useMusic() {
       
       audio.addEventListener('error', (e) => {
         console.error('Audio playback error:', e)
+        console.error('Audio Error Code:', audio.error ? audio.error.code : 'unknown')
+        isPlaying.value = false
+      })
+
+      audio.addEventListener('canplay', () => {
+        console.log('Audio can play')
+        if (duration.value === 0 && audio.duration && audio.duration !== Infinity) {
+             duration.value = audio.duration
+        }
       })
 
       audio.addEventListener('timeupdate', () => {
@@ -67,9 +76,29 @@ export function useMusic() {
     if (index >= 0 && index < playlist.value.length) {
       initAudio()
       currentTrackIndex.value = index
-      audio.src = playlist.value[index].url
-      audio.play().catch(e => console.error('Play failed:', e))
-      isPlaying.value = true
+      
+      const track = playlist.value[index]
+      console.log('Playing track:', track.url)
+      
+      // Reset state
+      currentTime.value = 0
+      duration.value = track.duration || 0 // Use metadata duration if available
+      buffered.value = 0
+      
+      audio.src = track.url
+      audio.load() // Force reload
+      
+      const playPromise = audio.play()
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            isPlaying.value = true
+          })
+          .catch(e => {
+            console.error('Play failed:', e)
+            isPlaying.value = false
+          })
+      }
     }
   }
 
