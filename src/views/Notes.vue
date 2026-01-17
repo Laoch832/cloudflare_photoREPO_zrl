@@ -15,6 +15,10 @@
         </div>
       </div>
       <div class="header-right">
+        <button v-if="isAdmin" class="create-btn" @click="showCreateModal = true">
+          <span class="material-icons">add</span>
+          <span>新建</span>
+        </button>
         <button class="icon-btn" title="列表视图" @click="viewMode = viewMode === 'grid' ? 'list' : 'grid'">
           <span class="material-icons">{{ viewMode === 'grid' ? 'view_list' : 'grid_view' }}</span>
         </button>
@@ -23,6 +27,21 @@
         </button>
       </div>
     </header>
+
+    <!-- Create Modal -->
+    <div v-if="showCreateModal" class="modal-overlay">
+      <div class="modal-card">
+        <h3>写下新的心事</h3>
+        <input v-model="newNoteTitle" placeholder="标题" class="modal-input">
+        <textarea v-model="newNoteContent" placeholder="内容..." class="modal-textarea"></textarea>
+        <div class="modal-actions">
+          <button @click="showCreateModal = false" class="cancel-btn">取消</button>
+          <button @click="createNote" class="confirm-btn" :disabled="saving">
+            {{ saving ? '发布中...' : '发布' }}
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Main Content -->
     <div class="docs-container fade-in" style="animation-delay: 0.1s">
@@ -100,6 +119,7 @@
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
+import { supabase } from '../lib/supabase'
 
 const loading = ref(true)
 const notes = ref([])
@@ -107,6 +127,11 @@ const selectedNote = ref(null)
 const searchQuery = ref('')
 const viewMode = ref('grid') // 'grid' or 'list'
 const sortDesc = ref(true)
+const isAdmin = ref(false)
+const showCreateModal = ref(false)
+const newNoteTitle = ref('')
+const newNoteContent = ref('')
+const saving = ref(false)
 
 // Computed
 const filteredNotes = computed(() => {
@@ -128,6 +153,42 @@ const filteredNotes = computed(() => {
 })
 
 // Methods
+const checkAdmin = async () => {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user && user.email === '2730377018@qq.com') {
+    isAdmin.value = true
+  }
+}
+
+const createNote = async () => {
+  if (!newNoteTitle.value) return alert('请输入标题')
+  
+  saving.value = true
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    const { error } = await supabase
+      .from('notes')
+      .insert({
+        title: newNoteTitle.value,
+        content: newNoteContent.value,
+        user_id: user.id,
+        is_published: true
+      })
+      
+    if (error) throw error
+    
+    alert('发布成功！')
+    showCreateModal.value = false
+    newNoteTitle.value = ''
+    newNoteContent.value = ''
+    fetchNotes()
+  } catch (error) {
+    alert('发布失败: ' + error.message)
+  } finally {
+    saving.value = false
+  }
+}
+
 const formatDate = (dateStr) => {
   const date = new Date(dateStr)
   return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
@@ -149,14 +210,40 @@ const closeNote = () => {
 // Fetch notes
 const fetchNotes = async () => {
   try {
-    const response = await fetch('/notes.json')
-    const data = await response.json()
-    notes.value = data
+    // Fetch from Supabase first
+    const { data: dbNotes, error } = await supabase
+      .from('notes')
+      .select('*')
+      .eq('is_published', true)
+      .order('created_at', { ascending: false })
+      
+    let allNotes = []
+    
+    if (!error && dbNotes) {
+      allNotes = dbNotes.map(n => ({
+        id: n.id,
+        filename: n.title,
+        content: n.content,
+        summary: n.content.substring(0, 100).replace(/<[^>]*>/g, '') + '...',
+        date: n.created_at
+      }))
+    }
+
+    // Fetch from local JSON (legacy)
+    try {
+      const response = await fetch('/notes.json')
+      const localData = await response.json()
+      allNotes = [...allNotes, ...localData]
+    } catch (e) {
+      console.warn('No local notes.json found')
+    }
+    
+    notes.value = allNotes
     
     // Check hash for direct link
     const hash = window.location.hash.substring(1)
     if (hash) {
-      const found = data.find(n => n.id === hash)
+      const found = allNotes.find(n => n.id === hash)
       if (found) openNote(found)
     }
   } catch (error) {
@@ -167,6 +254,7 @@ const fetchNotes = async () => {
 }
 
 onMounted(() => {
+  checkAdmin()
   fetchNotes()
 })
 </script>
@@ -299,6 +387,99 @@ onMounted(() => {
 
 [data-theme="dark"] .icon-btn:hover {
   background: rgba(255,255,255,0.1);
+}
+
+.create-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-right: 12px;
+  transition: all 0.2s;
+}
+
+.create-btn:hover {
+  background: var(--primary-dark);
+  box-shadow: 0 2px 8px rgba(255, 77, 109, 0.3);
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-card {
+  background: white;
+  padding: 32px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+[data-theme="dark"] .modal-card {
+  background: #303134;
+  color: white;
+}
+
+.modal-input, .modal-textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 16px 0;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+.modal-textarea {
+  min-height: 200px;
+  resize: vertical;
+}
+
+[data-theme="dark"] .modal-input,
+[data-theme="dark"] .modal-textarea {
+  background: rgba(0,0,0,0.2);
+  border-color: rgba(255,255,255,0.1);
+  color: white;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.confirm-btn {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background: transparent;
+  border: 1px solid #dadce0;
+  padding: 10px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: inherit;
 }
 
 /* Dashboard */
