@@ -60,10 +60,41 @@ async function handleViewCount(request, env) {
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    const addSecurityHeaders = (response) => {
+      try {
+        response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+        response.headers.set('X-Content-Type-Options', 'nosniff');
+        response.headers.set('X-Frame-Options', 'DENY');
+        response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+        response.headers.set('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), interest-cohort=()');
+        response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+        response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
+        response.headers.set('Content-Security-Policy', [
+          "default-src 'self'",
+          "base-uri 'self'",
+          "object-src 'none'",
+          "frame-ancestors 'none'",
+          "img-src 'self' data: https:",
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+          "font-src 'self' https://fonts.gstatic.com data:",
+          "script-src 'self' 'unsafe-eval'",
+          "connect-src 'self' https://dsqvrjgrwkwaqdybxqgy.supabase.co https://*.supabase.co https://*.supabase.net https://*.canz-monkey.cn",
+          "media-src 'self' blob: data: https:",
+          'upgrade-insecure-requests'
+        ].join('; '));
+      } catch (e) {}
+      return response;
+    };
     
     // 处理API请求
     if (url.pathname === '/api/view-count') {
-      return handleViewCount(request, env);
+      const res = await handleViewCount(request, env);
+      // 收紧CORS策略：仅允许同源
+      try {
+        res.headers.set('Access-Control-Allow-Origin', url.origin);
+        res.headers.set('Vary', 'Origin');
+      } catch (e) {}
+      return addSecurityHeaders(res);
     }
     
     // 配置KV资产处理
@@ -75,21 +106,23 @@ export default {
     
     // 处理所有其他请求，包括静态资源和单页应用路由
     try {
-      return await getAssetFromKV(
+      const assetResponse = await getAssetFromKV(
         {
           request,
           waitUntil: ctx.waitUntil.bind(ctx),
         },
         assetOptions
       );
+      return addSecurityHeaders(assetResponse);
     } catch (error) {
       // 如果出现错误，返回404页面
-      return new Response('404 Not Found: ' + error.message, {
+      const notFound = new Response('404 Not Found: ' + error.message, {
         status: 404,
         headers: {
           'content-type': 'text/plain',
         },
       });
+      return addSecurityHeaders(notFound);
     }
   },
 };
