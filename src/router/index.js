@@ -42,6 +42,11 @@ const routes = [
     name: 'Manager',
     component: () => import('../views/Manager.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/temp',
+    name: 'TempImage',
+    component: () => import('../views/TempImage.vue')
   }
 ]
 
