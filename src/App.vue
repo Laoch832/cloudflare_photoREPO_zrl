@@ -34,21 +34,23 @@
           </transition>
         </div>
 
-        <router-link to="/" class="nav-logo cursive anim-pulse">暗恋日记</router-link>
+        <router-link :to="user ? '/' : '/music'" class="nav-logo cursive anim-pulse">暗恋日记</router-link>
         
         <div class="nav-links">
-          <router-link to="/" class="nav-link anim-hover-lift" active-class="active">
-            <span class="material-icons">home</span> 首页
-          </router-link>
-          <router-link to="/gallery" class="nav-link anim-hover-lift" active-class="active">
-            <span class="material-icons">photo_library</span> 珍藏
-          </router-link>
-          <router-link to="/notes" class="nav-link anim-hover-lift" active-class="active">
-            <span class="material-icons">favorite</span> 心事
-          </router-link>
-          <router-link to="/diary" class="nav-link anim-hover-lift" active-class="active">
-            <span class="material-icons">auto_stories</span> 日记
-          </router-link>
+          <template v-if="user">
+            <router-link to="/" class="nav-link anim-hover-lift" active-class="active">
+              <span class="material-icons">home</span> 首页
+            </router-link>
+            <router-link to="/gallery" class="nav-link anim-hover-lift" active-class="active">
+              <span class="material-icons">photo_library</span> 珍藏
+            </router-link>
+            <router-link to="/notes" class="nav-link anim-hover-lift" active-class="active">
+              <span class="material-icons">favorite</span> 心事
+            </router-link>
+            <router-link to="/diary" class="nav-link anim-hover-lift" active-class="active">
+              <span class="material-icons">auto_stories</span> 日记
+            </router-link>
+          </template>
           <router-link to="/music" class="nav-link anim-hover-lift" active-class="active">
             <span class="material-icons">library_music</span> 音乐
           </router-link>
