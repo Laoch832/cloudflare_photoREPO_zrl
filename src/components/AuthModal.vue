@@ -1,14 +1,17 @@
 <template>
   <transition name="auth-fade">
-    <div v-if="isOpen" class="auth-overlay">
-      <div class="auth-card google-style">
+    <div v-if="isOpen" class="auth-overlay" @click.self="$emit('close')">
+      <div class="auth-card x-style">
+        <!-- Close Button -->
+        <button class="close-btn" @click="$emit('close')">
+          <span class="material-icons">close</span>
+        </button>
+
         <!-- Account Chooser State -->
         <div v-if="showAccountChooser" class="account-chooser">
           <div class="auth-header">
-             <div class="google-logo">
-              <span class="g-blue">G</span><span class="g-red">o</span><span class="g-yellow">o</span><span class="g-blue">g</span><span class="g-green">l</span><span class="g-red">e</span>
-            </div>
-            <h2>选择账号</h2>
+             <h2 class="quote-title">{{ hitokoto }}</h2>
+             <p class="subtext">选择账号以继续</p>
           </div>
           
           <div class="account-list">
@@ -52,11 +55,8 @@
         <!-- Login/Register Form State -->
         <div v-else class="login-form-content">
           <div class="auth-header">
-            <div class="google-logo">
-              <span class="g-blue">G</span><span class="g-red">o</span><span class="g-yellow">o</span><span class="g-blue">g</span><span class="g-green">l</span><span class="g-red">e</span>
-            </div>
-            <h2>{{ isRegister ? '创建您的账号' : '登录' }}</h2>
-            <p class="subtext">继续访问 暗恋日记</p>
+            <h2 class="quote-title">{{ hitokoto }}</h2>
+            <p class="subtext" v-if="!hitokoto.includes('Login')">{{ isRegister ? '创建您的账号' : '登录以继续' }}</p>
           </div>
 
           <div class="auth-form">
@@ -66,7 +66,7 @@
                 <span>通过 angzhic 一键登录</span>
               </button>
               <div class="divider">
-                <span>或使用邮箱</span>
+                <span>或</span>
               </div>
             </div>
             
@@ -101,11 +101,11 @@
             </div>
 
             <div class="auth-actions">
-              <button class="text-btn anim-squash" @click="toggleMode">
-                {{ isRegister ? '已有账号？登录' : '创建账号' }}
-              </button>
               <button class="next-btn anim-squash" @click="handleSubmit" :disabled="loading">
                 {{ loading ? '请稍候...' : (isRegister ? '注册' : '下一步') }}
+              </button>
+              <button class="text-btn anim-squash" @click="toggleMode">
+                {{ isRegister ? '已有账号？登录' : '没有账号？注册' }}
               </button>
             </div>
           </div>
@@ -116,7 +116,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { supabase } from '../lib/supabase'
 
 const props = defineProps({
@@ -130,6 +130,7 @@ const email = ref('')
 const password = ref('')
 const loading = ref(false)
 const errorMsg = ref('')
+const hitokoto = ref('Login from here')
 
 const toggleMode = () => {
   isRegister.value = !isRegister.value
@@ -139,10 +140,21 @@ const toggleMode = () => {
 const savedAccounts = ref([])
 const showAccountChooser = ref(false)
 
-// Check for saved accounts on mount
-import { onMounted } from 'vue'
+const fetchHitokoto = async () => {
+  try {
+    // Fetch English quote
+    const res = await fetch('https://api.quotable.io/random?maxLength=60')
+    if (!res.ok) throw new Error('Network response was not ok')
+    const data = await res.json()
+    hitokoto.value = data.content
+  } catch (e) {
+    console.log('Quote fetch failed, using fallback')
+    hitokoto.value = 'Login from here'
+  }
+}
 
 onMounted(() => {
+  fetchHitokoto()
   const saved = localStorage.getItem('saved_accounts')
   if (saved) {
     savedAccounts.value = JSON.parse(saved)
@@ -155,7 +167,6 @@ onMounted(() => {
 const selectAccount = (account) => {
   email.value = account.email
   showAccountChooser.value = false
-  // Focus password input automatically would be nice
   setTimeout(() => document.getElementById('password')?.focus(), 100)
 }
 
@@ -214,24 +225,27 @@ const handleSubmit = async () => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: white;
+  background: rgba(0, 0, 0, 0.4); /* Dimmed background */
   z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(4px);
 }
 
 [data-theme="dark"] .auth-overlay {
-  background: #202124;
-  color: white;
+  background: rgba(91, 112, 131, 0.4);
 }
 
 .auth-card {
+  position: relative;
   width: 100%;
-  max-width: 450px;
-  padding: 48px 40px 36px;
-  border: 1px solid #dadce0;
-  border-radius: 8px;
+  max-width: 600px;
+  min-height: 400px; /* Minimal height for elegance */
+  padding: 40px 80px; /* Wider padding like X */
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 16px 32px rgba(0,0,0,0.12);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -239,57 +253,90 @@ const handleSubmit = async () => {
 }
 
 [data-theme="dark"] .auth-card {
-  border-color: #5f6368;
+  background: #000000;
+  border: 1px solid #2f3336;
 }
 
 @media (max-width: 600px) {
   .auth-card {
-    border: none;
     padding: 24px;
     height: 100%;
+    max-width: 100%;
+    border-radius: 0;
     justify-content: center;
   }
 }
 
-.google-logo {
-  font-family: 'Product Sans', Arial, sans-serif;
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 16px;
-  letter-spacing: -0.5px;
+.close-btn {
+  position: absolute;
+  top: 16px;
+  left: 16px; /* X usually has close on top-left for modals, but request said top-right */
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f1419;
+  transition: background 0.2s;
 }
 
-.g-blue { color: #4285f4; }
-.g-red { color: #ea4335; }
-.g-yellow { color: #fbbc05; }
-.g-green { color: #34a853; }
+/* User requested Top Right */
+.close-btn {
+  left: auto;
+  right: 16px;
+}
+
+[data-theme="dark"] .close-btn {
+  color: #eff3f4;
+}
+
+.close-btn:hover {
+  background: rgba(15, 20, 25, 0.1);
+}
+
+[data-theme="dark"] .close-btn:hover {
+  background: rgba(239, 243, 244, 0.1);
+}
 
 .auth-header {
-  text-align: center;
+  text-align: left; /* X style is often left or center. Let's stick to center for now as it looks better for quotes */
   width: 100%;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Align left looks more like X's "Happening now" */
 }
 
-.auth-header h2 {
-  font-weight: 400;
-  font-size: 24px;
-  margin: 0 0 8px;
-  font-family: 'Google Sans', 'Roboto', sans-serif;
+.quote-title {
+  font-family: 'TwitterChirp', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  font-size: 26px; /* Large, bold */
+  margin: 0 0 12px;
+  color: #0f1419;
+  line-height: 1.3;
+}
+
+[data-theme="dark"] .quote-title {
+  color: #eff3f4;
 }
 
 .subtext {
-  font-size: 16px;
-  color: #202124;
+  font-size: 17px;
+  color: #536471;
 }
 
 [data-theme="dark"] .subtext {
-  color: #e8eaed;
+  color: #71767b;
 }
 
 .auth-form {
   width: 100%;
 }
 
+/* Inputs */
 .input-group {
   position: relative;
   margin-bottom: 24px;
@@ -297,138 +344,115 @@ const handleSubmit = async () => {
 
 input {
   width: 100%;
-  padding: 13px 15px;
-  font-size: 16px;
-  border: 1px solid #dadce0;
+  padding: 16px 12px;
+  font-size: 17px;
+  border: 1px solid #cfd9de;
   border-radius: 4px;
   outline: none;
   background: transparent;
   color: inherit;
-  transition: border-color 0.2s;
+  transition: all 0.2s;
 }
 
 [data-theme="dark"] input {
-  border-color: #5f6368;
+  border-color: #333639;
+  color: #eff3f4;
 }
 
 input:focus {
-  border-color: #1a73e8;
-  border-width: 2px;
-  padding: 12px 14px; /* Adjust for border width */
+  border-color: #1d9bf0;
+  box-shadow: 0 0 0 1px #1d9bf0;
 }
 
 [data-theme="dark"] input:focus {
-  border-color: #8ab4f8;
+  border-color: #1d9bf0;
 }
 
 label {
   position: absolute;
-  left: 12px;
-  top: 14px;
+  left: 8px;
+  top: 18px;
   padding: 0 4px;
   background: white;
-  color: #5f6368;
-  font-size: 16px;
+  color: #536471;
+  font-size: 17px;
   pointer-events: none;
   transition: 0.2s ease all;
 }
 
 [data-theme="dark"] label {
-  background: #202124;
-  color: #9aa0a6;
+  background: #000000;
+  color: #71767b;
 }
 
-/* Float label when input has value or focus */
 input:focus ~ label,
 input:not(:placeholder-shown) ~ label {
-  top: -10px;
-  font-size: 12px;
-  color: #1a73e8;
+  top: -8px;
+  font-size: 13px;
+  color: #1d9bf0;
 }
 
-[data-theme="dark"] input:focus ~ label,
-[data-theme="dark"] input:not(:placeholder-shown) ~ label {
-  color: #8ab4f8;
-}
-
-.error-msg {
-  display: flex;
-  align-items: center;
-  color: #d93025;
-  font-size: 12px;
-  margin-bottom: 20px;
-  gap: 8px;
-}
-
-.error-icon {
-  font-size: 16px;
-}
-
+/* Buttons */
 .auth-actions {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 30px;
-}
-
-.text-btn {
-  background: none;
-  border: none;
-  color: #1a73e8;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-[data-theme="dark"] .text-btn {
-  color: #8ab4f8;
-}
-
-.text-btn:hover {
-  background: rgba(26, 115, 232, 0.04);
+  flex-direction: column; /* X style stacks buttons */
+  gap: 20px;
+  margin-top: 40px;
 }
 
 .next-btn {
-  background: #1a73e8;
+  width: 100%;
+  background: #0f1419; /* Black button */
   color: white;
   border: none;
-  padding: 10px 24px;
-  border-radius: 4px;
-  font-weight: 500;
+  padding: 14px;
+  border-radius: 9999px; /* Pill shape */
+  font-weight: 700;
+  font-size: 15px;
   cursor: pointer;
-  font-size: 14px;
   transition: background 0.2s;
 }
 
 [data-theme="dark"] .next-btn {
-  background: #8ab4f8;
-  color: #202124;
+  background: #eff3f4; /* White button in dark mode */
+  color: #0f1419;
 }
 
 .next-btn:hover:not(:disabled) {
-  background: #1557b0;
-  box-shadow: 0 1px 2px rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+  opacity: 0.9;
 }
 
 .next-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: default;
 }
 
-/* Animations */
-.auth-fade-enter-active,
-.auth-fade-leave-active {
-  transition: opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+.text-btn {
+  background: none;
+  border: 1px solid #cfd9de;
+  color: #0f1419;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 14px;
+  border-radius: 9999px;
+  font-size: 15px;
+  width: 100%;
 }
 
-.auth-fade-enter-from,
-.auth-fade-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
+[data-theme="dark"] .text-btn {
+  border-color: #536471;
+  color: #1d9bf0; /* Or standard text color */
 }
-/* SSO Button Styles */
+
+.text-btn:hover {
+  background: rgba(15, 20, 25, 0.1);
+}
+
+[data-theme="dark"] .text-btn:hover {
+  background: rgba(239, 243, 244, 0.1);
+}
+
+/* SSO Button */
 .sso-section {
   margin-bottom: 24px;
 }
@@ -442,105 +466,111 @@ input:not(:placeholder-shown) ~ label {
   padding: 12px;
   background: white;
   border: 1px solid #dadce0;
-  border-radius: 4px;
+  border-radius: 9999px; /* Pill */
   font-weight: 500;
-  color: #3c4043;
+  color: #0f1419;
   cursor: pointer;
   transition: background 0.2s;
-  font-family: 'Google Sans', 'Roboto', sans-serif;
 }
 
 [data-theme="dark"] .sso-btn {
-  background: #303134;
-  border-color: #5f6368;
-  color: #e8eaed;
+  background: transparent;
+  border-color: #536471;
+  color: #eff3f4;
 }
 
 .sso-btn:hover {
-  background: #f8f9fa;
-  box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+  background: #f7f9f9;
 }
 
 [data-theme="dark"] .sso-btn:hover {
-  background: #3c4043;
+  background: rgba(239, 243, 244, 0.1);
 }
 
 .divider {
   display: flex;
   align-items: center;
-  margin-top: 20px;
-  color: #5f6368;
-  font-size: 14px;
+  margin: 20px 0;
+  color: #536471;
+  font-size: 15px;
 }
 
 .divider::before,
 .divider::after {
   content: "";
   flex: 1;
-  border-top: 1px solid #dadce0;
+  border-top: 1px solid #cfd9de;
 }
 
 [data-theme="dark"] .divider::before,
 [data-theme="dark"] .divider::after {
-  border-color: #5f6368;
+  border-color: #2f3336;
 }
 
 .divider span {
   padding: 0 10px;
 }
 
-.sso-login {
-  border-top: 1px solid rgba(0,0,0,0.05);
-  margin-top: 10px;
-  padding-top: 16px;
+/* Error */
+.error-msg {
+  display: flex;
+  align-items: center;
+  color: #f4212e;
+  font-size: 13px;
+  margin-bottom: 20px;
+  gap: 8px;
 }
 
-[data-theme="dark"] .sso-login {
-  border-top-color: rgba(255,255,255,0.05);
+/* Animations */
+.auth-fade-enter-active,
+.auth-fade-leave-active {
+  transition: opacity 0.2s ease;
 }
 
-/* Account Chooser Styles */
+.auth-fade-enter-from,
+.auth-fade-leave-to {
+  opacity: 0;
+}
+
+/* Account Chooser */
 .account-list {
   width: 100%;
-  margin-top: 20px;
 }
 
 .account-item {
   display: flex;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  padding: 12px;
+  border-radius: 8px;
   cursor: pointer;
   transition: background 0.2s;
-  border-radius: 8px;
-  padding: 10px 16px;
-}
-
-[data-theme="dark"] .account-item {
-  border-bottom-color: rgba(255,255,255,0.05);
 }
 
 .account-item:hover {
-  background: rgba(0,0,0,0.04);
+  background: #eff3f4;
 }
 
 [data-theme="dark"] .account-item:hover {
-  background: rgba(255,255,255,0.04);
+  background: #16181c;
 }
 
 .acc-avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--primary-color);
+  background: #cfd9de;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   font-size: 18px;
-  margin-right: 16px;
+  margin-right: 12px;
   overflow: hidden;
+}
+
+[data-theme="dark"] .acc-avatar {
+  background: #333639;
 }
 
 .acc-avatar img {
@@ -549,40 +579,27 @@ input:not(:placeholder-shown) ~ label {
   object-fit: cover;
 }
 
-.acc-avatar.icon {
-  background: transparent;
-  color: #5f6368;
-}
-
-[data-theme="dark"] .acc-avatar.icon {
-  color: #bdc1c6;
-}
-
 .acc-info {
   display: flex;
   flex-direction: column;
 }
 
 .acc-name {
-  font-weight: 500;
+  font-weight: 700;
   font-size: 15px;
-  color: #202124;
+  color: #0f1419;
 }
 
 [data-theme="dark"] .acc-name {
-  color: #e8eaed;
+  color: #eff3f4;
 }
 
 .acc-email {
-  font-size: 13px;
-  color: #5f6368;
+  font-size: 14px;
+  color: #536471;
 }
 
 [data-theme="dark"] .acc-email {
-  color: #9aa0a6;
-}
-
-.login-form-content {
-    width: 100%;
+  color: #71767b;
 }
 </style>
