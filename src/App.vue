@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" @contextmenu="handleContextMenu" @keydown="handleKeydown">
     <!-- Sakura Background -->
     <SakuraBackground />
     <MusicPlayer />
@@ -34,7 +34,7 @@
           </transition>
         </div>
 
-        <router-link :to="user ? '/' : '/music'" class="nav-logo cursive anim-pulse">暗恋日记</router-link>
+        <router-link :to="user ? '/' : '/music'" class="nav-logo cursive anim-pulse" :class="{ 'sensitive-blur': !user }">暗恋日记</router-link>
         
         <div class="nav-links">
           <template v-if="user">
@@ -81,7 +81,7 @@
 
     <!-- Footer -->
     <footer class="footer">
-      <div class="container">
+      <div class="container" :class="{ 'sensitive-blur': !user }">
         <p class="cursive footer-text">默默守护 <span class="heart">❤</span> 她的第 {{ days }} 天</p>
         <p class="views-count">想念了她 {{ views }} 次</p>
       </div>
@@ -115,6 +115,7 @@ const { currentTrack } = useMusic() // Get currentTrack
 
 // Calculate days (Same logic as Home, for footer consistency)
 const days = computed(() => {
+  if (!user.value) return 0 // Hide sensitive data if not logged in
   const startDate = new Date('2024-10-01') 
   const today = new Date()
   const diffTime = Math.abs(today - startDate)
@@ -149,6 +150,8 @@ const toggleTheme = () => {
 
 // Fetch views count
 const fetchViews = async () => {
+  if (!user.value) return // Prevent fetching if not logged in
+  
   try {
     const response = await fetch('/api/view-count')
     const data = await response.json()
@@ -186,6 +189,9 @@ const handleLoginSuccess = (userData) => {
   setTimeout(() => {
     isAuthLoading.value = false
   }, 1500)
+  
+  // Refresh sensitive data
+  fetchViews()
 }
 
 const handleProfileClick = () => {
@@ -197,18 +203,54 @@ const handleLogout = async () => {
   user.value = null
 }
 
+// Anti-inspection (Best effort)
+const handleContextMenu = (e) => {
+  if (!user.value) {
+    e.preventDefault()
+  }
+}
+
+const handleKeydown = (e) => {
+  if (!user.value) {
+    if (
+      e.key === 'F12' || 
+      (e.ctrlKey && e.shiftKey && e.key === 'I') || 
+      (e.ctrlKey && e.shiftKey && e.key === 'J') || 
+      (e.ctrlKey && e.key === 'U')
+    ) {
+      e.preventDefault()
+    }
+  }
+}
+
+watch(user, (newUser) => {
+  if (newUser) {
+    document.title = '暗恋日记'
+  } else {
+    document.title = 'Music Player'
+    views.value = 0
+  }
+}, { immediate: true })
+
 onMounted(() => {
   document.documentElement.setAttribute('data-theme', theme.value)
   window.addEventListener('scroll', handleScroll)
-  fetchViews()
-
+  
   // Auth check
   supabase.auth.getSession().then(({ data: { session } }) => {
     user.value = session?.user ?? null
+    if (user.value) {
+      fetchViews()
+    }
   })
 
   supabase.auth.onAuthStateChange((_, session) => {
     user.value = session?.user ?? null
+    if (user.value) {
+      fetchViews()
+    } else {
+      views.value = 0
+    }
   })
 })
 
@@ -218,6 +260,14 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* Sensitive Data Blur */
+.sensitive-blur {
+  filter: blur(8px);
+  user-select: none;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
 .navbar {
   position: fixed;
   top: 0;
