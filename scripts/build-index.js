@@ -52,8 +52,8 @@ async function generate() {
         const thumbName = `thumb_${file}`;
         const thumbPath = path.join(thumbnailsDir, thumbName);
         
-        // Only generate if not exists or older
-        if (!fs.existsSync(thumbPath) || fs.statSync(thumbPath).mtime < stats.mtime) {
+        // Only generate if not exists
+        if (!fs.existsSync(thumbPath)) {
           try {
             await sharp(filePath)
               .resize(300, 300, { fit: 'inside' }) // Resize to max 300x300

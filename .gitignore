@@ -26,8 +26,8 @@ node_modules
 *.sw?
 
 # Generated assets
-public/images/thumbnails
-public/images.json
-public/music/covers
-public/music/hls
-public/music.json
+# public/images/thumbnails
+# public/images.json
+# public/music/covers
+# public/music/hls
+# public/music.json
