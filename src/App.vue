@@ -309,7 +309,170 @@ onUnmounted(() => {
 
 @media (max-width: 768px) {
   .user-area {
+    left: auto;
+    right: 16px;
+    top: 24px;
+    transform: none;
+  }
+
+  .user-profile {
+    height: 40px;
+    min-width: 40px; /* Circle for M3 */
+    width: 40px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%; /* Fully round */
+    background: var(--surface-variant, #f0f4f8); /* M3 Surface Variant */
+  }
+
+  [data-theme="dark"] .user-profile {
+    background: var(--surface-variant-dark, #303134);
+  }
+
+  .user-profile.expanded {
+    min-width: 40px;
+    padding: 0;
+    width: 40px;
+  }
+
+  /* Hide username on mobile for M3 style */
+  .username {
+    display: none;
+  }
+
+  .avatar {
+    margin-right: 0;
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Guest Button - Pill Shape (Filled Tonal) */
+  .user-profile.guest {
+    width: auto;
+    min-width: 80px;
+    border-radius: 20px;
+    padding: 0 16px;
+    background: var(--secondary-container, #e8def8);
+    color: var(--on-secondary-container, #1d192b);
+  }
+  
+  [data-theme="dark"] .user-profile.guest {
+    background: #4a4458;
+    color: #e8def8;
+  }
+
+  .user-profile.guest .material-icons {
+    display: none; /* Hide icon, show text? Or keep icon + text */
+  }
+  
+  /* Add pseudo-element for text if we want "Login" text, 
+     but Vue template modification is cleaner. 
+     Let's use ::after for "Login" text on mobile guest button if strictly CSS 
+     or just rely on the icon. 
+     User asked for "Google Material 3 mobile".
+     M3 top app bar action is usually just an icon (account_circle).
+     But "Login" might need to be more prominent.
+     Let's keep it simple: Circle Icon for Guest too, standard M3.
+  */
+  .user-profile.guest {
+     width: 40px;
+     min-width: 40px;
+     padding: 0;
+     border-radius: 50%;
+     background: transparent; /* Top bar icon style */
+     box-shadow: none;
+  }
+  
+  .user-profile.guest .material-icons {
+     display: block;
+     font-size: 24px;
+     color: var(--text-main);
+  }
+
+  .nav-logo {
+    font-size: 22px;
+    /* Ensure logo stays centered or moves left if needed. 
+       Currently centered by flex container. */
+  }
+  
+  .nav-links {
+    position: fixed;
+    bottom: 0; /* Stick to bottom */
+    left: 0;
+    transform: none;
+    width: 100%;
+    max-width: 100%;
+    gap: 0;
+    padding: 0;
+    justify-content: space-around; /* Standard Bottom Nav spacing */
+    background: rgba(255, 255, 255, 0.96); /* Higher opacity */
+    box-shadow: 0 -1px 4px rgba(0,0,0,0.05); /* Top shadow */
+    z-index: 900;
+    height: 80px; /* Taller for bottom nav */
+    border-radius: 0; /* Rectangular */
+    border: none;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    padding-bottom: 20px; /* Safe area for iPhone home indicator */
+  }
+  
+  [data-theme="dark"] .nav-links {
+    background: #1e1e1e; /* M3 Dark Surface */
+    border-top-color: rgba(255,255,255,0.1);
+  }
+  
+  .nav-link {
+    font-size: 12px; /* Show label below icon */
+    flex-direction: column;
+    padding: 8px 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-light);
+  }
+  
+  .nav-link .material-icons {
+    font-size: 24px;
+    margin: 0;
+    /* M3 Active Indicator Pill would go around icon */
+    padding: 4px 20px;
+    border-radius: 16px;
+    transition: background 0.2s;
+  }
+
+  .nav-link:hover, .nav-link.active {
+    background: transparent;
+    color: var(--text-main);
+    transform: translateY(0);
+    box-shadow: none;
+  }
+  
+  .nav-link.active {
+    color: var(--primary-color); /* Active label color */
+  }
+
+  .nav-link.active .material-icons {
+    background: var(--secondary-container, rgba(255, 77, 109, 0.15));
+    color: var(--primary-dark);
+  }
+  
+  /* Hide Theme Button on mobile or move it? 
+     Usually in profile menu or settings. 
+     For now, let's keep it but maybe position it differently?
+     Current layout has .nav-actions (theme btn) on right.
+     If User is on right, theme button might overlap or sit next to it.
+     Let's move theme button to left (where user was) or hide it.
+     Let's hide theme button on navbar for mobile, user can toggle in profile?
+     Or put it on Left.
+  */
+  .nav-actions {
+    position: absolute;
     left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
   }
 }
 
