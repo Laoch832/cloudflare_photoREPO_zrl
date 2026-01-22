@@ -8,8 +8,21 @@
     <nav class="navbar" :class="{ 'scrolled': isScrolled, 'navbar-hidden': !showNavbar, 'has-player': currentTrack }">
       <div class="container nav-container">
         
-        <!-- User Profile Area (Left) -->
-        <div class="user-area">
+        <!-- User Profile Area (Mobile: Top Right) -->
+        <div class="user-area-mobile" v-if="isMobile">
+           <md-icon-button class="user-btn-mobile" @click="user ? handleProfileClick() : handleLoginClick()">
+              <div v-if="user && user.user_metadata.avatar_url" class="avatar-mobile">
+                 <img :src="user.user_metadata.avatar_url" alt="User Avatar" />
+              </div>
+              <div v-else-if="user" class="avatar-text-mobile">
+                 {{ user.email[0].toUpperCase() }}
+              </div>
+              <md-icon v-else>account_circle</md-icon>
+           </md-icon-button>
+        </div>
+
+        <!-- User Profile Area (Desktop: Left) -->
+        <div class="user-area" v-else>
           <transition name="user-expand" mode="out-in">
             <!-- Loading State -->
             <div v-if="isAuthLoading" class="user-loading" key="loading">
@@ -36,7 +49,8 @@
 
         <router-link :to="user ? '/' : '/music'" class="nav-logo cursive anim-pulse" :class="{ 'sensitive-blur': !user }">暗恋日记</router-link>
         
-        <div class="nav-links">
+        <!-- Desktop Nav Links -->
+        <div class="nav-links" v-if="!isMobile">
           <template v-if="user">
             <router-link to="/" class="nav-link anim-hover-lift" active-class="active">
               <span class="material-icons">home</span> 首页
@@ -63,6 +77,34 @@
         </div>
       </div>
     </nav>
+    
+    <!-- Mobile Bottom Navigation (Material Web) -->
+    <div class="mobile-nav-container" v-if="isMobile">
+        <md-navigation-bar :activeIndex="activeTabIndex">
+            <template v-if="user">
+                <md-navigation-tab label="首页" @click="router.push('/')" :active="route.path === '/'">
+                    <md-icon slot="activeIcon">home</md-icon>
+                    <md-icon slot="inactiveIcon">home</md-icon>
+                </md-navigation-tab>
+                <md-navigation-tab label="珍藏" @click="router.push('/gallery')" :active="route.path === '/gallery'">
+                    <md-icon slot="activeIcon">photo_library</md-icon>
+                    <md-icon slot="inactiveIcon">photo_library</md-icon>
+                </md-navigation-tab>
+                <md-navigation-tab label="心事" @click="router.push('/notes')" :active="route.path === '/notes'">
+                    <md-icon slot="activeIcon">favorite</md-icon>
+                    <md-icon slot="inactiveIcon">favorite</md-icon>
+                </md-navigation-tab>
+                 <md-navigation-tab label="日记" @click="router.push('/diary')" :active="route.path === '/diary'">
+                    <md-icon slot="activeIcon">auto_stories</md-icon>
+                    <md-icon slot="inactiveIcon">auto_stories</md-icon>
+                </md-navigation-tab>
+            </template>
+            <md-navigation-tab label="音乐" @click="router.push('/music')" :active="route.path === '/music'">
+                <md-icon slot="activeIcon">library_music</md-icon>
+                <md-icon slot="inactiveIcon">library_music</md-icon>
+            </md-navigation-tab>
+        </md-navigation-bar>
+    </div>
 
     <AuthModal 
       :is-open="showAuthModal" 
@@ -71,7 +113,7 @@
     />
 
     <!-- Main Content -->
-    <main class="main-content" :style="{ paddingTop: currentTrack ? '144px' : '80px' }">
+    <main class="main-content" :style="{ paddingTop: currentTrack ? '144px' : '80px', paddingBottom: isMobile ? '80px' : '0' }">
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
           <component :is="Component" />
@@ -80,7 +122,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="footer">
+    <footer class="footer" :style="{ marginBottom: isMobile ? '80px' : '0' }">
       <div class="container" :class="{ 'sensitive-blur': !user }">
         <p class="cursive footer-text">默默守护 <span class="heart">❤</span> 她的第 {{ days }} 天</p>
         <p class="views-count">想念了她 {{ views }} 次</p>
@@ -98,9 +140,11 @@ import { useMusic } from './composables/useMusic' // Import useMusic
 
 import AuthModal from './components/AuthModal.vue'
 
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
+
 // Theme management
 const theme = ref(localStorage.getItem('theme') || 'light')
 const isScrolled = ref(false)
@@ -110,6 +154,7 @@ const views = ref(0)
 const user = ref(null)
 const showAuthModal = ref(false)
 const isAuthLoading = ref(false) // For the "circle" loading state
+const isMobile = ref(false)
 
 const { currentTrack } = useMusic() // Get currentTrack
 
@@ -126,6 +171,21 @@ const days = computed(() => {
 const themeIcon = computed(() => {
   return theme.value === 'light' ? 'dark_mode' : 'light_mode'
 })
+
+const activeTabIndex = computed(() => {
+    const path = route.path
+    if (path === '/') return 0
+    if (path === '/gallery') return 1
+    if (path === '/notes') return 2
+    if (path === '/diary') return 3
+    if (path === '/music') return user.value ? 4 : 0 // If not logged in, music is 0
+    return 0
+})
+
+// Check mobile
+const checkMobile = () => {
+    isMobile.value = window.innerWidth <= 768
+}
 
 // Scroll handler
 const handleScroll = () => {
@@ -235,6 +295,8 @@ watch(user, (newUser) => {
 onMounted(() => {
   document.documentElement.setAttribute('data-theme', theme.value)
   window.addEventListener('scroll', handleScroll)
+  window.addEventListener('resize', checkMobile)
+  checkMobile()
   
   // Auth check
   supabase.auth.getSession().then(({ data: { session } }) => {
@@ -256,6 +318,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('resize', checkMobile)
 })
 </script>
 
@@ -307,172 +370,42 @@ onUnmounted(() => {
   z-index: 1001;
 }
 
-@media (max-width: 768px) {
-  .user-area {
-    left: auto;
-    right: 16px;
-    top: 24px;
-    transform: none;
-  }
-
-  .user-profile {
-    height: 40px;
-    min-width: 40px; /* Circle for M3 */
-    width: 40px;
-    padding: 0;
-    justify-content: center;
-    border-radius: 50%; /* Fully round */
-    background: var(--surface-variant, #f0f4f8); /* M3 Surface Variant */
-  }
-
-  [data-theme="dark"] .user-profile {
-    background: var(--surface-variant-dark, #303134);
-  }
-
-  .user-profile.expanded {
-    min-width: 40px;
-    padding: 0;
-    width: 40px;
-  }
-
-  /* Hide username on mobile for M3 style */
-  .username {
-    display: none;
-  }
-
-  .avatar {
-    margin-right: 0;
-    width: 32px;
-    height: 32px;
-  }
-
-  /* Guest Button - Pill Shape (Filled Tonal) */
-  .user-profile.guest {
-    width: auto;
-    min-width: 80px;
-    border-radius: 20px;
-    padding: 0 16px;
-    background: var(--secondary-container, #e8def8);
-    color: var(--on-secondary-container, #1d192b);
-  }
-  
-  [data-theme="dark"] .user-profile.guest {
-    background: #4a4458;
-    color: #e8def8;
-  }
-
-  .user-profile.guest .material-icons {
-    display: none; /* Hide icon, show text? Or keep icon + text */
-  }
-  
-  /* Add pseudo-element for text if we want "Login" text, 
-     but Vue template modification is cleaner. 
-     Let's use ::after for "Login" text on mobile guest button if strictly CSS 
-     or just rely on the icon. 
-     User asked for "Google Material 3 mobile".
-     M3 top app bar action is usually just an icon (account_circle).
-     But "Login" might need to be more prominent.
-     Let's keep it simple: Circle Icon for Guest too, standard M3.
-  */
-  .user-profile.guest {
-     width: 40px;
-     min-width: 40px;
-     padding: 0;
-     border-radius: 50%;
-     background: transparent; /* Top bar icon style */
-     box-shadow: none;
-  }
-  
-  .user-profile.guest .material-icons {
-     display: block;
-     font-size: 24px;
-     color: var(--text-main);
-  }
-
-  .nav-logo {
-    font-size: 22px;
-    /* Ensure logo stays centered or moves left if needed. 
-       Currently centered by flex container. */
-  }
-  
-  .nav-links {
-    position: fixed;
-    bottom: 0; /* Stick to bottom */
-    left: 0;
-    transform: none;
-    width: 100%;
-    max-width: 100%;
-    gap: 0;
-    padding: 0;
-    justify-content: space-around; /* Standard Bottom Nav spacing */
-    background: rgba(255, 255, 255, 0.96); /* Higher opacity */
-    box-shadow: 0 -1px 4px rgba(0,0,0,0.05); /* Top shadow */
-    z-index: 900;
-    height: 80px; /* Taller for bottom nav */
-    border-radius: 0; /* Rectangular */
-    border: none;
-    border-top: 1px solid rgba(0,0,0,0.05);
-    padding-bottom: 20px; /* Safe area for iPhone home indicator */
-  }
-  
-  [data-theme="dark"] .nav-links {
-    background: #1e1e1e; /* M3 Dark Surface */
-    border-top-color: rgba(255,255,255,0.1);
-  }
-  
-  .nav-link {
-    font-size: 12px; /* Show label below icon */
-    flex-direction: column;
-    padding: 8px 0;
-    width: 100%;
-    height: 100%;
-    border-radius: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 4px;
-    color: var(--text-light);
-  }
-  
-  .nav-link .material-icons {
-    font-size: 24px;
-    margin: 0;
-    /* M3 Active Indicator Pill would go around icon */
-    padding: 4px 20px;
-    border-radius: 16px;
-    transition: background 0.2s;
-  }
-
-  .nav-link:hover, .nav-link.active {
-    background: transparent;
-    color: var(--text-main);
-    transform: translateY(0);
-    box-shadow: none;
-  }
-  
-  .nav-link.active {
-    color: var(--primary-color); /* Active label color */
-  }
-
-  .nav-link.active .material-icons {
-    background: var(--secondary-container, rgba(255, 77, 109, 0.15));
-    color: var(--primary-dark);
-  }
-  
-  /* Hide Theme Button on mobile or move it? 
-     Usually in profile menu or settings. 
-     For now, let's keep it but maybe position it differently?
-     Current layout has .nav-actions (theme btn) on right.
-     If User is on right, theme button might overlap or sit next to it.
-     Let's move theme button to left (where user was) or hide it.
-     Let's hide theme button on navbar for mobile, user can toggle in profile?
-     Or put it on Left.
-  */
-  .nav-actions {
+/* Mobile User Area - Top Right */
+.user-area-mobile {
     position: absolute;
-    left: 16px;
+    right: 16px;
     top: 50%;
     transform: translateY(-50%);
+    z-index: 1002;
+}
+
+.user-btn-mobile {
+    --md-icon-button-icon-color: var(--text-main);
+    --md-icon-button-state-layer-color: var(--primary-color);
+}
+
+.avatar-mobile img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-text-mobile {
+    width: 32px;
+    height: 32px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .user-area {
+    display: none; /* Hide standard user area on mobile */
   }
 }
 
@@ -714,60 +647,37 @@ onUnmounted(() => {
   transform: translateY(-10px);
 }
 
+/* Mobile Specifics */
+.mobile-nav-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 999;
+    /* M3 Navigation Bar override */
+    --md-navigation-bar-container-color: rgba(255, 255, 255, 0.96);
+    --md-navigation-tab-active-indicator-color: var(--secondary-container, #e8def8);
+    --md-navigation-tab-active-icon-color: var(--on-secondary-container, #1d192b);
+    --md-sys-color-surface: rgba(255, 255, 255, 0.96); /* Trick to set background */
+}
+
+[data-theme="dark"] .mobile-nav-container {
+    --md-navigation-bar-container-color: #1e1e1e;
+    --md-sys-color-surface: #1e1e1e;
+    --md-navigation-tab-active-indicator-color: #4a4458;
+    --md-navigation-tab-active-icon-color: #e8def8;
+}
+
 @media (max-width: 768px) {
   .nav-logo {
     font-size: 22px;
   }
   
-  .nav-links {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%; /* Make it wider */
-    max-width: 400px;
-    gap: 0; /* Distribute evenly */
-    padding: 0 16px;
-    justify-content: space-between;
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-    z-index: 900; /* Lower than MusicPlayer */
-    height: 60px;
-    border-radius: 30px;
-    display: flex;
-  }
-  
-  [data-theme="dark"] .nav-links {
-    background: rgba(43, 10, 18, 0.95);
-  }
-  
-  .nav-link {
-    font-size: 0; /* Hide text */
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .nav-link .material-icons {
-    font-size: 26px;
-    margin: 0;
-  }
-
-  .nav-link:hover, .nav-link.active {
-    background: transparent;
-    color: var(--primary-color);
-    transform: translateY(0);
-    box-shadow: none;
-  }
-  
-  /* Add indicator for active state if needed, or just color */
-  .nav-link.active .material-icons {
-    transform: scale(1.2);
-    transition: transform 0.2s;
+  .nav-actions {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
   }
 }
 </style>
