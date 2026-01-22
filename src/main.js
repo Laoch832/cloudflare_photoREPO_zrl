@@ -5,8 +5,8 @@ import router from './router'
 // Import Material Web Components
 import '@material/web/icon/icon.js';
 import '@material/web/iconbutton/icon-button.js';
-import '@material/web/navigationbar/navigation-bar.js';
-import '@material/web/navigationtab/navigation-tab.js';
+import '@material/web/labs/navigationbar/navigation-bar.js';
+import '@material/web/labs/navigationtab/navigation-tab.js';
 
 // Create Vue app
 const app = createApp(App)
