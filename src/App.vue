@@ -331,268 +331,173 @@ onUnmounted(() => {
   opacity: 0.6;
 }
 
-.navbar {
+/* --- VitePress Style Navbar --- */
+.VPNav {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  padding: 20px 0;
-  z-index: 1000;
-  transition: all 0.3s ease;
-  transform: translateY(0);
-}
-
-.navbar.has-player {
-  top: 64px;
-}
-
-.navbar.navbar-hidden {
-  transform: translateY(-100%);
-}
-
-.navbar.scrolled {
-  background: var(--bg-card);
+  height: var(--vp-nav-height);
+  background-color: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(12px);
-  padding: 12px 0;
-  box-shadow: var(--shadow-sm);
+  border-bottom: 1px solid var(--vp-c-divider);
+  z-index: 1000;
+  transition: transform 0.3s ease;
 }
 
-[data-theme="dark"] .navbar.scrolled {
-  background: var(--bg-card);
+[data-theme="dark"] .VPNav {
+  background-color: rgba(30, 30, 30, 0.7);
 }
 
-/* User Profile Area */
-.user-area {
-  position: absolute;
-  left: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 1001;
+.VPNav.has-player {
+    top: 0; /* VitePress header stays top */
 }
 
-/* Mobile User Area - Top Right */
-.user-area-mobile {
+.VPNav.navbar-hidden {
+    transform: translateY(-100%);
+}
+
+.VPNavBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    padding: 0 24px;
+}
+
+/* Title / Logo */
+.VPNavBarTitle {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    font-size: 20px;
+}
+
+.logo-text {
+    color: var(--vp-c-text-1);
+    font-size: 22px;
+}
+
+/* Menu (Desktop) */
+.VPNavBarMenu {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+}
+
+.VPLink {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--vp-c-text-1);
+    transition: color 0.25s;
+    position: relative;
+}
+
+.VPLink:hover, .VPLink.active {
+    color: var(--vp-c-brand-1);
+}
+
+.VPLink.active::after {
+    content: '';
     position: absolute;
-    right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 1002;
+    bottom: -22px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--vp-c-brand-1);
 }
 
-.user-btn-mobile {
-    --md-icon-button-icon-color: var(--text-main);
-    --md-icon-button-state-layer-color: var(--primary-color);
+/* Actions */
+.VPNavBarActions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.avatar-mobile img {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.avatar-text-mobile {
-    width: 32px;
-    height: 32px;
-    background: var(--primary-color);
-    color: white;
-    border-radius: 50%;
+.VPSwitchAppearance {
+    background: transparent;
+    border: none;
+    color: var(--vp-c-text-2);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
+    transition: color 0.25s;
 }
 
+.VPSwitchAppearance:hover {
+    color: var(--vp-c-text-1);
+    background-color: var(--gray-100);
+}
+
+[data-theme="dark"] .VPSwitchAppearance:hover {
+    background-color: var(--gray-300);
+}
+
+/* User Profile Styles */
+.user-avatar-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--vp-c-brand-1);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.user-avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.login-btn-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--vp-c-text-1);
+    cursor: pointer;
+    padding: 4px 12px;
+    border-radius: 20px;
+    transition: background 0.2s;
+}
+
+.login-btn-text:hover {
+    background-color: var(--gray-100);
+}
+
+.user-avatar-mini {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--vp-c-brand-1);
+    color: white;
+    font-size: 12px;
+}
+.user-avatar-mini img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Mobile Overrides */
 @media (max-width: 768px) {
-  .user-area {
-    display: none; /* Hide standard user area on mobile */
-  }
-}
-
-.user-profile {
-  display: flex;
-  align-items: center;
-  background: white;
-  border-radius: 50px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  cursor: pointer;
-  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-  overflow: hidden;
-  height: 40px;
-}
-
-[data-theme="dark"] .user-profile {
-  background: #202124;
-  color: white;
-}
-
-.user-profile.guest {
-  width: 40px;
-  justify-content: center;
-}
-
-.user-profile.expanded {
-  padding: 0 16px 0 4px;
-  gap: 10px;
-  min-width: 120px;
-}
-
-.user-profile:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-}
-
-.avatar {
-  width: 32px;
-  height: 32px;
-  background: var(--primary-color);
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 16px;
-  overflow: hidden; /* Ensure image fits */
-}
-
-.avatar-img-small {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.username {
-  font-size: 14px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-/* Loading Spinner */
-.user-loading {
-  width: 40px;
-  height: 40px;
-  background: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-[data-theme="dark"] .user-loading {
-  background: #202124;
-}
-
-.spinner {
-  animation: rotate 2s linear infinite;
-  width: 24px;
-  height: 24px;
-}
-
-.path {
-  stroke: var(--primary-color);
-  stroke-linecap: round;
-  animation: dash 1.5s ease-in-out infinite;
-}
-
-@keyframes rotate {
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes dash {
-  0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
-  50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
-  100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
-}
-
-/* Transition for User Profile */
-.user-expand-enter-active,
-.user-expand-leave-active {
-  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); /* Smoother bounce */
-  overflow: hidden; /* Hide content during width change */
-}
-
-.user-expand-enter-from,
-.user-expand-leave-to {
-  width: 40px; /* Start/End width same as collapsed/loading */
-  min-width: 40px;
-  padding: 0;
-  opacity: 0;
-}
-
-.nav-container {
-  display: flex;
-  justify-content: center; /* Center logo */
-  align-items: center;
-  position: relative; /* For absolute positioning of user-area */
-}
-
-.nav-logo {
-  font-size: 26px;
-  font-weight: bold;
-  color: var(--primary-dark);
-  text-shadow: 0 2px 4px rgba(255, 77, 109, 0.1);
-  text-decoration: none; /* Ensure no underline */
-}
-
-.nav-links {
-  display: flex;
-  gap: 16px;
-  background: rgba(255, 255, 255, 0.6);
-  padding: 6px 12px;
-  border-radius: 50px;
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-[data-theme="dark"] .nav-links {
-  background: rgba(0, 0, 0, 0.4);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.nav-link {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text-main);
-  padding: 8px 16px;
-  border-radius: 20px;
-  transition: all 0.3s ease;
-}
-
-.nav-link .material-icons {
-  font-size: 18px;
-}
-
-.nav-link:hover, .nav-link.active {
-  background: var(--primary-color);
-  color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(255, 77, 109, 0.3);
-}
-
-.theme-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-main);
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s;
-}
-
-.theme-btn:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: var(--primary-dark);
-  transform: rotate(15deg);
+    .VPNavBar {
+        padding: 0 16px;
+    }
+    .VPNavBarMenu {
+        display: none;
+    }
 }
 
 .main-content {
