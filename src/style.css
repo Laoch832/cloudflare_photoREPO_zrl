@@ -1,4 +1,15 @@
 :root {
+  /* --- VitePress-like Variables Mapping --- */
+  --vp-nav-height: 64px;
+  --vp-c-bg: var(--bg-body);
+  --vp-c-bg-soft: var(--bg-card);
+  --vp-c-brand-1: var(--primary-color);
+  --vp-c-brand-2: var(--primary-dark);
+  --vp-c-text-1: var(--text-primary);
+  --vp-c-text-2: var(--text-secondary);
+  --vp-c-divider: var(--gray-300);
+  --vp-font-family-base: "Inter", ui-sans-serif, system-ui, sans-serif;
+
   /* --- 1. 现代配色方案 (Color Palette) --- */
   
   /* 品牌色 - 保持浪漫基调但更现代 */
@@ -96,7 +107,7 @@
 }
 
 body {
-  font-family: var(--font-sans);
+  font-family: var(--vp-font-family-base);
   font-size: var(--text-base);
   line-height: var(--leading-normal);
   color: var(--text-primary);

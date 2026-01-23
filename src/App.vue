@@ -4,76 +4,55 @@
     <SakuraBackground />
     <MusicPlayer />
 
-    <!-- Navigation -->
-    <nav class="navbar" :class="{ 'scrolled': isScrolled, 'navbar-hidden': !showNavbar, 'has-player': currentTrack }">
-      <div class="container nav-container">
+    <!-- Navigation (VitePress Style) -->
+    <nav class="VPNav" :class="{ 'scrolled': isScrolled, 'navbar-hidden': !showNavbar, 'has-player': currentTrack }">
+      <div class="VPNavBar container">
         
-        <!-- User Profile Area (Mobile: Top Right) -->
-        <div class="user-area-mobile" v-if="isMobile">
-           <md-icon-button class="user-btn-mobile" @click="user ? handleProfileClick() : handleLoginClick()">
-              <div v-if="user && user.user_metadata.avatar_url" class="avatar-mobile">
-                 <img :src="user.user_metadata.avatar_url" alt="User Avatar" />
-              </div>
-              <div v-else-if="user" class="avatar-text-mobile">
-                 {{ user.email[0].toUpperCase() }}
-              </div>
-              <md-icon v-else>account_circle</md-icon>
-           </md-icon-button>
-        </div>
-
-        <!-- User Profile Area (Desktop: Left) -->
-        <div class="user-area" v-else>
-          <transition name="user-expand" mode="out-in">
-            <!-- Loading State -->
-            <div v-if="isAuthLoading" class="user-loading" key="loading">
-              <svg class="spinner" viewBox="0 0 50 50">
-                <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
-              </svg>
-            </div>
-            
-            <!-- Logged In State -->
-            <div v-else-if="user" class="user-profile expanded anim-squash" key="profile" @click="handleProfileClick">
-              <div class="avatar">
-                <img v-if="user.user_metadata.avatar_url" :src="user.user_metadata.avatar_url" class="avatar-img-small">
-                <span v-else>{{ user.email[0].toUpperCase() }}</span>
-              </div>
-              <span class="username">{{ user.user_metadata.full_name || user.email.split('@')[0] }}</span>
-            </div>
-
-            <!-- Guest State -->
-            <div v-else class="user-profile guest anim-squash" key="guest" @click="handleLoginClick">
-              <span class="material-icons">person</span>
-            </div>
-          </transition>
-        </div>
-
-        <router-link :to="user ? '/' : '/music'" class="nav-logo cursive anim-pulse" :class="{ 'sensitive-blur': !user }">暗恋日记</router-link>
-        
-        <!-- Desktop Nav Links -->
-        <div class="nav-links" v-if="!isMobile">
-          <template v-if="user">
-            <router-link to="/" class="nav-link anim-hover-lift" active-class="active">
-              <span class="material-icons">home</span> 首页
-            </router-link>
-            <router-link to="/gallery" class="nav-link anim-hover-lift" active-class="active">
-              <span class="material-icons">photo_library</span> 珍藏
-            </router-link>
-            <router-link to="/notes" class="nav-link anim-hover-lift" active-class="active">
-              <span class="material-icons">favorite</span> 心事
-            </router-link>
-            <router-link to="/diary" class="nav-link anim-hover-lift" active-class="active">
-              <span class="material-icons">auto_stories</span> 日记
-            </router-link>
-          </template>
-          <router-link to="/music" class="nav-link anim-hover-lift" active-class="active">
-            <span class="material-icons">library_music</span> 音乐
+        <!-- Logo (Left) -->
+        <div class="VPNavBarTitle">
+          <router-link :to="user ? '/' : '/music'" class="title-link" :class="{ 'sensitive-blur': !user }">
+             <!-- Use text logo for now, can add image if available -->
+             <span class="logo-text cursive">暗恋日记</span>
           </router-link>
         </div>
 
-        <div class="nav-actions">
-          <button class="theme-btn anim-squash" @click="toggleTheme" title="切换主题">
-            <span class="material-icons">{{ themeIcon }}</span>
-          </button>
+        <!-- Desktop Nav Links (Center/Right) -->
+        <div class="VPNavBarMenu" v-if="!isMobile">
+           <template v-if="user">
+            <router-link to="/" class="VPLink" active-class="active">首页</router-link>
+            <router-link to="/gallery" class="VPLink" active-class="active">珍藏</router-link>
+            <router-link to="/notes" class="VPLink" active-class="active">心事</router-link>
+            <router-link to="/diary" class="VPLink" active-class="active">日记</router-link>
+          </template>
+          <router-link to="/music" class="VPLink" active-class="active">音乐</router-link>
+        </div>
+
+        <!-- Actions (Right) -->
+        <div class="VPNavBarActions">
+            <!-- User Profile (Desktop) -->
+            <div class="user-action" v-if="!isMobile">
+                 <div v-if="isAuthLoading" class="user-loading-spinner"></div>
+                 <div v-else-if="user" class="user-avatar-circle" @click="handleProfileClick" :title="user.user_metadata.full_name || user.email">
+                    <img v-if="user.user_metadata.avatar_url" :src="user.user_metadata.avatar_url" alt="Avatar">
+                    <span v-else>{{ user.email[0].toUpperCase() }}</span>
+                 </div>
+                 <div v-else class="login-btn-text" @click="handleLoginClick">登录</div>
+            </div>
+            
+            <!-- Mobile User Icon (Top Right) -->
+            <div class="user-action-mobile" v-if="isMobile">
+                <md-icon-button @click="user ? handleProfileClick() : handleLoginClick()">
+                    <md-icon v-if="!user">account_circle</md-icon>
+                    <div v-else class="user-avatar-mini">
+                        <img v-if="user.user_metadata.avatar_url" :src="user.user_metadata.avatar_url">
+                        <span v-else>{{ user.email[0].toUpperCase() }}</span>
+                    </div>
+                </md-icon-button>
+            </div>
+
+            <button class="VPSwitchAppearance" @click="toggleTheme" title="切换主题">
+                <span class="material-icons">{{ themeIcon }}</span>
+            </button>
         </div>
       </div>
     </nav>
