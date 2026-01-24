@@ -5,6 +5,7 @@ import Profile from '../views/Profile.vue'
 import Music from '../views/Music.vue'
 import Gallery from '../views/Gallery.vue'
 import Diary from '../views/Diary.vue'
+import Notes from '../views/Notes.vue'
 
 const routes = [
   {
@@ -38,6 +39,11 @@ const routes = [
     path: '/diary',
     name: 'Diary',
     component: Diary
+  },
+  {
+    path: '/notes',
+    name: 'Notes',
+    component: Notes
   }
 ]
 
