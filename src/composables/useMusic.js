@@ -89,6 +89,9 @@ export function useMusic() {
       duration.value = track.duration || 0 // Use metadata duration if available
       buffered.value = 0
       
+      // Load lyrics if available
+      loadLyrics(track.id)
+      
       // Handle HLS
       if (track.url.endsWith('.m3u8')) {
         // 1. Try Native HLS (Safari)
@@ -253,6 +256,7 @@ export function useMusic() {
     currentTime,
     duration,
     buffered,
+    currentLyrics,
     loadPlaylist,
     playTrack,
     togglePlay,

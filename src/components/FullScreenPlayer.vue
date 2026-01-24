@@ -21,13 +21,18 @@
         <div class="player-main-split">
           <!-- Left Column: Lyrics -->
           <div class="lyrics-column" :class="{ 'mobile-hidden': !showLyrics && isMobile }">
-             <div class="lyrics-container">
-                <p v-if="!lyrics" class="no-lyrics">暂无歌词</p>
+             <div class="lyrics-container" ref="lyricsContainer">
+                <p v-if="!parsedLyrics || parsedLyrics.length === 0" class="no-lyrics">暂无歌词</p>
                 <div v-else class="lyrics-lines">
-                   <!-- Placeholder for real lyrics parsing -->
-                   <p class="lyric-line">细数惭愧 我伤你几回</p>
-                   <p class="lyric-line active">我一路向北 离开有你的季节</p>
-                   <p class="lyric-line">方向盘周围 迴转着我的后悔</p>
+                   <p 
+                     v-for="(line, index) in parsedLyrics" 
+                     :key="index"
+                     class="lyric-line"
+                     :class="{ active: index === currentLyricIndex }"
+                     @click="seek(line.time)"
+                   >
+                     {{ line.text }}
+                   </p>
                 </div>
              </div>
           </div>
