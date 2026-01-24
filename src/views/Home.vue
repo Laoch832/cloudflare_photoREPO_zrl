@@ -1,329 +1,140 @@
 <template>
-  <div class="home-container">
-    <!-- Hero Section -->
-    <section class="hero-section">
-      <div class="hero-text">
-        <h1 class="main-title">高岭之花</h1>
-        <h2 class="sub-title">世界最好的女孩</h2>
-        <p class="tag"># The world 1st girl</p>
-        <router-link to="/gallery" class="black-pill-btn">
-          Fetch more photos
+  <div class="bg-black font-sans text-white/90 antialiased overflow-hidden min-h-screen relative">
+    <div class="fixed inset-0 z-0 overflow-hidden">
+      <div class="absolute inset-0 bg-cover bg-center scale-105 blur-[100px] opacity-70" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCXW2-dWMIb9nb69pFxqgWF7OjEVTqxBGud9l62LjCGje6QYLW0TpLpG3jOFlHv-z5CZD60v2dvnQA8g4NcGVXQm7Ka1ZGcr_c-npxxgI4vNovr6ZqcA-z7Jc5rqgHm42d0lIEpIKHeKL6MQsJFMafHXWiOjAxvw4Be6V-G5y61K5Pk6YQPA_M4ntbSc6J2j3J_rHlx_KFT1MoLg3izPeQz_LrngZ8IAbAZzPjEDzWhGFrvUaREvZ7mbwYC0o9q1n3bvITB34XG2Ic");'></div>
+      <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40"></div>
+      <div class="absolute inset-0 grain-texture"></div>
+    </div>
+    <header class="fixed top-0 left-0 right-0 z-50 ios-glass-nav h-16 flex items-center px-8">
+      <div class="flex items-center gap-3 w-1/4">
+        <div class="size-8 rounded-full ring-1 ring-white/20 p-0.5 overflow-hidden shadow-sm">
+          <div class="w-full h-full bg-cover bg-center rounded-full" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDgYG5fbrfAWYAbyZ7RmKq8IBLBAj6bbuVhR-COKsvf9zLkn7UK8IhEy7zQsn2FWb3n-Wf9-xvQX-ne5hKssruYZaOcM116VJWjTzmLyIO-LLLKLcBVtMQ_uL1ThysECYUBVxleFZSt_ZmhN-3s-mZrxirArEP9nN5vjZID5NmDaMMGXvXCEd8zsguRkntLDinf0r1jSD3Qf40ltscmLWb-HGfwakonh3J6UljgYOf7RI0eq2x4WHW49pdKb__McD7PxADWZ-jYgeY");'></div>
+        </div>
+        <span class="text-xs font-semibold tracking-widest uppercase opacity-70">Sanctum</span>
+      </div>
+      <nav class="flex-1 flex justify-center items-center gap-1">
+        <a class="px-5 py-1.5 rounded-full text-sm font-medium bg-white/10 text-white transition-all" href="#">Journal</a>
+        <a class="px-5 py-1.5 rounded-full text-sm font-medium text-white/50 hover:text-white hover:bg-white/5 transition-all" href="#">Gallery</a>
+        <a class="px-5 py-1.5 rounded-full text-sm font-medium text-white/50 hover:text-white hover:bg-white/5 transition-all" href="#">Crush List</a>
+        <a class="px-5 py-1.5 rounded-full text-sm font-medium text-white/50 hover:text-white hover:bg-white/5 transition-all" href="#">Playlist</a>
+      </nav>
+      <div class="w-1/4 flex justify-end gap-5">
+        <button class="text-white/40 hover:text-white transition-colors">
+          <span class="material-symbols-outlined text-[20px]">search</span>
+        </button>
+        <router-link to="/profile" class="text-white/40 hover:text-white transition-colors">
+          <span class="material-symbols-outlined text-[20px]">settings</span>
         </router-link>
       </div>
-      <div class="hero-image-wrapper">
-        <ProgressiveImage 
-          v-if="randomPhoto"
-          :src="randomPhoto.url" 
-          :thumbnail="randomPhoto.thumbnail" 
-          :alt="randomPhoto.name"
-          class="hero-image"
-        />
-        <div v-else class="placeholder-image"></div>
-      </div>
-    </section>
-
-    <!-- Content Grid -->
-    <section class="content-section">
-      <!-- Item 1: Note/Diary -->
-      <div class="grid-item text-left" v-if="latestNote">
-        <div class="item-content">
-          <h3 class="item-title">追光</h3>
-          <p class="item-meta">(正文部分)</p>
-          <p class="item-excerpt">{{ latestNote.summary }}</p>
-          <router-link :to="'/notes#' + latestNote.id" class="black-rect-btn">
-            前往日记本查看全文
-          </router-link>
+    </header>
+    <main class="relative z-10 h-screen w-full flex items-center justify-center pt-16 pb-32">
+      <div class="max-w-7xl w-full px-12 grid grid-cols-12 gap-12 items-center">
+        <div class="col-span-7 space-y-10">
+          <div class="space-y-4">
+            <div class="flex items-center gap-3">
+              <span class="h-[1px] w-8 bg-home-primary/60"></span>
+              <span class="text-white/40 text-[10px] font-bold tracking-[0.4em] uppercase">Thursday, October 24</span>
+            </div>
+            <h1 class="font-serif italic text-7xl md:text-9xl text-white tracking-tighter leading-none opacity-95">
+              Quietude
+            </h1>
+          </div>
+          <p class="font-serif text-3xl md:text-4xl text-white/80 leading-[1.4] max-w-2xl">
+            "A quiet afternoon, thinking of you. The light hits the floor just right today."
+          </p>
+          <div class="flex gap-4">
+            <button class="ios-glass-card px-8 py-4 rounded-ios-full flex items-center gap-3 hover:bg-white/10 active:scale-95 transition-all group">
+              <span class="material-symbols-outlined text-home-primary text-[22px] fill-current">edit_note</span>
+              <span class="text-sm font-semibold tracking-wide">Write a Memory</span>
+            </button>
+          </div>
+        </div>
+        <div class="col-span-5 flex justify-end">
+          <div class="relative group">
+            <div class="relative w-80 h-[480px] rounded-[2.5rem] overflow-hidden photo-frame transform rotate-1 group-hover:rotate-0 transition-all duration-1000 ease-[cubic-bezier(0.23,1,0.32,1)]">
+              <div class="absolute inset-0 bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDgYG5fbrfAWYAbyZ7RmKq8IBLBAj6bbuVhR-COKsvf9zLkn7UK8IhEy7zQsn2FWb3n-Wf9-xvQX-ne5hKssruYZaOcM116VJWjTzmLyIO-LLLKLcBVtMQ_uL1ThysECYUBVxleFZSt_ZmhN-3s-mZrxirArEP9nN5vjZID5NmDaMMGXvXCEd8zsguRkntLDinf0r1jSD3Qf40ltscmLWb-HGfwakonh3J6UljgYOf7RI0eq2x4WHW49pdKb__McD7PxADWZ-jYgeY");'></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20"></div>
+              <div class="absolute inset-0 border border-white/10 rounded-[2.5rem]"></div>
+              <div class="absolute bottom-6 left-6 right-6">
+                <div class="ios-glass-card px-4 py-3 rounded-2xl flex items-center justify-between">
+                  <div>
+                    <p class="text-[10px] uppercase tracking-widest text-white/50 font-bold mb-0.5">Captivation</p>
+                    <p class="text-xs font-medium">Summer Afternoon</p>
+                  </div>
+                  <span class="material-symbols-outlined text-home-primary text-[18px] fill-current">favorite</span>
+                </div>
+              </div>
+            </div>
+            <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-home-primary/10 blur-[80px] rounded-full -z-10 animate-pulse"></div>
+            <div class="absolute -top-10 -left-10 w-48 h-48 bg-white/5 blur-[80px] rounded-full -z-10"></div>
+          </div>
         </div>
       </div>
-      
-      <!-- Item 2: Image -->
-      <div class="grid-item image-right" v-if="featuredImages[0]">
-         <ProgressiveImage 
-          :src="featuredImages[0].url" 
-          :thumbnail="featuredImages[0].thumbnail" 
-          class="content-image noise-effect"
-        />
-      </div>
-
-      <!-- Item 3: Image -->
-      <div class="grid-item image-left" v-if="featuredImages[1]">
-         <ProgressiveImage 
-          :src="featuredImages[1].url" 
-          :thumbnail="featuredImages[1].thumbnail" 
-          class="content-image blur-effect"
-        />
-      </div>
-
-      <!-- Item 4: Note/Diary -->
-      <div class="grid-item text-right" v-if="secondNote">
-        <div class="item-content">
-          <h3 class="item-title">追光</h3>
-          <p class="item-meta">(正文部分)</p>
-          <p class="item-excerpt">{{ secondNote.summary }}</p>
-          <router-link :to="'/notes#' + secondNote.id" class="black-rect-btn">
-            前往日记本查看全文
-          </router-link>
+    </main>
+    <div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
+      <div class="ios-glass-player px-4 py-3 rounded-[2rem] flex items-center gap-5 min-w-[420px]">
+        <div class="size-14 rounded-2xl overflow-hidden shrink-0 shadow-lg border border-white/10">
+          <div class="w-full h-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB1cTdNnDkx3cYGJAHYTwAZoD6JhryILuFN_j4GKPjANEXVMKQvEhNYlZsu_JcCyyLQnv5cac1Iz2eCtzPjYX7fxR6FgwSVcu6cfSQWzwsJ3Ye1rn1M5D5ojJ82-aV66nQBluCjDbfo2_Z0CPFkbnFvWox16b6Xzt-5uBf6jjSyr4Dg5ZsdmD2c_QHHXjyVX67m3pNFwaPGpmqaql_mPcqi1lz54MUQER8XTuw_oNLXlbkckHhurry86KxqC8ciQxnm01X8CHnXoVc");'></div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between mb-2">
+            <div class="truncate">
+              <p class="text-[14px] font-semibold truncate leading-tight tracking-tight">Rainy Day Melody</p>
+              <p class="text-[12px] text-white/40 truncate tracking-tight">Atmosphere Artist</p>
+            </div>
+            <div class="flex items-center gap-5 ml-6">
+              <button class="text-white/60 hover:text-white transition-colors">
+                <span class="material-symbols-outlined text-[20px]">skip_previous</span>
+              </button>
+              <button class="size-9 rounded-full bg-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all">
+                <span class="material-symbols-outlined text-black text-[24px] fill-current">play_arrow</span>
+              </button>
+              <button class="text-white/60 hover:text-white transition-colors">
+                <span class="material-symbols-outlined text-[20px]">skip_next</span>
+              </button>
+            </div>
+          </div>
+          <div class="relative w-full h-1 bg-white/10 rounded-full overflow-hidden">
+            <div class="absolute top-0 left-0 h-full w-[35%] bg-white/60 rounded-full"></div>
+          </div>
         </div>
       </div>
-    </section>
-
-    <!-- Big Footer Text -->
-    <div class="big-footer">
-      Lookingforward Forever.
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import ProgressiveImage from '../components/ProgressiveImage.vue'
-
-const loading = ref(true)
-const images = ref([])
-const notes = ref([])
-const randomPhoto = ref(null)
-
-const featuredImages = computed(() => {
-  if (images.value.length < 2) return []
-  // Return different images than randomPhoto if possible
-  return images.value.filter(img => img !== randomPhoto.value).slice(0, 2)
-})
-
-const latestNote = computed(() => {
-  if (notes.value.length === 0) return null
-  return [...notes.value].sort((a, b) => new Date(b.date) - new Date(a.date))[0]
-})
-
-const secondNote = computed(() => {
-  if (notes.value.length < 2) return null
-  return [...notes.value].sort((a, b) => new Date(b.date) - new Date(a.date))[1]
-})
-
-const fetchData = async () => {
-  try {
-    const [imgRes, noteRes] = await Promise.all([
-      fetch('/images.json'),
-      fetch('/notes.json')
-    ])
-    
-    const imgData = await imgRes.json()
-    const noteData = await noteRes.json()
-    
-    images.value = imgData
-    notes.value = noteData
-    
-    if (imgData.length > 0) {
-      const randomIndex = Math.floor(Math.random() * imgData.length)
-      randomPhoto.value = imgData[randomIndex]
-    }
-  } catch (error) {
-    console.error('Failed to fetch data:', error)
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(() => {
-  fetchData()
-})
 </script>
 
 <style scoped>
-.home-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 40px 24px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  color: #000;
+.ios-glass-nav {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.15);
 }
-
-/* Hero Section */
-.hero-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 120px;
-  padding-top: 40px;
+.ios-glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border: 0.5px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.1);
 }
-
-.hero-text {
-  flex: 1;
-  padding-right: 40px;
+.ios-glass-player {
+  background: rgba(15, 15, 15, 0.4);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
 }
-
-.main-title {
-  font-size: 64px;
-  font-weight: 800;
-  margin-bottom: 16px;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+.photo-frame {
+  box-shadow: 
+    0 30px 60px -12px rgba(0,0,0,0.3),
+    inset 0 0 0 1px rgba(255,255,255,0.15);
 }
-
-.sub-title {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 12px;
-}
-
-.tag {
-  color: #666;
-  font-size: 16px;
-  margin-bottom: 32px;
-}
-
-.hero-image-wrapper {
-  flex: 1;
-  max-width: 500px;
-}
-
-.hero-image {
-  width: 100%;
-  border-radius: 0; /* Sharp corners as per design usually, or slight rounded */
-  object-fit: cover;
-  aspect-ratio: 4/3;
-}
-
-/* Buttons */
-.black-pill-btn {
-  display: inline-block;
-  background-color: #000;
-  color: #fff;
-  padding: 10px 24px;
-  border-radius: 999px;
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: transform 0.2s;
-}
-
-.black-pill-btn:hover {
-  transform: scale(1.05);
-}
-
-.black-rect-btn {
-  display: inline-block;
-  background-color: #000;
-  color: #fff;
-  padding: 12px 24px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
-  transition: opacity 0.2s;
-}
-
-.black-rect-btn:hover {
-  opacity: 0.8;
-}
-
-/* Content Grid */
-.content-section {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 80px 40px;
-  margin-bottom: 120px;
-}
-
-.grid-item {
-  display: flex;
-  flex-direction: column;
-}
-
-.item-content {
-  max-width: 400px;
-}
-
-.item-title {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.item-meta {
-  font-size: 14px;
-  color: #888;
-  margin-bottom: 16px;
-}
-
-.item-excerpt {
-  font-size: 16px;
-  line-height: 1.6;
-  color: #333;
-  margin-bottom: 24px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.content-image {
-  width: 100%;
-  aspect-ratio: 16/10;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-.noise-effect {
-  filter: contrast(1.1) brightness(1.1);
-  /* Note: True noise requires SVG or canvas, simple filter here */
-}
-
-/* Alignment Helpers */
-.text-left {
-  align-items: flex-start;
-  justify-content: center;
-}
-
-.text-right {
-  align-items: flex-start; /* Design shows text aligned left even in right column usually */
-  justify-content: center;
-}
-
-.image-right {
-  align-items: flex-end;
-}
-
-.image-left {
-  align-items: flex-start;
-}
-
-/* Footer */
-.big-footer {
-  font-size: 48px;
-  font-weight: 900;
-  text-align: left;
-  letter-spacing: -0.02em;
-  margin-top: 80px;
-  border-top: 1px solid #eee;
-  padding-top: 40px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .hero-section {
-    flex-direction: column-reverse;
-    gap: 40px;
-  }
-  
-  .hero-text {
-    padding-right: 0;
-  }
-  
-  .main-title {
-    font-size: 42px;
-  }
-  
-  .content-section {
-    grid-template-columns: 1fr;
-    gap: 60px;
-  }
-  
-  .image-right {
-    align-items: flex-start;
-  }
-  
-  .big-footer {
-    font-size: 32px;
-  }
+.grain-texture {
+  background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuAhnN-c6-tvXKaxxtWEFk8ZQ6RmbkLBI9Tu3bsqNWc-EIPrnIwFFRSj6SdSMguirLBW_gm94P5Y2OfA3J2XQBfkhZgrYcHhvUEpBxEQiVEbD7hj4QtmWuNnHY71OiDBpv1kJQ9AmYeBR77LP1veXhxeixWY7W6W4nW_ZrfbKE-_2uQwCxxENnLox1oSeRRNOAl-gY0dU6I5uAL8epYCXkjqJrdRJdCMhSB6D7EsGHgN5HbhfD6GgiDGaqZyRtPPTn9ey14wZWXrObY);
+  opacity: 0.03;
+  pointer-events: none;
 }
 </style>
