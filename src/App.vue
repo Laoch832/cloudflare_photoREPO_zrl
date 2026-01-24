@@ -12,7 +12,7 @@
         <div class="VPNavBarTitle">
           <router-link :to="user ? '/' : '/music'" class="title-link" :class="{ 'sensitive-blur': !user }">
              <!-- Use text logo for now, can add image if available -->
-             <span class="logo-text cursive">暗恋日记</span>
+             <span class="logo-text">Love</span>
           </router-link>
         </div>
 
@@ -354,7 +354,10 @@ onUnmounted(() => {
 
 .logo-text {
     color: var(--vp-c-text-1);
-    font-size: 22px;
+    font-size: 24px;
+    font-weight: 800;
+    font-family: var(--font-sans); /* Remove cursive, use bold sans */
+    letter-spacing: -0.5px;
 }
 
 /* Menu (Desktop) */

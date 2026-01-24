@@ -1,128 +1,104 @@
 <template>
-  <div class="home">
+  <div class="home-container">
     <!-- Hero Section -->
-    <section class="hero">
-      <!-- Placeholder to prevent layout shift when content becomes fixed -->
-      <div class="hero-placeholder"></div>
-      
-      <!-- Animated Content Wrapper -->
-      <div class="hero-content" :class="{ 'docked': isDocked }">
-        <h1 class="cursive title slide-up" style="animation-delay: 0.1s">我喜欢你，默默地</h1>
-        <div class="days-counter slide-up" style="animation-delay: 0.3s">
-          <p class="counter-label" :class="{ 'fade-out': isDocked }">这份心意已经藏了</p>
-          <div class="days-wrapper">
-            <div class="days-number">{{ loveDays }}</div>
-            <p class="counter-label unit-label">天</p>
-          </div>
-        </div>
-        <div class="scroll-hint fade-in" :class="{ 'hidden': isDocked }" style="animation-delay: 1.5s">
-          <span>关于你的点滴</span>
-          <span class="material-icons bounce">expand_more</span>
-        </div>
+    <section class="hero-section">
+      <div class="hero-text">
+        <h1 class="main-title">高岭之花</h1>
+        <h2 class="sub-title">世界最好的女孩</h2>
+        <p class="tag"># The world 1st girl</p>
+        <router-link to="/gallery" class="black-pill-btn">
+          Fetch more photos
+        </router-link>
       </div>
-
-      <div class="hero-bg" :style="heroBgStyle"></div>
-      <div class="hero-overlay"></div>
+      <div class="hero-image-wrapper">
+        <ProgressiveImage 
+          v-if="randomPhoto"
+          :src="randomPhoto.url" 
+          :thumbnail="randomPhoto.thumbnail" 
+          :alt="randomPhoto.name"
+          class="hero-image"
+        />
+        <div v-else class="placeholder-image"></div>
+      </div>
     </section>
 
-    <div class="container content-grid">
-      <!-- Latest Photo -->
-      <section class="section slide-up" style="animation-delay: 0.5s">
-        <div class="section-header">
-          <h2 class="cursive">定格瞬间</h2>
-          <router-link to="/gallery" class="view-all">查看更多 <span class="material-icons">arrow_forward</span></router-link>
+    <!-- Content Grid -->
+    <section class="content-section">
+      <!-- Item 1: Note/Diary -->
+      <div class="grid-item text-left" v-if="latestNote">
+        <div class="item-content">
+          <h3 class="item-title">追光</h3>
+          <p class="item-meta">(正文部分)</p>
+          <p class="item-excerpt">{{ latestNote.summary }}</p>
+          <router-link :to="'/notes#' + latestNote.id" class="black-rect-btn">
+            前往日记本查看全文
+          </router-link>
         </div>
-        
-        <div class="photo-card" v-if="randomPhoto">
-          <div class="photo-wrapper">
-            <ProgressiveImage 
-              :src="randomPhoto.url" 
-              :thumbnail="randomPhoto.thumbnail" 
-              :alt="randomPhoto.name"
-              :delay="500" 
-            />
-            <div class="photo-overlay">
-              <span>{{ formatDate(randomPhoto.uploadedAt) }}</span>
-            </div>
-          </div>
-        </div>
-        <div v-else class="empty-state">
-          还没有关于你的照片...
-        </div>
-      </section>
+      </div>
+      
+      <!-- Item 2: Image -->
+      <div class="grid-item image-right" v-if="featuredImages[0]">
+         <ProgressiveImage 
+          :src="featuredImages[0].url" 
+          :thumbnail="featuredImages[0].thumbnail" 
+          class="content-image noise-effect"
+        />
+      </div>
 
-      <!-- Latest Note -->
-      <section class="section slide-up" style="animation-delay: 0.7s">
-        <div class="section-header">
-          <h2 class="cursive">心事</h2>
-          <router-link to="/notes" class="view-all">阅读更多 <span class="material-icons">arrow_forward</span></router-link>
-        </div>
+      <!-- Item 3: Image -->
+      <div class="grid-item image-left" v-if="featuredImages[1]">
+         <ProgressiveImage 
+          :src="featuredImages[1].url" 
+          :thumbnail="featuredImages[1].thumbnail" 
+          class="content-image blur-effect"
+        />
+      </div>
 
-        <div class="note-card" v-if="latestNote">
-          <div class="note-paper">
-            <div class="note-date">{{ latestNote.date }}</div>
-            <h3 class="note-title">{{ latestNote.filename.replace('.docx', '') }}</h3>
-            <p class="note-excerpt">{{ latestNote.summary }}</p>
-            <router-link :to="'/notes#' + latestNote.id" class="read-btn">展开阅读</router-link>
-          </div>
+      <!-- Item 4: Note/Diary -->
+      <div class="grid-item text-right" v-if="secondNote">
+        <div class="item-content">
+          <h3 class="item-title">追光</h3>
+          <p class="item-meta">(正文部分)</p>
+          <p class="item-excerpt">{{ secondNote.summary }}</p>
+          <router-link :to="'/notes#' + secondNote.id" class="black-rect-btn">
+            前往日记本查看全文
+          </router-link>
         </div>
-        <div v-else class="empty-state">
-          还没有写下心事...
-        </div>
-      </section>
+      </div>
+    </section>
+
+    <!-- Big Footer Text -->
+    <div class="big-footer">
+      Lookingforward Forever.
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import ProgressiveImage from '../components/ProgressiveImage.vue'
 
 const loading = ref(true)
-const isDocked = ref(false)
-
-const handleScroll = () => {
-  const scrollY = window.scrollY
-  // Threshold to trigger docking (adjust based on hero height)
-  isDocked.value = scrollY > 260
-}
-
-// ... rest of script unchanged
 const images = ref([])
 const notes = ref([])
 const randomPhoto = ref(null)
 
-// Calculate love days
-const loveDays = computed(() => {
-  const startDate = new Date('2024-10-01') // Replace with your date
-  const today = new Date()
-  const diffTime = Math.abs(today - startDate)
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+const featuredImages = computed(() => {
+  if (images.value.length < 2) return []
+  // Return different images than randomPhoto if possible
+  return images.value.filter(img => img !== randomPhoto.value).slice(0, 2)
 })
 
-// Get latest note
 const latestNote = computed(() => {
   if (notes.value.length === 0) return null
   return [...notes.value].sort((a, b) => new Date(b.date) - new Date(a.date))[0]
 })
 
-// Dynamic hero background
-const heroBgStyle = computed(() => {
-  if (randomPhoto.value) {
-    return {
-      backgroundImage: `url(${randomPhoto.value.url})`
-    }
-  }
-  return {}
+const secondNote = computed(() => {
+  if (notes.value.length < 2) return null
+  return [...notes.value].sort((a, b) => new Date(b.date) - new Date(a.date))[1]
 })
 
-// Format date
-const formatDate = (dateString) => {
-  if (!dateString) return ''
-  return new Date(dateString).toLocaleDateString('zh-CN')
-}
-
-// Fetch data
 const fetchData = async () => {
   try {
     const [imgRes, noteRes] = await Promise.all([
@@ -137,7 +113,6 @@ const fetchData = async () => {
     notes.value = noteData
     
     if (imgData.length > 0) {
-      // Pick a random photo for hero bg or display
       const randomIndex = Math.floor(Math.random() * imgData.length)
       randomPhoto.value = imgData[randomIndex]
     }
@@ -150,431 +125,205 @@ const fetchData = async () => {
 
 onMounted(() => {
   fetchData()
-  window.addEventListener('scroll', handleScroll, { passive: true })
-})
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
 })
 </script>
 
 <style scoped>
-.home {
-  min-height: 100vh;
+.home-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #000;
 }
 
 /* Hero Section */
-.hero {
-  height: 90vh;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  /* overflow: hidden; Remove overflow hidden to allow sticky element to escape if needed, though fixed works anyway */
-  margin-top: -80px; /* Offset navbar height */
-  margin-bottom: 60px;
-}
-
-.hero-placeholder {
-  width: 100%;
-  height: 300px; /* Approximate height of content */
-  display: none; /* Only show when docked */
-}
-
-.hero-content {
-  z-index: 1;
-  padding: 40px;
-  max-width: 900px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-  transform-origin: top center;
-  position: relative; /* Default */
-  width: 100%;
-}
-
-.hero-content.docked {
-  position: fixed;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%) scale(0.35); /* Scale down to header size */
-  width: auto;
-  padding: 10px 40px;
-  border-radius: 50px;
-  background: rgba(255, 255, 255, 0.9); /* Opaque background to cover logo */
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  z-index: 1200;
-  border: 1px solid rgba(0,0,0,0.05);
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  max-width: none;
-  backdrop-filter: blur(15px);
-}
-
-/* When docked, reveal the placeholder to prevent jump */
-.hero-content.docked ~ .hero-placeholder {
-  display: block;
-}
-
-[data-theme="dark"] .hero-content.docked {
-  background: rgba(43, 10, 18, 0.9);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Adjust inner elements when docked */
-.hero-content.docked .title {
-  margin: 0;
-  font-size: 3rem; /* Will be scaled down further by parent scale */
-  text-shadow: none;
-  white-space: nowrap;
-}
-
-.hero-content.docked .days-counter {
-  margin: 0;
-  display: flex;
-  align-items: center;
-}
-
-.hero-content.docked .days-wrapper {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.hero-content.docked .days-number {
-  font-size: 4rem;
-  margin: 0;
-  text-shadow: none;
-}
-
-.hero-content.docked .unit-label {
-  font-size: 1.5rem;
-  margin: 0;
-  opacity: 0.8;
-}
-
-/* Hide elements when docked */
-.fade-out {
-  opacity: 0;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-  margin: 0;
-  padding: 0;
-  transition: opacity 0.3s;
-}
-
-.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.hero-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  opacity: 0.15;
-  z-index: -2;
-  filter: blur(8px);
-  transform: scale(1.1);
-  transition: opacity 1s ease;
-}
-
-.hero-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle, transparent 0%, var(--bg-color) 90%);
-  z-index: -1;
-}
-
-[data-theme="dark"] .hero-bg {
-  opacity: 0.1;
-}
-
-.hero-content {
-  z-index: 1;
-  padding: 40px;
-  max-width: 900px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-[data-theme="dark"] .hero-content {
-  background: rgba(0, 0, 0, 0.1);
-  border-color: rgba(255, 255, 255, 0.05);
-}
-
-.title {
-  font-size: 5rem;
-  color: var(--primary-dark);
-  margin-bottom: 20px;
-  text-shadow: 0 4px 12px rgba(255, 77, 109, 0.15);
-  font-weight: normal;
-  line-height: 1.2;
-}
-
-.days-counter {
-  margin: 30px 0;
-}
-
-.counter-label {
-  font-size: 1.2rem;
-  color: var(--text-light);
-  letter-spacing: 2px;
-  margin-bottom: 10px;
-}
-
-.days-number {
-  font-size: 8rem;
-  font-weight: 300;
-  color: var(--accent-color);
-  line-height: 1;
-  margin: 10px 0;
-  font-family: 'Helvetica Neue', sans-serif;
-  text-shadow: 2px 4px 0px rgba(0,0,0,0.05);
-}
-
-.scroll-hint {
-  margin-top: 40px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: var(--text-light);
-  opacity: 0.6;
-  font-size: 0.9rem;
-  gap: 8px;
-}
-
-.bounce {
-  animation: bounce 2s infinite;
-}
-
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-  40% {transform: translateY(-10px);}
-  60% {transform: translateY(-5px);}
-}
-
-/* Content Grid */
-.content-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 60px;
-  padding-bottom: 60px;
-}
-
-.section-header {
+.hero-section {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  margin-bottom: 120px;
+  padding-top: 40px;
+}
+
+.hero-text {
+  flex: 1;
+  padding-right: 40px;
+}
+
+.main-title {
+  font-size: 64px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.sub-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.tag {
+  color: #666;
+  font-size: 16px;
   margin-bottom: 32px;
 }
 
-.section-header h2 {
-  font-size: 2.5rem;
-  color: var(--primary-dark);
-  font-weight: normal;
+.hero-image-wrapper {
+  flex: 1;
+  max-width: 500px;
 }
 
-.view-all {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--text-light);
-  transition: all 0.3s ease;
-  padding: 8px 16px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.5);
-}
-
-.view-all:hover {
-  background: var(--primary-color);
-  color: white;
-  transform: translateX(5px);
-}
-
-/* Photo Card */
-.photo-card {
-  background: white;
-  padding: 16px;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  transform: rotate(-2deg);
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  cursor: pointer;
-}
-
-.photo-card:hover {
-  transform: rotate(0) scale(1.02) translateY(-10px);
-  box-shadow: var(--shadow-lg);
-}
-
-.photo-wrapper {
-  position: relative;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  aspect-ratio: 4/3;
-  background: #f8f8f8;
-}
-
-.photo-wrapper img {
+.hero-image {
   width: 100%;
-  height: 100%;
+  border-radius: 0; /* Sharp corners as per design usually, or slight rounded */
   object-fit: cover;
-  transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  aspect-ratio: 4/3;
 }
 
-.photo-card:hover img {
-  transform: scale(1.1);
-}
-
-.photo-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  padding: 20px;
-  background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
-  color: white;
-  font-weight: 500;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-
-.photo-card:hover .photo-overlay {
-  opacity: 1;
-}
-
-/* Note Card */
-.note-card {
-  height: 100%;
-}
-
-.note-paper {
-  background: #fff;
-  padding: 40px;
-  border-radius: 4px;
-  box-shadow: var(--shadow-sm);
-  position: relative;
-  background-image: linear-gradient(#f1f1f1 1px, transparent 1px);
-  background-size: 100% 2em;
-  line-height: 2em;
-  height: 100%;
-  min-height: 350px;
-  transform: rotate(1deg);
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.note-paper:hover {
-  transform: rotate(0) translateY(-10px);
-  box-shadow: var(--shadow-lg);
-}
-
-.note-date {
-  color: var(--text-light);
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin-bottom: 16px;
-  font-family: monospace;
-  opacity: 0.7;
-}
-
-.note-title {
-  font-size: 1.8rem;
-  color: var(--text-main);
-  margin-bottom: 20px;
-  line-height: 1.4;
+/* Buttons */
+.black-pill-btn {
+  display: inline-block;
+  background-color: #000;
+  color: #fff;
+  padding: 10px 24px;
+  border-radius: 999px;
+  font-size: 14px;
   font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.2s;
 }
 
-.note-excerpt {
-  color: var(--text-main);
+.black-pill-btn:hover {
+  transform: scale(1.05);
+}
+
+.black-rect-btn {
+  display: inline-block;
+  background-color: #000;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.black-rect-btn:hover {
   opacity: 0.8;
-  margin-bottom: 30px;
+}
+
+/* Content Grid */
+.content-section {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 80px 40px;
+  margin-bottom: 120px;
+}
+
+.grid-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.item-content {
+  max-width: 400px;
+}
+
+.item-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.item-meta {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 16px;
+}
+
+.item-excerpt {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333;
+  margin-bottom: 24px;
   display: -webkit-box;
-  -webkit-line-clamp: 5;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  font-size: 1.05rem;
 }
 
-.read-btn {
-  display: inline-block;
-  color: var(--primary-dark);
-  font-weight: 600;
-  border-bottom: 2px solid var(--primary-color);
-  padding-bottom: 4px;
-  font-size: 1rem;
-  transition: all 0.3s;
+.content-image {
+  width: 100%;
+  aspect-ratio: 16/10;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
-.read-btn:hover {
-  color: var(--accent-color);
-  border-color: var(--accent-color);
-  padding-left: 10px;
+.noise-effect {
+  filter: contrast(1.1) brightness(1.1);
+  /* Note: True noise requires SVG or canvas, simple filter here */
 }
 
-.empty-state {
-  padding: 80px;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: var(--radius-md);
-  color: var(--text-light);
-  font-style: italic;
-  border: 2px dashed rgba(0,0,0,0.05);
+/* Alignment Helpers */
+.text-left {
+  align-items: flex-start;
+  justify-content: center;
 }
 
-[data-theme="dark"] .photo-card,
-[data-theme="dark"] .note-paper {
-  background-color: var(--card-bg);
+.text-right {
+  align-items: flex-start; /* Design shows text aligned left even in right column usually */
+  justify-content: center;
 }
 
-[data-theme="dark"] .note-paper {
-  background-image: linear-gradient(#3a3a3a 1px, transparent 1px);
+.image-right {
+  align-items: flex-end;
 }
 
+.image-left {
+  align-items: flex-start;
+}
+
+/* Footer */
+.big-footer {
+  font-size: 48px;
+  font-weight: 900;
+  text-align: left;
+  letter-spacing: -0.02em;
+  margin-top: 80px;
+  border-top: 1px solid #eee;
+  padding-top: 40px;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-  .title {
-    font-size: 3.5rem;
-  }
-  
-  .days-number {
-    font-size: 5rem;
-  }
-  
-  .content-grid {
-    grid-template-columns: 1fr;
+  .hero-section {
+    flex-direction: column-reverse;
     gap: 40px;
   }
   
-  .photo-card, .note-paper {
-    transform: rotate(0);
+  .hero-text {
+    padding-right: 0;
   }
   
-  .hero {
-    height: 80vh;
+  .main-title {
+    font-size: 42px;
   }
   
-  .hero-content {
-    padding: 20px;
-    margin: 0 16px;
+  .content-section {
+    grid-template-columns: 1fr;
+    gap: 60px;
+  }
+  
+  .image-right {
+    align-items: flex-start;
+  }
+  
+  .big-footer {
+    font-size: 32px;
   }
 }
 </style>
