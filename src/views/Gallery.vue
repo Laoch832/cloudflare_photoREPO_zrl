@@ -1,5 +1,5 @@
 <template>
-  <div class="font-display overflow-hidden text-white antialiased min-h-screen relative">
+  <div class="font-display overflow-hidden text-white antialiased min-h-screen relative bg-black">
     <div class="fixed inset-0 z-0">
       <div class="absolute inset-0 environment-bg"></div>
       <div class="absolute inset-0 bg-black/40"></div>
@@ -22,61 +22,22 @@
           </div>
         </div>
         <div class="flex-1 overflow-y-auto custom-scrollbar px-2">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-12 gap-y-20 pb-20 justify-items-center">
-            <div class="polaroid-frame -rotate-2">
-              <div class="aspect-[1/1] w-full bg-cover bg-center grayscale-[0.2] contrast-[1.1]" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCXW2-dWMIb9nb69pFxqgWF7OjEVTqxBGud9l62LjCGje6QYLW0TpLpG3jOFlHv-z5CZD60v2dvnQA8g4NcGVXQm7Ka1ZGcr_c-npxxgI4vNovr6ZqcA-z7Jc5rqgHm42d0lIEpIKHeKL6MQsJFMafHXWiOjAxvw4Be6V-G5y61K5Pk6YQPA_M4ntbSc6J2j3J_rHlx_KFT1MoLg3izPeQz_LrngZ8IAbAZzPjEDzWhGFrvUaREvZ7mbwYC0o9q1n3bvITB34XG2Ic");'></div>
-              <div class="pt-6 text-center">
-                <p class="font-handwritten text-zinc-800 text-2xl leading-tight">Rainy afternoon tea.</p>
-                <p class="text-[9px] uppercase tracking-[0.2em] text-zinc-400 mt-3 font-sans">Oct 12, 2023</p>
+          <div v-if="loading" class="flex items-center justify-center h-full">
+            <div class="text-white/50">Loading memories...</div>
+          </div>
+          <div v-else-if="images.length === 0" class="flex items-center justify-center h-full">
+             <div class="text-white/50">No memories found.</div>
+          </div>
+          <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-12 gap-y-20 pb-20 justify-items-center">
+            <div v-for="(image, index) in images" :key="image.name" 
+                 class="polaroid-frame" 
+                 :class="getRotationClass(index)">
+              <div class="aspect-[1/1] w-full bg-cover bg-center" 
+                   :style="{ backgroundImage: `url(${image.thumbnail || image.url})` }">
               </div>
-            </div>
-            <div class="polaroid-frame rotate-2">
-              <div class="aspect-[1/1] w-full bg-cover bg-center grayscale-[0.1]" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDgYG5fbrfAWYAbyZ7RmKq8IBLBAj6bbuVhR-COKsvf9zLkn7UK8IhEy7zQsn2FWb3n-Wf9-xvQX-ne5hKssruYZaOcM116VJWjTzmLyIO-LLLKLcBVtMQ_uL1ThysECYUBVxleFZSt_ZmhN-3s-mZrxirArEP9nN5vjZID5NmDaMMGXvXCEd8zsguRkntLDinf0r1jSD3Qf40ltscmLWb-HGfwakonh3J6UljgYOf7RI0eq2x4WHW49pdKb__McD7PxADWZ-jYgeY");'></div>
               <div class="pt-6 text-center">
-                <p class="font-handwritten text-zinc-800 text-2xl leading-tight">That secret smile.</p>
-                <p class="text-[9px] uppercase tracking-[0.2em] text-zinc-400 mt-3 font-sans">Sep 28, 2023</p>
-              </div>
-            </div>
-            <div class="polaroid-frame -rotate-1">
-              <div class="aspect-[1/1] w-full bg-cover bg-center contrast-[1.05]" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB1cTdNnDkx3cYGJAHYTwAZoD6JhryILuFN_j4GKPjANEXVMKQvEhNYlZsu_JcCyyLQnv5cac1Iz2eCtzPjYX7fxR6FgwSVcu6cfSQWzwsJ3Ye1rn1M5D5ojJ82-aV66nQBluCjDbfo2_Z0CPFkbnFvWox16b6Xzt-5uBf6jjSyr4Dg5ZsdmD2c_QHHXjyVX67m3pNFwaPGpmqaql_mPcqi1lz54MUQER8XTuw_oNLXlbkckHhurry86KxqC8ciQxnm01X8CHnXoVc");'></div>
-              <div class="pt-6 text-center">
-                <p class="font-handwritten text-zinc-800 text-2xl leading-tight">City lights at midnight.</p>
-                <p class="text-[9px] uppercase tracking-[0.2em] text-zinc-400 mt-3 font-sans">Nov 04, 2023</p>
-              </div>
-            </div>
-            <div class="polaroid-frame rotate-3">
-              <div class="aspect-[1/1] w-full bg-cover bg-center brightness-105" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAhnN-c6-tvXKaxxtWEFk8ZQ6RmbkLBI9Tu3bsqNWc-EIPrnIwFFRSj6SdSMguirLBW_gm94P5Y2OfA3J2XQBfkhZgrYcHhvUEpBxEQiVEbD7hj4QtmWuNnHY71OiDBpv1kJQ9AmYeBR77LP1veXhxeixWY7W6W4nW_ZrfbKE-_2uQwCxxENnLox1oSeRRNOAl-gY0dU6I5uAL8epYCXkjqJrdRJdCMhSB6D7EsGHgN5HbhfD6GgiDGaqZyRtPPTn9ey14wZWXrObY");'></div>
-              <div class="pt-6 text-center">
-                <p class="font-handwritten text-zinc-800 text-2xl leading-tight">Static in the air.</p>
-                <p class="text-[9px] uppercase tracking-[0.2em] text-zinc-400 mt-3 font-sans">Aug 15, 2023</p>
-              </div>
-            </div>
-            <div class="polaroid-frame rotate-1">
-              <div class="aspect-[1/1] w-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCXW2-dWMIb9nb69pFxqgWF7OjEVTqxBGud9l62LjCGje6QYLW0TpLpG3jOFlHv-z5CZD60v2dvnQA8g4NcGVXQm7Ka1ZGcr_c-npxxgI4vNovr6ZqcA-z7Jc5rqgHm42d0lIEpIKHeKL6MQsJFMafHXWiOjAxvw4Be6V-G5y61K5Pk6YQPA_M4ntbSc6J2j3J_rHlx_KFT1MoLg3izPeQz_LrngZ8IAbAZzPjEDzWhGFrvUaREvZ7mbwYC0o9q1n3bvITB34XG2Ic");'></div>
-              <div class="pt-6 text-center">
-                <p class="font-handwritten text-zinc-800 text-2xl leading-tight">Morning coffee rituals.</p>
-                <p class="text-[9px] uppercase tracking-[0.2em] text-zinc-400 mt-3 font-sans">Oct 30, 2023</p>
-              </div>
-            </div>
-            <div class="polaroid-frame -rotate-3">
-              <div class="aspect-[1/1] w-full bg-cover bg-center grayscale-[0.3]" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDgYG5fbrfAWYAbyZ7RmKq8IBLBAj6bbuVhR-COKsvf9zLkn7UK8IhEy7zQsn2FWb3n-Wf9-xvQX-ne5hKssruYZaOcM116VJWjTzmLyIO-LLLKLcBVtMQ_uL1ThysECYUBVxleFZSt_ZmhN-3s-mZrxirArEP9nN5vjZID5NmDaMMGXvXCEd8zsguRkntLDinf0r1jSD3Qf40ltscmLWb-HGfwakonh3J6UljgYOf7RI0eq2x4WHW49pdKb__McD7PxADWZ-jYgeY");'></div>
-              <div class="pt-6 text-center">
-                <p class="font-handwritten text-zinc-800 text-2xl leading-tight">The dusty corner shelf.</p>
-                <p class="text-[9px] uppercase tracking-[0.2em] text-zinc-400 mt-3 font-sans">Dec 01, 2023</p>
-              </div>
-            </div>
-            <div class="polaroid-frame rotate-2">
-              <div class="aspect-[1/1] w-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB1cTdNnDkx3cYGJAHYTwAZoD6JhryILuFN_j4GKPjANEXVMKQvEhNYlZsu_JcCyyLQnv5cac1Iz2eCtzPjYX7fxR6FgwSVcu6cfSQWzwsJ3Ye1rn1M5D5ojJ82-aV66nQBluCjDbfo2_Z0CPFkbnFvWox16b6Xzt-5uBf6jjSyr4Dg5ZsdmD2c_QHHXjyVX67m3pNFwaPGpmqaql_mPcqi1lz54MUQER8XTuw_oNLXlbkckHhurry86KxqC8ciQxnm01X8CHnXoVc");'></div>
-              <div class="pt-6 text-center">
-                <p class="font-handwritten text-zinc-800 text-2xl leading-tight">Raindrops on glass.</p>
-                <p class="text-[9px] uppercase tracking-[0.2em] text-zinc-400 mt-3 font-sans">Jan 14, 2024</p>
-              </div>
-            </div>
-            <div class="polaroid-frame -rotate-2">
-              <div class="aspect-[1/1] w-full bg-cover bg-center brightness-90 contrast-110" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB1cTdNnDkx3cYGJAHYTwAZoD6JhryILuFN_j4GKPjANEXVMKQvEhNYlZsu_JcCyyLQnv5cac1Iz2eCtzPjYX7fxR6FgwSVcu6cfSQWzwsJ3Ye1rn1M5D5ojJ82-aV66nQBluCjDbfo2_Z0CPFkbnFvWox16b6Xzt-5uBf6jjSyr4Dg5ZsdmD2c_QHHXjyVX67m3pNFwaPGpmqaql_mPcqi1lz54MUQER8XTuw_oNLXlbkckHhurry86KxqC8ciQxnm01X8CHnXoVc");'></div>
-              <div class="pt-6 text-center">
-                <p class="font-handwritten text-zinc-800 text-2xl leading-tight">Summer's last breath.</p>
-                <p class="text-[9px] uppercase tracking-[0.2em] text-zinc-400 mt-3 font-sans">Aug 31, 2023</p>
+                <p class="font-handwritten text-zinc-800 text-2xl leading-tight truncate px-2">{{ formatName(image.name) }}</p>
+                <p class="text-[9px] uppercase tracking-[0.2em] text-zinc-400 mt-3 font-sans">{{ formatDate(image.uploadedAt) }}</p>
               </div>
             </div>
           </div>
@@ -87,6 +48,37 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
+import { fetchJsonCached } from '../lib/fetchJsonCached'
+
+const images = ref([])
+const loading = ref(true)
+
+const getRotationClass = (index) => {
+  const rotations = ['-rotate-2', 'rotate-2', '-rotate-1', 'rotate-3', 'rotate-1', '-rotate-3']
+  return rotations[index % rotations.length]
+}
+
+const formatName = (filename) => {
+  // Remove extension and underscores
+  return filename.replace(/\.[^/.]+$/, "").replace(/_/g, " ")
+}
+
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
+}
+
+onMounted(async () => {
+  try {
+    images.value = await fetchJsonCached('/images.json')
+  } catch (e) {
+    console.error('Failed to load images:', e)
+  } finally {
+    loading.value = false
+  }
+})
 </script>
 
 <style scoped>
@@ -112,6 +104,8 @@
   transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
   transform-style: preserve-3d;
   border: 1px solid rgba(0,0,0,0.05);
+  width: 100%;
+  max-width: 280px;
 }
 .polaroid-frame::before {
   content: '';

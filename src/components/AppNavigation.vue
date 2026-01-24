@@ -9,23 +9,44 @@
     <nav class="flex-1 flex justify-center items-center gap-1">
       <router-link to="/diary" class="px-5 py-1.5 rounded-full text-sm font-medium transition-all" :class="route.path === '/diary' ? 'bg-white/10 text-white' : 'text-white/50 hover:text-white hover:bg-white/5'">Journal</router-link>
       <router-link to="/gallery" class="px-5 py-1.5 rounded-full text-sm font-medium transition-all" :class="route.path === '/gallery' ? 'bg-white/10 text-white' : 'text-white/50 hover:text-white hover:bg-white/5'">Gallery</router-link>
-      <a href="#" class="px-5 py-1.5 rounded-full text-sm font-medium text-white/50 hover:text-white hover:bg-white/5 transition-all">Crush List</a>
       <router-link to="/music" class="px-5 py-1.5 rounded-full text-sm font-medium transition-all" :class="route.path === '/music' ? 'bg-white/10 text-white' : 'text-white/50 hover:text-white hover:bg-white/5'">Playlist</router-link>
     </nav>
-    <div class="w-1/4 flex justify-end gap-5">
+    <div class="w-1/4 flex justify-end gap-5 items-center">
       <button class="text-white/40 hover:text-white transition-colors">
         <span class="material-symbols-outlined text-[20px]">search</span>
       </button>
-      <router-link to="/profile" class="text-white/40 hover:text-white transition-colors">
-        <span class="material-symbols-outlined text-[20px]">settings</span>
+      
+      <div v-if="user" class="flex items-center gap-3">
+        <router-link to="/profile" class="size-8 rounded-full overflow-hidden border border-white/20 hover:border-white/50 transition-all">
+           <img v-if="user.user_metadata.avatar_url" :src="user.user_metadata.avatar_url" alt="User" class="w-full h-full object-cover" />
+           <div v-else class="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-[10px] font-bold">
+             {{ user.email?.[0].toUpperCase() }}
+           </div>
+        </router-link>
+      </div>
+      <router-link v-else to="/login" class="text-xs font-semibold tracking-wide uppercase text-white/70 hover:text-white transition-colors border border-white/20 px-3 py-1.5 rounded-full hover:bg-white/10">
+        Login
       </router-link>
     </div>
   </header>
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { supabase } from '../lib/supabase'
+
 const route = useRoute()
+const user = ref(null)
+
+onMounted(async () => {
+  const { data: { session } } = await supabase.auth.getSession()
+  user.value = session?.user || null
+
+  supabase.auth.onAuthStateChange((_event, session) => {
+    user.value = session?.user || null
+  })
+})
 </script>
 
 <style scoped>
