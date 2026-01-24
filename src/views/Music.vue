@@ -1,42 +1,38 @@
 <template>
   <div class="music-page container">
-    <div class="header fade-in">
-      <h1 class="cursive page-title">音乐墙</h1>
-      <p class="subtitle">旋律里的故事</p>
+    <div class="header">
+      <h1 class="page-title">Music Library</h1>
+      <p class="subtitle">{{ playlist.length }} songs</p>
     </div>
 
-    <div class="music-wall fade-in" style="animation-delay: 0.2s">
-      <div v-if="loading" class="loading-state">
-        <span class="material-icons spin">music_note</span>
-        <p>正在加载唱片...</p>
-      </div>
-      
-      <div v-else-if="playlist.length === 0" class="empty-state">
-        <p>还没有添加音乐...</p>
-      </div>
+    <div class="loading-state" v-if="loading">
+      <div class="spinner"></div>
+    </div>
 
-      <div v-else class="cd-grid">
-        <div 
-          v-for="(track, index) in playlist" 
-          :key="track.id" 
-          class="cd-item"
-          :class="{ active: currentTrack && currentTrack.id === track.id }"
-          @click="playTrack(index)"
-        >
-          <div class="cd-wrapper">
-            <div class="cd-disc" :class="{ spinning: currentTrack && currentTrack.id === track.id && isPlaying }">
-              <img :src="track.cover || '/default-cover.png'" class="cd-cover" alt="Cover">
-              <div class="cd-hole"></div>
+    <div class="song-list" v-else>
+      <div 
+        v-for="(track, index) in playlist" 
+        :key="track.id" 
+        class="song-item"
+        :class="{ active: currentTrack && currentTrack.id === track.id }"
+        @click="playTrack(index)"
+      >
+        <div class="song-cover">
+          <img :src="track.cover || '/default-cover.png'" loading="lazy" alt="cover">
+          <div class="playing-overlay" v-if="currentTrack && currentTrack.id === track.id && isPlaying">
+            <div class="bar-wave">
+              <span></span><span></span><span></span><span></span>
             </div>
-            <div class="cd-case"></div>
           </div>
-          <div class="track-info">
-            <h3 class="track-title">{{ track.title }}</h3>
-            <p class="track-artist">{{ track.artist }}</p>
-          </div>
-          <div class="playing-indicator" v-if="currentTrack && currentTrack.id === track.id">
-            <span class="material-icons">equalizer</span>
-          </div>
+        </div>
+        <div class="song-info">
+          <h3 class="song-title">{{ track.title }}</h3>
+          <p class="song-artist">{{ track.artist }}</p>
+        </div>
+        <div class="song-actions">
+          <button class="action-btn">
+            <span class="material-icons">more_horiz</span>
+          </button>
         </div>
       </div>
     </div>
@@ -51,7 +47,6 @@ const loading = ref(true)
 const { playlist, playTrack, currentTrack, isPlaying, loadPlaylist } = useMusic()
 
 onMounted(async () => {
-  // If playlist is empty, try to fetch (though App.vue or Player usually does it)
   if (playlist.value.length === 0) {
     try {
       const res = await fetch('/music.json')
@@ -67,163 +62,189 @@ onMounted(async () => {
 
 <style scoped>
 .music-page {
-  padding-bottom: 100px; /* Space for player */
+  padding-top: 40px;
+  padding-bottom: 120px;
 }
 
 .header {
-  text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
+  padding-left: 16px;
 }
 
 .page-title {
-  font-size: 3.5rem;
-  color: var(--primary-dark);
-  margin-bottom: 10px;
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: 8px;
 }
 
 .subtitle {
-  color: var(--text-light);
-  font-size: 1.1rem;
-  letter-spacing: 2px;
+  color: #888;
+  font-size: 16px;
 }
 
-.loading-state, .empty-state {
-  text-align: center;
-  padding: 60px;
-  color: var(--text-light);
+.song-list {
+  display: flex;
+  flex-direction: column;
 }
 
-.spin {
-  animation: spin 2s infinite linear;
-}
-
-/* CD Grid */
-.cd-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 40px;
-  padding: 20px;
-}
-
-.cd-item {
-  position: relative;
+.song-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: transform 0.3s;
+  transition: background-color 0.2s;
 }
 
-.cd-item:hover {
-  transform: translateY(-10px);
+.song-item:hover {
+  background-color: rgba(0,0,0,0.03);
 }
 
-.cd-wrapper {
-  width: 160px;
-  height: 160px;
-  margin: 0 auto 20px;
-  position: relative;
+.song-item.active {
+  background-color: rgba(255, 77, 109, 0.08);
 }
 
-.cd-disc {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: #111;
-  position: relative;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+.song-cover {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
   overflow: hidden;
-  transition: transform 0.3s;
+  margin-right: 16px;
+  position: relative;
+  background-color: #eee;
 }
 
-.cd-cover {
+.song-cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.8;
 }
 
-.cd-hole {
+.playing-overlay {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 30px;
-  height: 30px;
-  background: #f9fbfd; /* Match bg */
-  border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.2);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.cd-disc.spinning {
-  animation: spin 4s linear infinite;
+.bar-wave {
+  display: flex;
+  align-items: flex-end;
+  height: 16px;
+  gap: 2px;
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.bar-wave span {
+  width: 3px;
+  background: #fff;
+  animation: wave 1s infinite ease-in-out;
 }
 
-.track-info {
-  text-align: center;
+.bar-wave span:nth-child(1) { animation-delay: 0.0s; height: 60%; }
+.bar-wave span:nth-child(2) { animation-delay: 0.1s; height: 100%; }
+.bar-wave span:nth-child(3) { animation-delay: 0.2s; height: 50%; }
+.bar-wave span:nth-child(4) { animation-delay: 0.3s; height: 80%; }
+
+@keyframes wave {
+  0%, 100% { height: 20%; }
+  50% { height: 100%; }
 }
 
-.track-title {
-  font-size: 1rem;
+.song-info {
+  flex: 1;
+  min-width: 0; /* Allow truncation */
+}
+
+.song-title {
+  font-size: 16px;
   font-weight: 600;
   margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--text-main);
+}
+
+.song-item.active .song-title {
+  color: var(--primary-color);
+}
+
+.song-artist {
+  font-size: 14px;
+  color: #888;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.track-artist {
-  font-size: 0.85rem;
-  color: var(--text-light);
+.song-actions {
+  opacity: 0;
+  transition: opacity 0.2s;
 }
 
-.playing-indicator {
-  position: absolute;
-  top: -10px;
-  right: 0;
-  background: var(--primary-color);
-  color: white;
+.song-item:hover .song-actions {
+  opacity: 1;
+}
+
+.action-btn {
+  background: transparent;
+  border: none;
+  color: #888;
+  padding: 8px;
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  animation: bounce 1s infinite;
 }
 
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+.action-btn:hover {
+  background-color: rgba(0,0,0,0.05);
+  color: #000;
 }
 
-@media (max-width: 768px) {
-  .page-title {
-    font-size: 2.5rem;
-  }
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
 
-  .cd-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 20px;
-    padding: 15px;
-  }
+.spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #eee;
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s infinite linear;
+}
 
-  .cd-wrapper {
-    width: 130px;
-    height: 130px;
-  }
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 
-  .cd-hole {
-    width: 24px;
-    height: 24px;
-  }
-  
-  .track-title {
-    font-size: 0.9rem;
-  }
+/* Dark Mode */
+[data-theme="dark"] .song-item:hover {
+  background-color: rgba(255,255,255,0.05);
+}
+
+[data-theme="dark"] .song-item.active {
+  background-color: rgba(255, 77, 109, 0.15);
+}
+
+[data-theme="dark"] .page-title {
+  color: #fff;
+}
+
+[data-theme="dark"] .song-title {
+  color: #eee;
+}
+
+[data-theme="dark"] .song-item.active .song-title {
+  color: var(--primary-color);
 }
 </style>

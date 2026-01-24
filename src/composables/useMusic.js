@@ -5,6 +5,7 @@ const playlist = ref([])
 const currentTrackIndex = ref(-1)
 const isPlaying = ref(false)
 const isMinimized = ref(false)
+const isPlayerExpanded = ref(false)
 const volume = ref(0.5)
 const isShuffled = ref(false)
 const originalPlaylist = ref([]) // To restore after shuffle
@@ -195,6 +196,10 @@ export function useMusic() {
     isMinimized.value = !isMinimized.value
   }
 
+  const toggleExpand = () => {
+    isPlayerExpanded.value = !isPlayerExpanded.value
+  }
+
   const toggleShuffle = () => {
     isShuffled.value = !isShuffled.value
     if (isShuffled.value) {
@@ -242,6 +247,7 @@ export function useMusic() {
     currentTrack,
     isPlaying,
     isMinimized,
+    isPlayerExpanded,
     volume,
     isShuffled,
     currentTime,
@@ -253,6 +259,7 @@ export function useMusic() {
     nextTrack,
     prevTrack,
     toggleMinimize,
+    toggleExpand,
     toggleShuffle,
     seek
   }

@@ -126,6 +126,12 @@ onMounted(async () => {
   align-items: center;
   backdrop-filter: blur(12px);
   box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.top-player-bar:hover {
+  background: rgba(255, 255, 255, 1);
 }
 
 [data-theme="dark"] .top-player-bar {

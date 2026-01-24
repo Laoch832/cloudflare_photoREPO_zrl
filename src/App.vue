@@ -3,6 +3,7 @@
     <!-- Sakura Background -->
     <SakuraBackground />
     <MusicPlayer />
+    <FullScreenPlayer />
 
     <!-- Navigation (VitePress Style) -->
     <nav class="VPNav" :class="{ 'scrolled': isScrolled, 'navbar-hidden': !showNavbar, 'has-player': currentTrack }">
@@ -114,6 +115,7 @@
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import SakuraBackground from './components/SakuraBackground.vue'
 import MusicPlayer from './components/MusicPlayer.vue'
+import FullScreenPlayer from './components/FullScreenPlayer.vue'
 import { supabase } from './lib/supabase'
 import { useMusic } from './composables/useMusic' // Import useMusic
 
