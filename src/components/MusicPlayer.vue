@@ -1,47 +1,61 @@
 <template>
-  <transition name="slide-down">
-    <div v-if="currentTrack" class="top-player-bar">
-      <div class="player-container container">
-        <!-- Left: Controls -->
-        <div class="player-controls">
-          <button class="icon-btn anim-squash" @click.stop="prevTrack" title="上一首">
-            <span class="material-icons">skip_previous</span>
-          </button>
-          <button class="play-btn anim-squash" @click.stop="togglePlay" title="播放/暂停">
-            <span class="material-icons">{{ isPlaying ? 'pause' : 'play_arrow' }}</span>
-          </button>
-          <button class="icon-btn anim-squash" @click.stop="nextTrack" title="下一首">
-            <span class="material-icons">skip_next</span>
+  <transition name="slide-up">
+    <div v-if="currentTrack" class="bottom-player-bar" @click="toggleExpand">
+      <div class="player-container">
+        <!-- Left: Track Info -->
+        <div class="player-left">
+          <img :src="currentTrack.cover || '/default-cover.png'" class="cover-thumb">
+          <div class="info-text">
+            <span class="title">{{ currentTrack.title }}</span>
+            <span class="artist">{{ currentTrack.artist }}</span>
+          </div>
+          <button class="icon-btn like-btn">
+            <span class="material-icons">favorite_border</span>
           </button>
         </div>
 
-        <!-- Center: Info & Progress -->
+        <!-- Center: Controls & Progress -->
         <div class="player-center">
-          <div class="track-info">
-            <img :src="currentTrack.cover || '/default-cover.png'" class="cover-thumb">
-            <div class="info-text">
-              <span class="title">{{ currentTrack.title }}</span>
-              <span class="artist"> - {{ currentTrack.artist }}</span>
-            </div>
+          <div class="controls-row">
+             <button class="icon-btn small" @click.stop="toggleShuffle" :class="{ active: isShuffled }" title="随机播放">
+              <span class="material-icons">shuffle</span>
+            </button>
+            <button class="icon-btn" @click.stop="prevTrack" title="上一首">
+              <span class="material-icons">skip_previous</span>
+            </button>
+            <button class="play-btn-circle" @click.stop="togglePlay" title="播放/暂停">
+              <span class="material-icons">{{ isPlaying ? 'pause' : 'play_arrow' }}</span>
+            </button>
+            <button class="icon-btn" @click.stop="nextTrack" title="下一首">
+              <span class="material-icons">skip_next</span>
+            </button>
+             <button class="icon-btn small" title="循环播放">
+              <span class="material-icons">repeat</span>
+            </button>
           </div>
           
-          <div class="progress-bar-wrapper" @click.stop="seekTo">
-            <div class="progress-track">
-              <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
-              <div class="progress-buffer" :style="{ width: bufferPercent + '%' }"></div>
+          <div class="progress-row">
+            <span class="time">{{ formatTime(currentTime) }}</span>
+            <div class="progress-bar-wrapper" @click.stop="seekTo">
+              <div class="progress-track">
+                <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
+              </div>
             </div>
+            <span class="time">{{ formatTime(duration) }}</span>
           </div>
         </div>
 
-        <!-- Right: Meta & Actions -->
-        <div class="player-meta">
-          <span class="time">{{ formatTime(currentTime) }} / {{ formatTime(duration) }}</span>
-          <button class="icon-btn anim-squash" @click.stop="toggleShuffle" :class="{ active: isShuffled }" title="随机播放">
-            <span class="material-icons">shuffle</span>
+        <!-- Right: Volume/Extras -->
+        <div class="player-right">
+          <button class="icon-btn small" title="歌词" @click.stop="toggleExpand">
+            <span class="material-icons">lyrics</span>
           </button>
-          <button class="icon-btn anim-squash" @click="toggleMinimize" title="收起">
-            <span class="material-icons">close</span>
-          </button>
+          <div class="volume-control">
+             <span class="material-icons volume-icon">volume_up</span>
+             <div class="volume-bar">
+                <div class="volume-fill" style="width: 50%"></div>
+             </div>
+          </div>
         </div>
       </div>
     </div>
@@ -295,9 +309,39 @@ onMounted(async () => {
   opacity: 0;
 }
 
+/* Mobile Adjustments */
 @media (max-width: 768px) {
-  .info-text .artist { display: none; }
-  .player-meta .time { display: none; }
-  .player-center { margin: 0 12px; }
+  .player-left {
+      width: auto;
+      flex: 1;
+      min-width: 0;
+  }
+  .player-center {
+      display: none; /* Hide complex controls on mobile bar, rely on full screen */
+  }
+  .player-right {
+      width: auto;
+      min-width: 0;
+  }
+  .volume-control, .icon-btn.small {
+      display: none;
+  }
+  
+  .mobile-play-btn {
+      width: 40px;
+      height: 40px;
+      background: transparent;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
+  }
+  
+  .cover-thumb {
+      width: 48px;
+      height: 48px;
+  }
+  
+  .title {
+      font-size: 13px;
+  }
 }
 </style>

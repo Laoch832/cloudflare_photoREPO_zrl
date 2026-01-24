@@ -1,41 +1,88 @@
 <template>
-  <div class="music-page container">
-    <div class="header">
-      <h1 class="page-title">Music Library</h1>
-      <p class="subtitle">{{ playlist.length }} songs</p>
-    </div>
+  <div class="music-layout">
+    <!-- Sidebar (Desktop) -->
+    <aside class="music-sidebar">
+       <div class="sidebar-logo">
+         <span class="material-icons">music_note</span> Music
+       </div>
+       
+       <nav class="sidebar-nav">
+         <div class="nav-item active">
+            <span class="material-icons">home</span> Home
+         </div>
+         <div class="nav-item">
+            <span class="material-icons">search</span> Browse
+         </div>
+         <div class="nav-item">
+            <span class="material-icons">radio</span> Radio
+         </div>
+       </nav>
 
-    <div class="loading-state" v-if="loading">
-      <div class="spinner"></div>
-    </div>
+       <div class="sidebar-section">
+         <div class="section-title">LIBRARY</div>
+         <div class="nav-item"><span class="material-icons">favorite_border</span> Liked Songs</div>
+         <div class="nav-item"><span class="material-icons">history</span> Recently Played</div>
+         <div class="nav-item"><span class="material-icons">album</span> Albums</div>
+       </div>
+    </aside>
 
-    <div class="song-list" v-else>
-      <div 
-        v-for="(track, index) in playlist" 
-        :key="track.id" 
-        class="song-item"
-        :class="{ active: currentTrack && currentTrack.id === track.id }"
-        @click="playTrack(index)"
-      >
-        <div class="song-cover">
-          <img :src="track.cover || '/default-cover.png'" loading="lazy" alt="cover">
-          <div class="playing-overlay" v-if="currentTrack && currentTrack.id === track.id && isPlaying">
-            <div class="bar-wave">
-              <span></span><span></span><span></span><span></span>
-            </div>
-          </div>
-        </div>
-        <div class="song-info">
-          <h3 class="song-title">{{ track.title }}</h3>
-          <p class="song-artist">{{ track.artist }}</p>
-        </div>
-        <div class="song-actions">
-          <button class="action-btn">
-            <span class="material-icons">more_horiz</span>
-          </button>
-        </div>
+    <!-- Main Content -->
+    <main class="music-main">
+      <div class="content-container">
+        <!-- Trending Header -->
+        <section class="music-section">
+           <h2 class="section-header">TRENDING <span class="sub-header">This week</span></h2>
+           
+           <!-- Horizontal Grid -->
+           <div class="album-grid">
+              <div 
+                v-for="(track, index) in playlist" 
+                :key="track.id" 
+                class="album-card"
+                @click="playTrack(index)"
+              >
+                 <div class="card-image">
+                    <img :src="track.cover || '/default-cover.png'" loading="lazy">
+                    <div class="hover-play-btn">
+                       <span class="material-icons">play_arrow</span>
+                    </div>
+                 </div>
+                 <div class="card-info">
+                    <div class="card-title">{{ track.title }}</div>
+                    <div class="card-artist">{{ track.artist }}</div>
+                 </div>
+              </div>
+           </div>
+        </section>
+
+        <!-- Made For You -->
+        <section class="music-section">
+           <h2 class="section-header">MADE FOR YOU</h2>
+           <p class="section-desc">Inspired by your recent activity.</p>
+           
+           <div class="album-grid">
+              <!-- Mock Data (Reusing playlist for visual fill) -->
+              <div 
+                v-for="(track, index) in [...playlist].reverse()" 
+                :key="'mix-'+track.id" 
+                class="album-card"
+                 @click="playTrack(playlist.length - 1 - index)"
+              >
+                 <div class="card-image circle-variant">
+                    <img :src="track.cover || '/default-cover.png'" loading="lazy">
+                    <div class="hover-play-btn">
+                       <span class="material-icons">play_arrow</span>
+                    </div>
+                 </div>
+                 <div class="card-info">
+                    <div class="card-title">Daily Mix {{ index + 1 }}</div>
+                    <div class="card-artist">{{ track.artist }} Radio</div>
+                 </div>
+              </div>
+           </div>
+        </section>
       </div>
-    </div>
+    </main>
   </div>
 </template>
 
@@ -44,7 +91,7 @@ import { onMounted, ref } from 'vue'
 import { useMusic } from '../composables/useMusic'
 
 const loading = ref(true)
-const { playlist, playTrack, currentTrack, isPlaying, loadPlaylist } = useMusic()
+const { playlist, playTrack, loadPlaylist } = useMusic()
 
 onMounted(async () => {
   if (playlist.value.length === 0) {
@@ -61,190 +108,199 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.music-page {
-  padding-top: 40px;
-  padding-bottom: 120px;
-}
-
-.header {
-  margin-bottom: 32px;
-  padding-left: 16px;
-}
-
-.page-title {
-  font-size: 32px;
-  font-weight: 800;
-  margin-bottom: 8px;
-}
-
-.subtitle {
-  color: #888;
-  font-size: 16px;
-}
-
-.song-list {
+.music-layout {
   display: flex;
-  flex-direction: column;
+  min-height: 100vh;
+  background-color: #121212; /* Spotify Dark */
+  color: #fff;
+  padding-top: var(--vp-nav-height); /* Clear global nav */
 }
 
-.song-item {
+/* Sidebar */
+.music-sidebar {
+  width: 240px;
+  background-color: #000;
+  padding: 24px;
+  flex-shrink: 0;
+  display: none; /* Hidden on mobile by default */
+}
+
+@media (min-width: 769px) {
+  .music-sidebar {
+    display: block;
+    position: fixed;
+    top: var(--vp-nav-height);
+    bottom: 90px; /* Player height */
+    left: 0;
+    overflow-y: auto;
+  }
+  .music-main {
+      margin-left: 240px;
+  }
+}
+
+.sidebar-logo {
+  font-size: 24px;
+  font-weight: 700;
   display: flex;
   align-items: center;
-  padding: 12px 16px;
-  border-radius: 12px;
+  gap: 8px;
+  margin-bottom: 32px;
+  letter-spacing: -1px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 0;
+  color: #b3b3b3;
+  font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: color 0.2s;
 }
 
-.song-item:hover {
-  background-color: rgba(0,0,0,0.03);
+.nav-item:hover, .nav-item.active {
+  color: #fff;
 }
 
-.song-item.active {
-  background-color: rgba(255, 77, 109, 0.08);
+.nav-item .material-icons {
+  font-size: 24px;
 }
 
-.song-cover {
-  width: 56px;
-  height: 56px;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-right: 16px;
+.nav-item.active {
+  border-left: 3px solid var(--primary-color);
+  padding-left: 13px; /* Compensate for border */
+}
+
+.sidebar-section {
+  margin-top: 32px;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #b3b3b3;
+  letter-spacing: 1.5px;
+  margin-bottom: 16px;
+}
+
+/* Main Content */
+.music-main {
+  flex: 1;
+  padding: 32px;
+  background: linear-gradient(180deg, #1e1e1e 0%, #121212 100%);
+  padding-bottom: 120px; /* Space for player */
+}
+
+.section-header {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  letter-spacing: -0.5px;
+}
+
+.sub-header {
+  font-size: 14px;
+  color: #b3b3b3;
+  font-weight: 400;
+  margin-left: 8px;
+}
+
+.section-desc {
+  color: #b3b3b3;
+  margin-top: -16px;
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+
+.album-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 24px;
+  margin-bottom: 48px;
+}
+
+.album-card {
+  background: #181818;
+  padding: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.album-card:hover {
+  background: #282828;
+}
+
+.card-image {
   position: relative;
-  background-color: #eee;
+  width: 100%;
+  aspect-ratio: 1;
+  margin-bottom: 16px;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 }
 
-.song-cover img {
+.card-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.playing-overlay {
+.circle-variant {
+    border-radius: 50%; /* For radio/artist style */
+}
+
+.hover-play-btn {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.4);
+  bottom: 8px;
+  right: 8px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--primary-color); /* Green in Spotify, keeping our brand color */
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
-.bar-wave {
-  display: flex;
-  align-items: flex-end;
-  height: 16px;
-  gap: 2px;
+.album-card:hover .hover-play-btn {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.bar-wave span {
-  width: 3px;
-  background: #fff;
-  animation: wave 1s infinite ease-in-out;
-}
-
-.bar-wave span:nth-child(1) { animation-delay: 0.0s; height: 60%; }
-.bar-wave span:nth-child(2) { animation-delay: 0.1s; height: 100%; }
-.bar-wave span:nth-child(3) { animation-delay: 0.2s; height: 50%; }
-.bar-wave span:nth-child(4) { animation-delay: 0.3s; height: 80%; }
-
-@keyframes wave {
-  0%, 100% { height: 20%; }
-  50% { height: 100%; }
-}
-
-.song-info {
-  flex: 1;
-  min-width: 0; /* Allow truncation */
-}
-
-.song-title {
-  font-size: 16px;
-  font-weight: 600;
+.card-title {
+  font-weight: 700;
+  color: #fff;
   margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--text-main);
 }
 
-.song-item.active .song-title {
-  color: var(--primary-color);
-}
-
-.song-artist {
+.card-artist {
   font-size: 14px;
-  color: #888;
+  color: #b3b3b3;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.song-actions {
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.song-item:hover .song-actions {
-  opacity: 1;
-}
-
-.action-btn {
-  background: transparent;
-  border: none;
-  color: #888;
-  padding: 8px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.action-btn:hover {
-  background-color: rgba(0,0,0,0.05);
-  color: #000;
-}
-
-.loading-state {
-  display: flex;
-  justify-content: center;
-  padding: 40px;
-}
-
-.spinner {
-  width: 30px;
-  height: 30px;
-  border: 3px solid #eee;
-  border-top-color: var(--primary-color);
-  border-radius: 50%;
-  animation: spin 1s infinite linear;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Dark Mode */
-[data-theme="dark"] .song-item:hover {
-  background-color: rgba(255,255,255,0.05);
-}
-
-[data-theme="dark"] .song-item.active {
-  background-color: rgba(255, 77, 109, 0.15);
-}
-
-[data-theme="dark"] .page-title {
-  color: #fff;
-}
-
-[data-theme="dark"] .song-title {
-  color: #eee;
-}
-
-[data-theme="dark"] .song-item.active .song-title {
-  color: var(--primary-color);
+@media (max-width: 768px) {
+  .music-main {
+      padding: 16px;
+  }
+  .album-grid {
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 16px;
+  }
 }
 </style>
