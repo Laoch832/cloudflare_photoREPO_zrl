@@ -256,7 +256,6 @@ export function useMusic() {
     currentTime,
     duration,
     buffered,
-    currentLyrics,
     loadPlaylist,
     playTrack,
     togglePlay,
