@@ -130,6 +130,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { supabase } from '../lib/supabase'
 import { useRouter } from 'vue-router'
+import { fetchJsonCached } from '../lib/fetchJsonCached'
 
 const router = useRouter()
 const currentTab = ref('notes')
@@ -188,8 +189,7 @@ const selectedImages = ref([])
 
 const fetchImages = async () => {
   try {
-    const res = await fetch('/images.json')
-    images.value = await res.json()
+    images.value = await fetchJsonCached('/images.json')
     
     // Load featured from Supabase
     const { data, error } = await supabase

@@ -102,6 +102,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { supabase } from '../lib/supabase'
+import { fetchJsonCached } from '../lib/fetchJsonCached'
 
 const images = ref([])
 const loading = ref(true)
@@ -111,8 +112,7 @@ const featuredSet = ref(new Set())
 
 const fetchImages = async () => {
   try {
-    const response = await fetch('/images.json')
-    const data = await response.json()
+    const data = await fetchJsonCached('/images.json')
     images.value = data
     
     // Load featured

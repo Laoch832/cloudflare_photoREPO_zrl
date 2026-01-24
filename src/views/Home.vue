@@ -125,6 +125,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { fetchJsonCached } from '../lib/fetchJsonCached'
 
 const randomPhoto = ref(null)
 
@@ -135,8 +136,7 @@ const currentDate = computed(() => {
 
 const fetchImages = async () => {
   try {
-    const res = await fetch('/images.json')
-    const data = await res.json()
+    const data = await fetchJsonCached('/images.json')
     if (data.length > 0) {
       const randomIndex = Math.floor(Math.random() * data.length)
       randomPhoto.value = data[randomIndex]
