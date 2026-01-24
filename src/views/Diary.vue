@@ -13,79 +13,38 @@
         </div>
         <div class="relative">
           <div class="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-[0.5px] timeline-line bg-white/10"></div>
-          <div class="space-y-24 relative">
-            <div class="relative">
+          
+          <div v-if="loading" class="flex items-center justify-center h-40">
+            <div class="text-white/50">Loading journal...</div>
+          </div>
+          <div v-else-if="entries.length === 0" class="flex items-center justify-center h-40">
+             <div class="text-white/50">No journal entries found.</div>
+          </div>
+
+          <div v-else class="space-y-24 relative">
+            <div v-for="(entry, index) in entries" :key="entry.id" class="relative">
               <div class="absolute left-1/2 -translate-x-1/2 top-0 size-2.5 rounded-full bg-white border border-accent/40 shadow-sm z-10"></div>
               <div class="pt-8 flex flex-col items-center">
                 <div class="text-center mb-6">
-                  <span class="block text-2xl font-display font-medium text-white">October 24</span>
-                  <span class="text-[10px] uppercase tracking-widest text-white/30 font-bold">Thursday</span>
+                  <span class="block text-2xl font-display font-medium text-white">{{ formatDate(entry.created_at).date }}</span>
+                  <span class="text-[10px] uppercase tracking-widest text-white/30 font-bold">{{ formatDate(entry.created_at).day }}</span>
                 </div>
                 <div class="w-full ios-card rounded-ios-lg p-10 bg-white/5 backdrop-blur-md border border-white/10">
                   <div class="flex justify-between items-start mb-6">
-                    <h3 class="text-xl font-medium text-white tracking-tight">The Golden Hour Reflection</h3>
+                    <h3 class="text-xl font-medium text-white tracking-tight">{{ entry.title }}</h3>
                     <span class="material-symbols-outlined text-diary-accent text-[22px] fill-current">favorite</span>
                   </div>
-                  <p class="text-white/70 leading-relaxed font-light text-[17px] mb-8">
-                    Today the light hit the floor just right. I couldn't help but think about that afternoon at the cafe when we didn't say anything but everything felt understood...
+                  <p class="text-white/70 leading-relaxed font-light text-[17px] mb-8 whitespace-pre-wrap">
+                    {{ entry.content }}
                   </p>
                   <div class="flex items-center justify-between border-t border-white/5 pt-6">
                     <div class="flex gap-4 items-center">
-                      <span class="text-[11px] font-semibold text-white/30 bg-white/5 px-2.5 py-1 rounded-full uppercase">1,420 words</span>
-                      <span class="text-[11px] text-white/30 font-medium">4:30 PM</span>
+                      <span class="text-[11px] font-semibold text-white/30 bg-white/5 px-2.5 py-1 rounded-full uppercase">{{ countWords(entry.content) }} words</span>
+                      <span class="text-[11px] text-white/30 font-medium">{{ formatDate(entry.created_at).time }}</span>
                     </div>
                     <button class="text-diary-accent text-xs font-semibold flex items-center gap-1 hover:opacity-70 transition-opacity">
                       Read More <span class="material-symbols-outlined text-[14px]">chevron_right</span>
                     </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="relative">
-              <div class="absolute left-1/2 -translate-x-1/2 top-0 size-2.5 rounded-full bg-white border border-white/10 shadow-sm z-10"></div>
-              <div class="pt-8 flex flex-col items-center">
-                <div class="text-center mb-6">
-                  <span class="block text-2xl font-display font-medium text-white/60">October 21</span>
-                  <span class="text-[10px] uppercase tracking-widest text-white/20 font-bold">Monday</span>
-                </div>
-                <div class="w-full ios-card rounded-ios-lg p-10 bg-white/5 backdrop-blur-md border border-white/10">
-                  <div class="flex justify-between items-start mb-6">
-                    <h3 class="text-xl font-medium text-white tracking-tight">Midnight Echoes</h3>
-                    <span class="material-symbols-outlined text-white/10 text-[22px]">visibility_off</span>
-                  </div>
-                  <p class="text-white/70 leading-relaxed font-light text-[17px]">
-                    Listening to that one song on repeat. It feels like a secret soundtrack to everything I want to tell you but can't find the courage to speak...
-                  </p>
-                  <div class="mt-8 flex gap-4 text-[11px] text-white/30 font-medium border-t border-white/5 pt-6">
-                    <span>850 words</span>
-                    <span>•</span>
-                    <span>11:15 PM</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="relative">
-              <div class="absolute left-1/2 -translate-x-1/2 top-0 size-2.5 rounded-full bg-white border border-white/10 shadow-sm z-10"></div>
-              <div class="pt-8 flex flex-col items-center">
-                <div class="text-center mb-6">
-                  <span class="block text-2xl font-display font-medium text-white/60">October 18</span>
-                  <span class="text-[10px] uppercase tracking-widest text-white/20 font-bold">Friday</span>
-                </div>
-                <div class="w-full ios-card rounded-ios-lg p-10 bg-white/5 backdrop-blur-md border border-white/10">
-                  <div class="flex justify-between items-start mb-6">
-                    <h3 class="text-xl font-medium text-white tracking-tight">Rain on the Window</h3>
-                    <span class="material-symbols-outlined text-white/10 text-[22px]">bookmark</span>
-                  </div>
-                  <div class="flex flex-col md:flex-row gap-8 mb-8">
-                    <div class="w-full md:w-56 h-36 shrink-0 rounded-ios bg-cover bg-center shadow-sm" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB1cTdNnDkx3cYGJAHYTwAZoD6JhryILuFN_j4GKPjANEXVMKQvEhNYlZsu_JcCyyLQnv5cac1Iz2eCtzPjYX7fxR6FgwSVcu6cfSQWzwsJ3Ye1rn1M5D5ojJ82-aV66nQBluCjDbfo2_Z0CPFkbnFvWox16b6Xzt-5uBf6jjSyr4Dg5ZsdmD2c_QHHXjyVX67m3pNFwaPGpmqaql_mPcqi1lz54MUQER8XTuw_oNLXlbkckHhurry86KxqC8ciQxnm01X8CHnXoVc')"></div>
-                    <p class="text-white/70 leading-relaxed font-light text-[17px]">
-                      The rhythm of the rain is soothing today. I found that old polaroid in between the pages of my favorite book. It's funny how things find you when you're not looking.
-                    </p>
-                  </div>
-                  <div class="flex gap-4 text-[11px] text-white/30 font-medium border-t border-white/5 pt-6">
-                    <span>2,100 words</span>
-                    <span>•</span>
-                    <span>09:20 AM</span>
                   </div>
                 </div>
               </div>
@@ -98,6 +57,56 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
+import { supabase } from '../lib/supabase'
+
+const entries = ref([])
+const loading = ref(true)
+
+const formatDate = (dateString) => {
+  if (!dateString) return { date: '', day: '', time: '' }
+  const date = new Date(dateString)
+  return {
+    date: date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' }),
+    day: date.toLocaleDateString('en-US', { weekday: 'long' }),
+    time: date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  }
+}
+
+const countWords = (text) => {
+  return text ? text.trim().split(/\s+/).length : 0
+}
+
+onMounted(async () => {
+  try {
+    const { data, error } = await supabase
+      .from('notes')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    entries.value = data
+  } catch (e) {
+    console.error('Failed to load diary entries:', e)
+    // Fallback data for demo if table doesn't exist
+    entries.value = [
+      {
+        id: 1,
+        title: "The Golden Hour Reflection",
+        content: "Today the light hit the floor just right. I couldn't help but think about that afternoon at the cafe when we didn't say anything but everything felt understood...",
+        created_at: new Date().toISOString()
+      },
+      {
+        id: 2,
+        title: "Midnight Echoes",
+        content: "Listening to that one song on repeat. It feels like a secret soundtrack to everything I want to tell you but can't find the courage to speak...",
+        created_at: new Date(Date.now() - 86400000 * 3).toISOString()
+      }
+    ]
+  } finally {
+    loading.value = false
+  }
+})
 </script>
 
 <style scoped>
