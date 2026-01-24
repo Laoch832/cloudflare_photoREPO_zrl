@@ -48,31 +48,31 @@ const routes = [
   {
     path: '/stitch/home-1',
     name: 'StitchHomeAtmosphericCinemaV1',
-    component: () => import('../views/stitch/StitchHomeAtmosphericCinemaV1.vue'),
+    component: () => import('../views/stitch/stitchhomeatmosphericcinemav1.vue'),
     meta: { hidePlayer: true, hideChrome: true }
   },
   {
     path: '/stitch/home-2',
     name: 'StitchHomeAtmosphericCinemaV2',
-    component: () => import('../views/stitch/StitchHomeAtmosphericCinemaV2.vue'),
+    component: () => import('../views/stitch/stitchhomeatmosphericcinemav2.vue'),
     meta: { hidePlayer: true, hideChrome: true }
   },
   {
     path: '/stitch/home-3',
     name: 'StitchHomeAtmosphericCinemaV3',
-    component: () => import('../views/stitch/StitchHomeAtmosphericCinemaV3.vue'),
+    component: () => import('../views/stitch/stitchhomeatmosphericcinemav3.vue'),
     meta: { hidePlayer: true, hideChrome: true }
   },
   {
     path: '/stitch/home-4',
     name: 'StitchHomeAtmosphericCinemaV4',
-    component: () => import('../views/stitch/StitchHomeAtmosphericCinemaV4.vue'),
+    component: () => import('../views/stitch/stitchhomeatmosphericcinemav4.vue'),
     meta: { hidePlayer: true, hideChrome: true }
   },
   {
     path: '/stitch/account-settings',
     name: 'StitchAccountSettings',
-    component: () => import('../views/stitch/StitchAccountSettings.vue'),
+    component: () => import('../views/stitch/stitchaccountsettings.vue'),
     meta: { hidePlayer: true, hideChrome: true }
   },
   {
