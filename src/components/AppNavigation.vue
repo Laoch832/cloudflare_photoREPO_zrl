@@ -12,11 +12,12 @@
     <div class="flex items-center gap-6 md:gap-8">
       <!-- Navigation Links -->
       <nav class="hidden md:flex items-center gap-2">
-        <router-link to="/" class="nav-link" active-class="active">首页</router-link>
-        <router-link to="/gallery" class="nav-link" active-class="active">图库</router-link>
-        <router-link to="/diary" class="nav-link" active-class="active">日记</router-link>
-        <router-link to="/notes" class="nav-link" active-class="active">文档</router-link>
-        <router-link to="/music" class="nav-link" active-class="active">音乐</router-link>
+        <router-link to="/" class="px-4 py-1.5 rounded-full text-sm font-medium text-white/50 hover:text-white hover:bg-white/5 transition-all" active-class="bg-white/10 text-white font-semibold">首页</router-link>
+        <router-link to="/gallery" class="px-4 py-1.5 rounded-full text-sm font-medium text-white/50 hover:text-white hover:bg-white/5 transition-all" active-class="bg-white/10 text-white font-semibold">图库</router-link>
+        <router-link to="/diary" class="px-4 py-1.5 rounded-full text-sm font-medium text-white/50 hover:text-white hover:bg-white/5 transition-all" active-class="bg-white/10 text-white font-semibold">日记</router-link>
+        <router-link to="/notes" class="px-4 py-1.5 rounded-full text-sm font-medium text-white/50 hover:text-white hover:bg-white/5 transition-all" active-class="bg-white/10 text-white font-semibold">文档</router-link>
+        <router-link v-if="user" to="/files" class="px-4 py-1.5 rounded-full text-sm font-medium text-white/50 hover:text-white hover:bg-white/5 transition-all" active-class="bg-white/10 text-white font-semibold">存储</router-link>
+        <router-link to="/music" class="px-4 py-1.5 rounded-full text-sm font-medium text-white/50 hover:text-white hover:bg-white/5 transition-all" active-class="bg-white/10 text-white font-semibold">音乐</router-link>
       </nav>
 
       <div class="h-4 w-[1px] bg-white/20 hidden md:block"></div>
