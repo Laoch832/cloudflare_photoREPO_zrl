@@ -1,37 +1,11 @@
 <template>
   <div class="music-layout">
-    <!-- Sidebar (Desktop) -->
-    <aside class="music-sidebar">
-       <div class="sidebar-logo">
-         <span class="material-icons">music_note</span> Music
-       </div>
-       
-       <nav class="sidebar-nav">
-         <div class="nav-item active">
-            <span class="material-icons">home</span> Home
-         </div>
-         <div class="nav-item">
-            <span class="material-icons">search</span> Browse
-         </div>
-         <div class="nav-item">
-            <span class="material-icons">radio</span> Radio
-         </div>
-       </nav>
-
-       <div class="sidebar-section">
-         <div class="section-title">LIBRARY</div>
-         <div class="nav-item"><span class="material-icons">favorite_border</span> Liked Songs</div>
-         <div class="nav-item"><span class="material-icons">history</span> Recently Played</div>
-         <div class="nav-item"><span class="material-icons">album</span> Albums</div>
-       </div>
-    </aside>
-
     <!-- Main Content -->
     <main class="music-main">
       <div class="content-container">
         <!-- Trending Header -->
         <section class="music-section">
-           <h2 class="section-header">TRENDING <span class="sub-header">This week</span></h2>
+           <h2 class="section-header">Trending <span class="sub-header">This week</span></h2>
            
            <!-- Horizontal Grid -->
            <div class="album-grid">
@@ -57,7 +31,7 @@
 
         <!-- Made For You -->
         <section class="music-section">
-           <h2 class="section-header">MADE FOR YOU</h2>
+           <h2 class="section-header">Made For You</h2>
            <p class="section-desc">Inspired by your recent activity.</p>
            
            <div class="album-grid">
@@ -111,127 +85,60 @@ onMounted(async () => {
 .music-layout {
   display: flex;
   min-height: 100vh;
-  background-color: #121212; /* Spotify Dark */
-  color: #fff;
-  padding-top: var(--vp-nav-height); /* Clear global nav */
-}
-
-/* Sidebar */
-.music-sidebar {
-  width: 240px;
-  background-color: #000;
-  padding: 24px;
-  flex-shrink: 0;
-  display: none; /* Hidden on mobile by default */
-}
-
-@media (min-width: 769px) {
-  .music-sidebar {
-    display: block;
-    position: fixed;
-    top: var(--vp-nav-height);
-    bottom: 90px; /* Player height */
-    left: 0;
-    overflow-y: auto;
-  }
-  .music-main {
-      margin-left: 240px;
-  }
-}
-
-.sidebar-logo {
-  font-size: 24px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 32px;
-  letter-spacing: -1px;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 10px 0;
-  color: #b3b3b3;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.nav-item:hover, .nav-item.active {
-  color: #fff;
-}
-
-.nav-item .material-icons {
-  font-size: 24px;
-}
-
-.nav-item.active {
-  border-left: 3px solid var(--primary-color);
-  padding-left: 13px; /* Compensate for border */
-}
-
-.sidebar-section {
-  margin-top: 32px;
-}
-
-.section-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: #b3b3b3;
-  letter-spacing: 1.5px;
-  margin-bottom: 16px;
+  background-color: var(--bg-body); /* Standard white/light bg */
+  color: var(--text-primary);
+  padding-top: var(--vp-nav-height);
 }
 
 /* Main Content */
 .music-main {
   flex: 1;
-  padding: 32px;
-  background: linear-gradient(180deg, #1e1e1e 0%, #121212 100%);
+  padding: 40px;
+  max-width: 1400px;
+  margin: 0 auto;
   padding-bottom: 120px; /* Space for player */
 }
 
 .section-header {
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 24px;
   letter-spacing: -0.5px;
+  text-transform: uppercase;
 }
 
 .sub-header {
-  font-size: 14px;
-  color: #b3b3b3;
-  font-weight: 400;
+  font-size: 16px;
+  color: var(--text-secondary);
+  font-weight: 500;
   margin-left: 8px;
+  text-transform: none;
 }
 
 .section-desc {
-  color: #b3b3b3;
+  color: var(--text-secondary);
   margin-top: -16px;
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: 32px;
+  font-size: 15px;
 }
 
 .album-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 24px;
-  margin-bottom: 48px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 32px;
+  margin-bottom: 60px;
 }
 
 .album-card {
-  background: #181818;
-  padding: 16px;
-  border-radius: 6px;
+  background: transparent;
+  padding: 0;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: transform 0.3s ease;
 }
 
 .album-card:hover {
-  background: #282828;
+  transform: translateY(-5px);
 }
 
 .card-image {
@@ -239,9 +146,14 @@ onMounted(async () => {
   width: 100%;
   aspect-ratio: 1;
   margin-bottom: 16px;
-  border-radius: 4px;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: box-shadow 0.3s ease;
+}
+
+.album-card:hover .card-image {
+  box-shadow: 0 12px 24px rgba(0,0,0,0.15);
 }
 
 .card-image img {
@@ -251,25 +163,25 @@ onMounted(async () => {
 }
 
 .circle-variant {
-    border-radius: 50%; /* For radio/artist style */
+    border-radius: 50%;
 }
 
 .hover-play-btn {
   position: absolute;
-  bottom: 8px;
-  right: 8px;
+  bottom: 12px;
+  right: 12px;
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--primary-color); /* Green in Spotify, keeping our brand color */
+  background: #000; /* Black button like Home page */
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transform: translateY(8px);
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transform: translateY(10px);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
 .album-card:hover .hover-play-btn {
@@ -279,7 +191,8 @@ onMounted(async () => {
 
 .card-title {
   font-weight: 700;
-  color: #fff;
+  font-size: 16px;
+  color: var(--text-primary);
   margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
@@ -288,7 +201,7 @@ onMounted(async () => {
 
 .card-artist {
   font-size: 14px;
-  color: #b3b3b3;
+  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -296,11 +209,11 @@ onMounted(async () => {
 
 @media (max-width: 768px) {
   .music-main {
-      padding: 16px;
+      padding: 20px;
   }
   .album-grid {
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 20px;
   }
 }
 </style>

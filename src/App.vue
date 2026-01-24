@@ -327,15 +327,14 @@ onUnmounted(() => {
   left: 0;
   width: 100%;
   height: var(--vp-nav-height);
-  background-color: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
+  background-color: #fff;
   border-bottom: 1px solid var(--vp-c-divider);
   z-index: 1000;
   transition: transform 0.3s ease;
 }
 
 [data-theme="dark"] .VPNav {
-  background-color: rgba(30, 30, 30, 0.7);
+  background-color: #1e1e1e;
 }
 
 .VPNav.has-player {
