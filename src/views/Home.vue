@@ -10,16 +10,15 @@
       <div class="max-w-7xl w-full px-12 grid grid-cols-12 gap-12 items-center">
         <div class="col-span-7 space-y-10">
           <div class="space-y-4">
-            <div class="flex items-center gap-3">
-              <span class="h-[1px] w-8 bg-home-primary/60"></span>
-              <span class="text-white/40 text-[10px] font-bold tracking-[0.4em] uppercase">{{ currentDate }}</span>
+            <div class="text-white/40 text-[10px] font-bold tracking-[0.4em] uppercase text-left">
+              {{ currentDate }}
             </div>
-            <h1 class="font-serif italic text-7xl md:text-9xl text-white tracking-tighter leading-none opacity-95">
-              Quietude
+            <h1 class="font-serif italic text-5xl md:text-7xl text-white tracking-tighter leading-tight opacity-95 min-h-[120px]">
+              {{ hitokoto.hitokoto || 'Loading...' }}
             </h1>
           </div>
-          <p class="font-serif text-3xl md:text-4xl text-white/80 leading-[1.4] max-w-2xl">
-            "A quiet afternoon, thinking of you. The light hits the floor just right today."
+          <p class="font-serif text-2xl md:text-3xl text-white/80 leading-[1.4] max-w-2xl pl-2 border-l-2 border-white/20">
+            {{ hitokoto.from ? `—— ${hitokoto.from}` : '' }}
           </p>
           <div class="flex gap-4">
             <router-link to="/diary" class="ios-glass-card px-8 py-4 rounded-ios-full flex items-center gap-3 hover:bg-white/10 active:scale-95 transition-all group">
@@ -38,7 +37,7 @@
                 <div class="ios-glass-card px-4 py-3 rounded-2xl flex items-center justify-between">
                   <div>
                     <p class="text-[10px] uppercase tracking-widest text-white/50 font-bold mb-0.5">Captivation</p>
-                    <p class="text-xs font-medium">{{ featuredImage?.name ? formatName(featuredImage.name) : 'Summer Afternoon' }}</p>
+                    <!-- Filename removed as requested -->
                   </div>
                   <span class="material-symbols-outlined text-home-primary text-[18px] fill-current">favorite</span>
                 </div>
@@ -58,6 +57,7 @@ import { ref, computed, onMounted } from 'vue'
 import { fetchJsonCached } from '../lib/fetchJsonCached'
 
 const featuredImage = ref(null)
+const hitokoto = ref({ hitokoto: '正在加载...', from: '' })
 
 const currentDate = computed(() => {
   return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
@@ -73,19 +73,29 @@ const imageStyle = computed(() => {
   return { backgroundImage: `url("${url}")` }
 })
 
-const formatName = (filename) => {
-  return filename.replace(/\.[^/.]+$/, "").replace(/_/g, " ")
-}
-
 onMounted(async () => {
   try {
     const images = await fetchJsonCached('/images.json')
     if (images && images.length > 0) {
-      // Pick a random image or the first one
       featuredImage.value = images[Math.floor(Math.random() * images.length)]
     }
   } catch (e) {
-    console.error('Failed to load images for home:', e)
+    if (e.name !== 'AbortError') {
+      console.error('Failed to load images for home:', e)
+    }
+  }
+
+  // Fetch Hitokoto
+  try {
+    const res = await fetch('https://v1.hitokoto.cn/?c=d&c=i&c=k')
+    if (res.ok) {
+      hitokoto.value = await res.json()
+    }
+  } catch (e) {
+    if (e.name !== 'AbortError') {
+      console.error('Failed to load hitokoto:', e)
+      hitokoto.value = { hitokoto: 'Quietude', from: 'System' }
+    }
   }
 })
 </script>
