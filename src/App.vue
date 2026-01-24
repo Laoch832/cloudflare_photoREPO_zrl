@@ -203,6 +203,14 @@ const fetchViews = async () => {
   }
 }
 
+const handleProfileOrLogin = () => {
+  if (user.value) {
+    router.push('/profile')
+  } else {
+    showAuthModal.value = true
+  }
+}
+
 const handleLoginClick = () => {
   if (!user.value) {
     showAuthModal.value = true
