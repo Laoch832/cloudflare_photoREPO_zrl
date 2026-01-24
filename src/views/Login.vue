@@ -1,97 +1,64 @@
 <template>
-  <div class="min-h-screen w-full flex items-center justify-center bg-mesh font-sans antialiased relative overflow-hidden text-white">
-    <!-- Grain Overlay -->
-    <div class="grain-overlay"></div>
-
-    <!-- Main Card -->
-    <div class="relative z-10 w-full max-w-md p-8 glass-card-dark rounded-[2rem] flex flex-col gap-8 transform transition-all duration-500 hover:scale-[1.01]">
-      <!-- Header -->
-      <div class="text-center space-y-2">
-        <div class="inline-flex items-center justify-center size-16 rounded-2xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 mb-4 shadow-lg">
-          <span class="material-symbols-outlined text-3xl text-login-primary">lock</span>
+  <div class="login-page deep-artistic-bg min-h-screen flex items-center justify-center p-6 font-sans text-white/90 selection:bg-primary/30 relative overflow-hidden">
+    <!-- Decorative Glows -->
+    <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full pointer-events-none"></div>
+    <div class="fixed bottom-[-5%] right-[-5%] w-[30%] h-[30%] bg-purple-600/10 blur-[100px] rounded-full pointer-events-none"></div>
+    
+    <div class="w-full max-w-[440px] z-10 animate-fade-in">
+      <div class="text-center mb-10">
+        <div class="inline-flex items-center justify-center size-14 rounded-2xl bg-white/5 border border-white/10 mb-6 shadow-xl">
+          <span class="material-symbols-outlined text-primary text-3xl">auto_awesome</span>
         </div>
-        <h1 class="font-display text-3xl font-bold tracking-tight text-white">Sanctum</h1>
-        <p class="text-white/40 text-sm font-medium tracking-wide uppercase">Enter your private space</p>
+        <h2 class="font-serif text-4xl text-white font-light mb-3">Sanctum</h2>
+        <p class="text-white/40 text-[11px] uppercase tracking-[0.25em] font-light">Enter your private digital world</p>
       </div>
 
-      <!-- Form -->
-      <form @submit.prevent="handleLogin" class="space-y-5">
-        <div class="space-y-1">
-          <label class="text-xs font-semibold text-white/60 ml-1 uppercase tracking-wider">Email</label>
-          <div class="relative group">
+      <div class="glass-card rounded-ios p-10 space-y-8">
+        <form @submit.prevent="handleLogin" class="space-y-6">
+          <div class="space-y-2">
+            <label class="block text-white/40 text-[10px] font-semibold uppercase tracking-widest px-1">Email Address</label>
             <input 
               v-model="email"
               type="email" 
-              placeholder="you@example.com"
-              class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/20 focus:outline-none focus:border-login-primary/50 focus:bg-black/30 transition-all inner-shadow-input"
+              placeholder="name@example.com"
+              required
+              class="w-full ios-input rounded-ios-inner h-[54px] px-5 text-white focus:outline-none text-[15px] placeholder:text-white/10"
             >
-            <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-login-primary/80 transition-colors">mail</span>
           </div>
-        </div>
 
-        <div class="space-y-1">
-          <label class="text-xs font-semibold text-white/60 ml-1 uppercase tracking-wider">Password</label>
-          <div class="relative group">
+          <div class="space-y-2">
+            <div class="flex justify-between px-1">
+              <label class="block text-white/40 text-[10px] font-semibold uppercase tracking-widest">Password</label>
+              <a href="#" class="text-[10px] text-primary/60 hover:text-primary transition-colors uppercase tracking-widest font-bold">Forgot?</a>
+            </div>
             <input 
               v-model="password"
               type="password" 
               placeholder="••••••••"
-              class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/20 focus:outline-none focus:border-login-primary/50 focus:bg-black/30 transition-all inner-shadow-input"
+              required
+              class="w-full ios-input rounded-ios-inner h-[54px] px-5 text-white focus:outline-none text-[15px] placeholder:text-white/10"
             >
-            <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-login-primary/80 transition-colors">key</span>
           </div>
+
+          <button 
+            type="submit" 
+            :disabled="loading"
+            class="w-full magic-gradient h-[54px] rounded-ios-inner text-white font-bold text-[15px] transition-all active:scale-[0.98] shadow-xl shadow-primary/20 flex items-center justify-center gap-2"
+          >
+            <span v-if="loading" class="animate-spin size-4 border-2 border-white/30 border-t-white rounded-full"></span>
+            {{ loading ? 'Accessing...' : 'Sign In' }}
+          </button>
+        </form>
+
+        <div class="relative flex py-2 items-center">
+          <div class="flex-grow border-t border-white/5"></div>
+          <span class="flex-shrink-0 mx-4 text-[10px] text-white/20 uppercase tracking-widest font-bold">Limited Access</span>
+          <div class="flex-grow border-t border-white/5"></div>
         </div>
 
-        <div class="flex items-center justify-between text-xs text-white/40 px-1">
-          <label class="flex items-center gap-2 cursor-pointer hover:text-white/60 transition-colors">
-            <input type="checkbox" class="rounded border-white/20 bg-white/5 text-login-primary focus:ring-offset-0 focus:ring-0">
-            <span>Remember me</span>
-          </label>
-          <a href="#" class="hover:text-login-primary transition-colors">Forgot Password?</a>
-        </div>
-
-        <button 
-          type="submit" 
-          :disabled="loading"
-          class="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold tracking-wide shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {{ loading ? 'Signing in...' : 'Sign In' }}
-        </button>
-      </form>
-
-      <!-- Divider -->
-      <div class="relative flex py-2 items-center">
-        <div class="flex-grow border-t border-white/10"></div>
-        <span class="flex-shrink-0 mx-4 text-white/30 text-xs font-medium uppercase tracking-widest">Or continue with</span>
-        <div class="flex-grow border-t border-white/10"></div>
-      </div>
-
-      <!-- Social -->
-      <div class="grid grid-cols-2 gap-4">
-        <button class="flex items-center justify-center gap-2 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group">
-          <span class="material-symbols-outlined text-white/60 group-hover:text-white">g_mobiledata</span>
-          <span class="text-sm font-medium text-white/60 group-hover:text-white">Google</span>
-        </button>
-        <button class="flex items-center justify-center gap-2 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group">
-          <span class="material-symbols-outlined text-white/60 group-hover:text-white">apple</span>
-          <span class="text-sm font-medium text-white/60 group-hover:text-white">Apple</span>
-        </button>
-      </div>
-      
-      <!-- Footer -->
-      <p class="text-center text-xs text-white/30 mt-4">
-        Don't have access? <a href="#" class="text-login-primary hover:underline">Request invite</a>
-      </p>
-    </div>
-
-    <!-- Music Widget (Decorative or Functional) -->
-    <div class="absolute bottom-8 right-8 glass-panel rounded-full px-4 py-2 flex items-center gap-3 animate-fade-in opacity-0" style="animation-delay: 0.5s; animation-fill-mode: forwards;">
-      <div class="size-8 rounded-full bg-white/10 flex items-center justify-center">
-        <span class="material-symbols-outlined text-sm">music_note</span>
-      </div>
-      <div class="flex flex-col">
-        <span class="text-xs font-bold text-white">Midnight City</span>
-        <span class="text-[10px] text-white/50">M83</span>
+        <p class="text-center text-[12px] text-white/30">
+          Don't have an invite? <a href="#" class="text-primary/60 hover:text-primary transition-colors font-medium">Request Access</a>
+        </p>
       </div>
     </div>
   </div>
@@ -114,9 +81,7 @@ const handleLogin = async () => {
       email: email.value,
       password: password.value
     })
-    
     if (error) throw error
-    
     router.push('/')
   } catch (error) {
     alert(error.message)
@@ -125,3 +90,15 @@ const handleLogin = async () => {
   }
 }
 </script>
+
+<style scoped>
+.animate-fade-in {
+  opacity: 0;
+  animation: fadeIn 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
