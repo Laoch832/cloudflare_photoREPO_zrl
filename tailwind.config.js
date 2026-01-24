@@ -20,7 +20,7 @@ export default {
       },
       fontFamily: {
         "serif": ["Newsreader", "Playfair Display", "serif"],
-        "display": ["Plus Jakarta Sans", "Newsreader", "serif"],
+        "display": ["Newsreader", "Plus Jakarta Sans", "serif"], // Restored Serif priority
         "sans": ["Inter", "system-ui", "-apple-system", "sans-serif"],
         "handwritten": ["'La Belle Aurore'", "cursive"]
       },

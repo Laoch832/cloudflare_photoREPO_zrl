@@ -19,6 +19,7 @@
       </button>
       
       <div v-if="user" class="flex items-center gap-3">
+        <span class="text-xs font-medium text-white/80">{{ user.user_metadata.full_name || user.email.split('@')[0] }}</span>
         <router-link to="/profile" class="size-8 rounded-full overflow-hidden border border-white/20 hover:border-white/50 transition-all">
            <img v-if="user.user_metadata.avatar_url" :src="user.user_metadata.avatar_url" alt="User" class="w-full h-full object-cover" />
            <div v-else class="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-[10px] font-bold text-white">
