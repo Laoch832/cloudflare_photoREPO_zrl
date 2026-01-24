@@ -13,7 +13,7 @@
             <div class="text-white/40 text-[10px] font-bold tracking-[0.4em] uppercase text-left">
               {{ currentDate }}
             </div>
-            <h1 class="font-serif italic text-5xl md:text-7xl text-white tracking-tighter leading-tight opacity-95 min-h-[120px]">
+            <h1 class="font-serif italic text-5xl md:text-7xl tracking-tighter leading-tight opacity-95 min-h-[120px] transition-colors duration-1000" :style="{ color: textColor }">
               {{ hitokoto.hitokoto || 'Loading...' }}
             </h1>
           </div>
@@ -58,6 +58,23 @@ import { fetchJsonCached } from '../lib/fetchJsonCached'
 
 const featuredImage = ref(null)
 const hitokoto = ref({ hitokoto: '正在加载...', from: '' })
+// Pre-defined palette of high-contrast colors suitable for dark backgrounds
+const textColors = [
+  '#FFFFFF', // White
+  '#F0F8FF', // AliceBlue
+  '#FAEBD7', // AntiqueWhite
+  '#E0FFFF', // LightCyan
+  '#FFFAF0', // FloralWhite
+  '#F5F5DC', // Beige
+  '#FFF0F5', // LavenderBlush
+  '#FDF5E6', // OldLace
+  '#FAF0E6', // Linen
+  '#FFFFF0', // Ivory
+  '#FFD700', // Gold (for accent)
+  '#FF69B4', // HotPink (for accent)
+  '#00BFFF', // DeepSkyBlue (for accent)
+]
+const textColor = ref('#FFFFFF')
 
 const currentDate = computed(() => {
   return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
@@ -78,6 +95,8 @@ onMounted(async () => {
     const images = await fetchJsonCached('/images.json')
     if (images && images.length > 0) {
       featuredImage.value = images[Math.floor(Math.random() * images.length)]
+      // Randomly change text color when image changes, ensuring it's not too dark
+      textColor.value = textColors[Math.floor(Math.random() * textColors.length)]
     }
   } catch (e) {
     if (e.name !== 'AbortError') {
@@ -85,11 +104,11 @@ onMounted(async () => {
     }
   }
 
-  // Fetch Hitokoto
+  // Fetch Hitokoto from local JSON
   try {
-    const res = await fetch('https://v1.hitokoto.cn/?c=d&c=i&c=k')
-    if (res.ok) {
-      hitokoto.value = await res.json()
+    const quotes = await fetchJsonCached('/yy.json')
+    if (quotes && quotes.length > 0) {
+      hitokoto.value = quotes[Math.floor(Math.random() * quotes.length)]
     }
   } catch (e) {
     if (e.name !== 'AbortError') {
