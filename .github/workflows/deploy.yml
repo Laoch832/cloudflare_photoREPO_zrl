@@ -18,6 +18,18 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+          cache: 'npm'
+
+      - name: Cache Media Assets
+        uses: actions/cache@v3
+        with:
+          path: |
+            public/images/thumbnails
+            public/music/hls
+            public/music/covers
+          key: ${{ runner.os }}-media-${{ hashFiles('assets-src/music/*', 'public/images/*') }}
+          restore-keys: |
+            ${{ runner.os }}-media-
 
       - name: Install Dependencies
         run: npm install
