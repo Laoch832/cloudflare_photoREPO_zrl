@@ -7,6 +7,11 @@ import Diary from '../views/Diary.vue'
 import Login from '../views/Login.vue'
 import Music from '../views/Music.vue'
 import Profile from '../views/Profile.vue'
+import StitchHomeAtmosphericCinemaV1 from '../views/stitch/StitchHomeAtmosphericCinemaV1.vue'
+import StitchHomeAtmosphericCinemaV2 from '../views/stitch/StitchHomeAtmosphericCinemaV2.vue'
+import StitchHomeAtmosphericCinemaV3 from '../views/stitch/StitchHomeAtmosphericCinemaV3.vue'
+import StitchHomeAtmosphericCinemaV4 from '../views/stitch/StitchHomeAtmosphericCinemaV4.vue'
+import StitchAccountSettings from '../views/stitch/StitchAccountSettings.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,7 +50,38 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: Login
+      component: Login,
+      meta: { hidePlayer: true }
+    },
+    {
+      path: '/stitch/home-1',
+      name: 'stitch-home-1',
+      component: StitchHomeAtmosphericCinemaV1,
+      meta: { hidePlayer: true }
+    },
+    {
+      path: '/stitch/home-2',
+      name: 'stitch-home-2',
+      component: StitchHomeAtmosphericCinemaV2,
+      meta: { hidePlayer: true }
+    },
+    {
+      path: '/stitch/home-3',
+      name: 'stitch-home-3',
+      component: StitchHomeAtmosphericCinemaV3,
+      meta: { hidePlayer: true }
+    },
+    {
+      path: '/stitch/home-4',
+      name: 'stitch-home-4',
+      component: StitchHomeAtmosphericCinemaV4,
+      meta: { hidePlayer: true }
+    },
+    {
+      path: '/stitch/account-settings',
+      name: 'stitch-account-settings',
+      component: StitchAccountSettings,
+      meta: { hidePlayer: true }
     }
   ]
 })
