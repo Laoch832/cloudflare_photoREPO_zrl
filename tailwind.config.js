@@ -11,6 +11,8 @@ export default {
         "home-primary": "#ff4d94",
         "login-primary": "#f49d25",
         "profile-primary": "#8b5cf6",
+        "music-accent": "#ff2d55",
+        "diary-accent": "#E88D7D",
         "background-light": "#f8f7f5",
         "background-dark": "#221a10",
         "ios-bg": "rgba(255, 255, 255, 0.08)",
@@ -20,6 +22,7 @@ export default {
         "serif": ["Newsreader", "Playfair Display", "serif"],
         "display": ["Plus Jakarta Sans", "Newsreader", "serif"],
         "sans": ["Inter", "system-ui", "-apple-system", "sans-serif"],
+        "handwritten": ["'La Belle Aurore'", "cursive"]
       },
       borderRadius: {
         "ios": "1.25rem",
