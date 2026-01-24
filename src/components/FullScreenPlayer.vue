@@ -18,39 +18,43 @@
         </div>
 
         <!-- Main Content (Cover or Lyrics) -->
-        <div class="player-main" @click="showLyrics = !showLyrics">
-          <transition name="fade" mode="out-in">
-            <!-- Cover Art -->
-            <div v-if="!showLyrics" class="cover-wrapper" key="cover">
-              <div class="cover-shadow" :style="{ backgroundImage: `url(${currentTrack.cover || '/default-cover.png'})` }"></div>
-              <img :src="currentTrack.cover || '/default-cover.png'" class="main-cover" :class="{ playing: isPlaying }">
-            </div>
-
-            <!-- Lyrics View -->
-            <div v-else class="lyrics-wrapper" key="lyrics">
-              <div class="lyrics-container">
+        <div class="player-main-split">
+          <!-- Left Column: Lyrics -->
+          <div class="lyrics-column" :class="{ 'mobile-hidden': !showLyrics && isMobile }">
+             <div class="lyrics-container">
                 <p v-if="!lyrics" class="no-lyrics">暂无歌词</p>
                 <div v-else class="lyrics-lines">
                    <!-- Placeholder for real lyrics parsing -->
-                   <p class="lyric-line active">点击封面切换回封面</p>
-                   <p class="lyric-line">这里是歌词显示区域</p>
-                   <p class="lyric-line">目前仅作演示</p>
+                   <p class="lyric-line">细数惭愧 我伤你几回</p>
+                   <p class="lyric-line active">我一路向北 离开有你的季节</p>
+                   <p class="lyric-line">方向盘周围 迴转着我的后悔</p>
                 </div>
-              </div>
+             </div>
+          </div>
+          
+          <!-- Right Column: Cover -->
+          <div class="cover-column" :class="{ 'mobile-hidden': showLyrics && isMobile }">
+            <div class="cover-wrapper-large">
+               <div class="cover-shadow" :style="{ backgroundImage: `url(${currentTrack.cover || '/default-cover.png'})` }"></div>
+               <img :src="currentTrack.cover || '/default-cover.png'" class="main-cover-large">
             </div>
-          </transition>
+            
+            <!-- Info (Mobile only often, but we keep here for structure) -->
+            <div class="track-info-large">
+               <h2 class="track-name-large">{{ currentTrack.title }}</h2>
+               <p class="artist-name-large">{{ currentTrack.artist }}</p>
+            </div>
+          </div>
         </div>
 
-        <!-- Info & Controls -->
+        <!-- Info & Controls (Bottom) -->
         <div class="player-footer">
-          <div class="track-details">
-            <h2 class="track-name">{{ currentTrack.title }}</h2>
-            <p class="artist-name">{{ currentTrack.artist }}</p>
-          </div>
-
           <!-- Progress -->
           <div class="progress-section">
-            <input 
+            <div class="time-labels">
+              <span>{{ formatTime(currentTime) }}</span>
+            </div>
+             <input 
               type="range" 
               min="0" 
               :max="duration" 
@@ -59,27 +63,26 @@
               class="seek-slider"
               :style="{ backgroundSize: progressPercent + '% 100%' }"
             >
-            <div class="time-labels">
-              <span>{{ formatTime(currentTime) }}</span>
+             <div class="time-labels">
               <span>{{ formatTime(duration) }}</span>
             </div>
           </div>
 
           <!-- Controls -->
-          <div class="controls-row">
-            <button class="control-btn small" @click="toggleShuffle" :class="{ active: isShuffled }">
+          <div class="controls-row large">
+            <button class="control-btn" @click="toggleShuffle" :class="{ active: isShuffled }">
               <span class="material-icons">shuffle</span>
             </button>
             <button class="control-btn" @click="prevTrack">
               <span class="material-icons">skip_previous</span>
             </button>
-            <button class="control-btn play-pause" @click="togglePlay">
+            <button class="control-btn play-pause-large" @click="togglePlay">
               <span class="material-icons">{{ isPlaying ? 'pause' : 'play_arrow' }}</span>
             </button>
             <button class="control-btn" @click="nextTrack">
               <span class="material-icons">skip_next</span>
             </button>
-            <button class="control-btn small">
+            <button class="control-btn">
               <span class="material-icons">repeat</span>
             </button>
           </div>
@@ -90,8 +93,24 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useMusic } from '../composables/useMusic'
+
+const isMobile = ref(false)
+const showLyrics = ref(false) // For mobile toggle
+
+const checkMobile = () => {
+    isMobile.value = window.innerWidth <= 768
+}
+
+onMounted(() => {
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+})
+
+onUnmounted(() => {
+    window.removeEventListener('resize', checkMobile)
+})
 
 const { 
   currentTrack, 
@@ -108,7 +127,6 @@ const {
   seek
 } = useMusic()
 
-const showLyrics = ref(false)
 const lyrics = ref(null) // Todo: Load lyrics from currentTrack if available
 
 const progressPercent = computed(() => {

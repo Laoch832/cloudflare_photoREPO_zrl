@@ -47,13 +47,16 @@
 
         <!-- Right: Volume/Extras -->
         <div class="player-right">
-           <!-- Mobile Play Button (Visible only on mobile) -->
+           <!-- Mobile Play Button -->
            <button class="play-btn-circle mobile-play-btn" @click.stop="togglePlay" v-if="isMobile">
               <span class="material-icons" style="font-size: 20px">{{ isPlaying ? 'pause' : 'play_arrow' }}</span>
            </button>
 
           <button class="icon-btn small" title="歌词" @click.stop="toggleExpand">
             <span class="material-icons">lyrics</span>
+          </button>
+          <button class="icon-btn small" title="播放列表" @click.stop="togglePlaylist">
+            <span class="material-icons">queue_music</span>
           </button>
           <div class="volume-control">
              <span class="material-icons volume-icon">volume_up</span>
@@ -64,6 +67,32 @@
         </div>
       </div>
     </div>
+    
+    <!-- Playlist Popup -->
+    <transition name="slide-up-playlist">
+      <div v-if="showPlaylist" class="playlist-popup">
+        <div class="playlist-header">
+          <h3>播放列表</h3>
+          <button class="icon-btn" @click="showPlaylist = false"><span class="material-icons">close</span></button>
+        </div>
+        <div class="playlist-content">
+          <div 
+            v-for="(track, index) in playlist" 
+            :key="track.id" 
+            class="playlist-item"
+            :class="{ active: currentTrack && currentTrack.id === track.id }"
+            @click="playTrack(index)"
+          >
+            <div class="playing-indicator" v-if="currentTrack && currentTrack.id === track.id">
+              <span class="material-icons" style="font-size: 14px; color: #1db954;">volume_up</span>
+            </div>
+            <span class="track-title">{{ track.title }}</span>
+            <span class="track-artist">{{ track.artist }}</span>
+            <span class="track-duration">3:00</span>
+          </div>
+        </div>
+      </div>
+    </transition>
   </transition>
 </template>
 
@@ -72,9 +101,14 @@ import { onMounted, computed, ref, onUnmounted } from 'vue'
 import { useMusic } from '../composables/useMusic'
 
 const isMobile = ref(false)
+const showPlaylist = ref(false)
 
 const checkMobile = () => {
     isMobile.value = window.innerWidth <= 768
+}
+
+const togglePlaylist = () => {
+  showPlaylist.value = !showPlaylist.value
 }
 
 onMounted(() => {
@@ -88,6 +122,7 @@ onUnmounted(() => {
 
 const { 
   currentTrack, 
+  playlist,
   isPlaying, 
   isShuffled,
   currentTime,
@@ -100,7 +135,8 @@ const {
   loadPlaylist,
   playTrack,
   seek,
-  toggleMinimize // Using this to close/hide for now
+  toggleMinimize,
+  toggleExpand
 } = useMusic()
 
 const progressPercent = computed(() => {
@@ -319,13 +355,104 @@ onMounted(async () => {
   top: 0;
   left: 0;
   height: 100%;
-  background: #fff;
+  background: #1db954; /* Spotify Green */
   border-radius: 2px;
   transition: background 0.2s;
 }
 
 .progress-bar-wrapper:hover .progress-fill {
-    background: var(--primary-color);
+    background: #1ed760; /* Lighter Green on hover */
+}
+
+/* Playlist Popup */
+.playlist-popup {
+  position: fixed;
+  bottom: 90px;
+  right: 16px;
+  width: 350px;
+  max-height: 60vh;
+  background: #282828;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  color: #fff;
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.playlist-header {
+  padding: 16px;
+  background: #181818;
+  border-bottom: 1px solid #333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.playlist-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.playlist-content {
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.playlist-item {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.playlist-item:hover {
+  background: #333;
+}
+
+.playlist-item.active {
+  color: #1db954;
+}
+
+.track-title {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 8px;
+}
+
+.track-artist {
+  color: #b3b3b3;
+  font-size: 12px;
+  margin-right: 8px;
+}
+
+.track-duration {
+  color: #b3b3b3;
+  font-size: 12px;
+  min-width: 30px;
+  text-align: right;
+}
+
+.playing-indicator {
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.slide-up-playlist-enter-active,
+.slide-up-playlist-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-up-playlist-enter-from,
+.slide-up-playlist-leave-to {
+  opacity: 0;
+  transform: translateY(20px);
 }
 
 /* Right Section */
