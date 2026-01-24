@@ -1,219 +1,192 @@
 <template>
-  <div class="music-layout">
-    <!-- Main Content -->
-    <main class="music-main">
-      <div class="content-container">
-        <!-- Trending Header -->
-        <section class="music-section">
-           <h2 class="section-header">Trending <span class="sub-header">This week</span></h2>
-           
-           <!-- Horizontal Grid -->
-           <div class="album-grid">
-              <div 
-                v-for="(track, index) in playlist" 
-                :key="track.id" 
-                class="album-card"
-                @click="playTrack(index)"
-              >
-                 <div class="card-image">
-                    <img :src="track.cover || '/default-cover.png'" loading="lazy">
-                    <div class="hover-play-btn">
-                       <span class="material-icons">play_arrow</span>
-                    </div>
-                 </div>
-                 <div class="card-info">
-                    <div class="card-title">{{ track.title }}</div>
-                    <div class="card-artist">{{ track.artist }}</div>
-                 </div>
-              </div>
-           </div>
-        </section>
+  <div class="min-h-screen w-full bg-black font-sans antialiased text-white relative overflow-hidden flex flex-col">
+    <!-- Background Blur -->
+    <div class="absolute inset-0 bg-cover bg-center transition-all duration-1000 transform scale-110 blur-[80px] opacity-60" 
+         :style="{ backgroundImage: `url(${currentTrack?.cover || '/default-cover.png'})` }">
+    </div>
+    <div class="absolute inset-0 bg-black/40"></div>
+    <div class="absolute inset-0 grain-overlay"></div>
 
-        <!-- Made For You -->
-        <section class="music-section">
-           <h2 class="section-header">Made For You</h2>
-           <p class="section-desc">Inspired by your recent activity.</p>
-           
-           <div class="album-grid">
-              <!-- Mock Data (Reusing playlist for visual fill) -->
-              <div 
-                v-for="(track, index) in [...playlist].reverse()" 
-                :key="'mix-'+track.id" 
-                class="album-card"
-                 @click="playTrack(playlist.length - 1 - index)"
+    <!-- Top Navigation Pill -->
+    <div class="fixed top-6 left-1/2 -translate-x-1/2 z-50">
+      <nav class="ios-glass-nav px-1.5 py-1.5 rounded-full flex items-center gap-1 shadow-2xl border border-white/10">
+        <router-link to="/" class="px-5 py-2.5 rounded-full text-sm font-medium text-white/50 hover:text-white hover:bg-white/10 transition-all">
+          Home
+        </router-link>
+        <router-link to="/gallery" class="px-5 py-2.5 rounded-full text-sm font-medium text-white/50 hover:text-white hover:bg-white/10 transition-all">
+          Gallery
+        </router-link>
+        <router-link to="/diary" class="px-5 py-2.5 rounded-full text-sm font-medium text-white/50 hover:text-white hover:bg-white/10 transition-all">
+          Diary
+        </router-link>
+        <div class="px-6 py-2.5 rounded-full bg-white/10 shadow-sm text-sm font-semibold text-white border border-white/5">
+          Music
+        </div>
+      </nav>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col items-center justify-center relative z-10 px-6 pt-20 pb-8 w-full max-w-5xl mx-auto h-full">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 w-full h-full items-center">
+        <!-- Left: Cover Art -->
+        <div class="flex flex-col items-center justify-center space-y-8">
+          <div class="relative group w-full max-w-md aspect-square">
+            <div class="absolute inset-0 bg-cover bg-center rounded-[2rem] blur-2xl opacity-40 scale-95 transition-all duration-700 group-hover:opacity-60 group-hover:scale-105" 
+                 :style="{ backgroundImage: `url(${currentTrack?.cover || '/default-cover.png'})` }"></div>
+            <img :src="currentTrack?.cover || '/default-cover.png'" 
+                 class="relative w-full h-full object-cover rounded-[2rem] shadow-2xl border border-white/10 transform transition-transform duration-700 group-hover:scale-[1.02]"
+                 alt="Album Art">
+          </div>
+          
+          <div class="text-center space-y-2">
+            <h2 class="text-3xl md:text-4xl font-display font-bold tracking-tight text-white">{{ currentTrack?.title || 'No Track Selected' }}</h2>
+            <p class="text-white/60 text-lg font-medium">{{ currentTrack?.artist || 'Unknown Artist' }}</p>
+          </div>
+        </div>
+
+        <!-- Right: Lyrics & Controls -->
+        <div class="flex flex-col h-[60vh] md:h-[70vh]">
+          <!-- Lyrics View -->
+          <div class="flex-1 overflow-y-auto pr-4 mb-8 mask-linear-fade scrollbar-hide" ref="lyricsContainer">
+            <div v-if="!parsedLyrics || parsedLyrics.length === 0" class="h-full flex items-center justify-center text-white/30 text-xl font-display italic">
+              Instrumental / No Lyrics Available
+            </div>
+            <div v-else class="space-y-6 py-[30vh]">
+              <p 
+                v-for="(line, index) in parsedLyrics" 
+                :key="index"
+                class="text-2xl md:text-3xl font-bold transition-all duration-500 cursor-pointer origin-left hover:opacity-100"
+                :class="index === currentLyricIndex ? 'text-white scale-100 opacity-100 blur-0' : 'text-white/20 scale-95 blur-[1px] hover:text-white/40'"
+                @click="seek(line.time)"
               >
-                 <div class="card-image circle-variant">
-                    <img :src="track.cover || '/default-cover.png'" loading="lazy">
-                    <div class="hover-play-btn">
-                       <span class="material-icons">play_arrow</span>
-                    </div>
-                 </div>
-                 <div class="card-info">
-                    <div class="card-title">Daily Mix {{ index + 1 }}</div>
-                    <div class="card-artist">{{ track.artist }} Radio</div>
-                 </div>
+                {{ line.text }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <div class="mt-auto space-y-6 bg-black/20 backdrop-blur-xl p-6 rounded-[2rem] border border-white/5">
+            <!-- Progress -->
+            <div class="space-y-2 group">
+              <div class="relative h-1.5 bg-white/10 rounded-full cursor-pointer overflow-hidden" @click="onSeekClick">
+                <div class="absolute h-full bg-music-accent rounded-full transition-all duration-100 ease-linear" :style="{ width: progressPercent + '%' }"></div>
+                <div class="absolute h-full w-full opacity-0 group-hover:opacity-100 transition-opacity">
+                  <input 
+                    type="range" 
+                    min="0" 
+                    :max="duration" 
+                    :value="currentTime" 
+                    @input="onSeek"
+                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  >
+                </div>
               </div>
-           </div>
-        </section>
+              <div class="flex justify-between text-xs font-medium text-white/40">
+                <span>{{ formatTime(currentTime) }}</span>
+                <span>{{ formatTime(duration) }}</span>
+              </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex items-center justify-between">
+              <button @click="toggleShuffle" :class="isShuffled ? 'text-music-accent' : 'text-white/40 hover:text-white'" class="transition-colors">
+                <span class="material-symbols-outlined text-2xl">shuffle</span>
+              </button>
+              
+              <div class="flex items-center gap-6">
+                <button @click="prevTrack" class="text-white hover:text-music-accent transition-colors hover:scale-110 active:scale-95 transform">
+                  <span class="material-symbols-outlined text-4xl">skip_previous</span>
+                </button>
+                <button @click="togglePlay" class="size-16 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg shadow-white/10">
+                  <span class="material-symbols-outlined text-3xl fill-current">{{ isPlaying ? 'pause' : 'play_arrow' }}</span>
+                </button>
+                <button @click="nextTrack" class="text-white hover:text-music-accent transition-colors hover:scale-110 active:scale-95 transform">
+                  <span class="material-symbols-outlined text-4xl">skip_next</span>
+                </button>
+              </div>
+
+              <button class="text-white/40 hover:text-white transition-colors">
+                <span class="material-symbols-outlined text-2xl">repeat</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useMusic } from '../composables/useMusic'
 
-const loading = ref(true)
-const { playlist, playTrack, loadPlaylist } = useMusic()
+const lyricsContainer = ref(null)
 
-onMounted(async () => {
-  if (playlist.value.length === 0) {
-    try {
-      const res = await fetch('/music.json')
-      const tracks = await res.json()
-      loadPlaylist(tracks)
-    } catch (e) {
-      console.error(e)
-    }
+const { 
+  currentTrack, 
+  isPlaying, 
+  togglePlay, 
+  nextTrack, 
+  prevTrack, 
+  toggleShuffle, 
+  isShuffled, 
+  currentTime, 
+  duration, 
+  seek,
+  parsedLyrics,
+  currentLyricIndex
+} = useMusic()
+
+const progressPercent = computed(() => {
+  if (!duration.value) return 0
+  return (currentTime.value / duration.value) * 100
+})
+
+const formatTime = (seconds) => {
+  if (!seconds) return '0:00'
+  const mins = Math.floor(seconds / 60)
+  const secs = Math.floor(seconds % 60)
+  return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
+const onSeek = (e) => {
+  seek(e.target.value)
+}
+
+const onSeekClick = (e) => {
+  const rect = e.currentTarget.getBoundingClientRect()
+  const x = e.clientX - rect.left
+  const width = rect.width
+  const percent = x / width
+  seek(percent * duration.value)
+}
+
+watch(currentLyricIndex, (newIndex) => {
+  if (newIndex >= 0 && lyricsContainer.value) {
+    nextTick(() => {
+      // Find the active line (using index instead of class selection for reliability)
+      const lines = lyricsContainer.value.querySelectorAll('p')
+      const activeLine = lines[newIndex]
+      
+      if (activeLine) {
+        activeLine.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    })
   }
-  loading.value = false
 })
 </script>
 
 <style scoped>
-.music-layout {
-  display: flex;
-  min-height: 100vh;
-  background-color: var(--bg-body); /* Standard white/light bg */
-  color: var(--text-primary);
-  padding-top: var(--vp-nav-height);
+.mask-linear-fade {
+  mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
 }
 
-/* Main Content */
-.music-main {
-  flex: 1;
-  padding: 40px;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding-bottom: 120px; /* Space for player */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
 }
-
-.section-header {
-  font-size: 24px;
-  font-weight: 800;
-  margin-bottom: 24px;
-  letter-spacing: -0.5px;
-  text-transform: uppercase;
-}
-
-.sub-header {
-  font-size: 16px;
-  color: var(--text-secondary);
-  font-weight: 500;
-  margin-left: 8px;
-  text-transform: none;
-}
-
-.section-desc {
-  color: var(--text-secondary);
-  margin-top: -16px;
-  margin-bottom: 32px;
-  font-size: 15px;
-}
-
-.album-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 32px;
-  margin-bottom: 60px;
-}
-
-.album-card {
-  background: transparent;
-  padding: 0;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-
-.album-card:hover {
-  transform: translateY(-5px);
-}
-
-.card-image {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1;
-  margin-bottom: 16px;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  transition: box-shadow 0.3s ease;
-}
-
-.album-card:hover .card-image {
-  box-shadow: 0 12px 24px rgba(0,0,0,0.15);
-}
-
-.card-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.circle-variant {
-    border-radius: 50%;
-}
-
-.hover-play-btn {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: #000; /* Black button like Home page */
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-
-.album-card:hover .hover-play-btn {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.card-title {
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.card-artist {
-  font-size: 14px;
-  color: var(--text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-@media (max-width: 768px) {
-  .music-main {
-      padding: 20px;
-  }
-  .album-grid {
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 20px;
-  }
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 </style>

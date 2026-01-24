@@ -1,6 +1,12 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
+import { inject } from '@vercel/analytics'
+import { injectSpeedInsights } from '@vercel/speed-insights'
+
+// Initialize Vercel Analytics and Speed Insights
+inject()
+injectSpeedInsights()
 
 // Import Material Web Components
 import '@material/web/icon/icon.js';

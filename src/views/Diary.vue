@@ -1,70 +1,116 @@
 <template>
-  <div class="diary-page">
-    <div class="container diary-container">
-      <header class="diary-header">
-        <h1>我的日记</h1>
-        <p class="subtitle">记录每一个值得铭记的瞬间</p>
-      </header>
+  <div class="min-h-screen w-full bg-[#F2F2F7] font-sans antialiased text-gray-900 pb-32">
+    <!-- Top Navigation Pill -->
+    <div class="fixed top-6 left-1/2 -translate-x-1/2 z-50">
+      <nav class="ios-glass-nav px-1.5 py-1.5 rounded-full flex items-center gap-1 shadow-sm">
+        <router-link to="/" class="px-5 py-2.5 rounded-full text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-white/50 transition-all">
+          Home
+        </router-link>
+        <router-link to="/gallery" class="px-5 py-2.5 rounded-full text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-white/50 transition-all">
+          Gallery
+        </router-link>
+        <div class="px-6 py-2.5 rounded-full bg-white shadow-sm text-sm font-semibold text-gray-900">
+          Diary
+        </div>
+        <router-link to="/music" class="px-5 py-2.5 rounded-full text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-white/50 transition-all">
+          Music
+        </router-link>
+      </nav>
+    </div>
+
+    <!-- Main Content -->
+    <main class="pt-32 px-6 max-w-2xl mx-auto">
+      <!-- Header -->
+      <div class="text-center mb-12 space-y-2">
+        <h1 class="font-display text-4xl font-bold tracking-tight text-gray-900">Cinematic Diary</h1>
+        <p class="text-gray-500 font-medium tracking-wide">Capture the moments that matter</p>
+      </div>
 
       <!-- Admin: Post New Diary -->
-      <div v-if="isAdmin" class="post-box slide-up">
-        <h3><span class="material-icons">edit_note</span> 写日记</h3>
-        <div class="input-group">
-          <input v-model="newTitle" type="text" placeholder="标题（可选）" class="diary-input title-input smooth-transition">
+      <div v-if="isAdmin" class="mb-12 ios-glass-card p-6 rounded-[1.5rem] bg-white shadow-sm border border-white/40">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="size-8 rounded-full bg-diary-accent/10 flex items-center justify-center text-diary-accent">
+            <span class="material-symbols-outlined text-lg">edit</span>
+          </div>
+          <h3 class="font-semibold text-gray-900">Write a Memory</h3>
         </div>
-        <div class="input-group">
+        <div class="space-y-4">
+          <input v-model="newTitle" type="text" placeholder="Title (Optional)" class="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-diary-accent/20 transition-all">
           <textarea 
             v-model="newContent" 
-            placeholder="今天发生了什么..." 
-            class="diary-input content-input smooth-transition"
+            placeholder="What happened today?" 
+            class="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-diary-accent/20 transition-all min-h-[120px] resize-none"
           ></textarea>
-        </div>
-        <div class="post-actions">
-          <button class="post-btn anim-squash" @click="publishDiary" :disabled="publishing">
-            <span v-if="publishing" class="spinner-sm"></span>
-            {{ publishing ? '发布中...' : '发布日记' }}
-          </button>
+          <div class="flex justify-end">
+            <button class="bg-diary-accent text-white px-6 py-2.5 rounded-full font-medium shadow-lg shadow-diary-accent/20 hover:shadow-diary-accent/30 hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2" @click="publishDiary" :disabled="publishing">
+              <span v-if="publishing" class="animate-spin size-4 border-2 border-white/30 border-t-white rounded-full"></span>
+              {{ publishing ? 'Publishing...' : 'Publish' }}
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Diary List -->
-      <div class="diary-list">
-        <div v-if="loading" class="loading-state">
-          <div class="spinner"></div>
-        </div>
-        
-        <div v-else-if="notes.length === 0" class="empty-state">
-          <span class="material-icons">auto_stories</span>
-          <p>暂无日记，静待落笔。</p>
+      <!-- Timeline -->
+      <div class="relative pl-8 border-l-2 border-gray-200 space-y-12">
+        <!-- Loading State -->
+        <div v-if="loading" class="py-12 flex justify-center">
+          <div class="animate-spin size-8 border-2 border-diary-accent/30 border-t-diary-accent rounded-full"></div>
         </div>
 
-        <div v-else class="timeline">
-          <div 
-            v-for="(note, index) in notes" 
-            :key="note.id" 
-            class="timeline-item fade-in"
-            :style="{ animationDelay: `${index * 0.1}s` }"
-          >
-            <div class="timeline-dot"></div>
-            <div class="diary-card anim-hover-lift">
-              <div class="diary-date">
-                <span class="day">{{ formatDateDay(note.created_at) }}</span>
-                <span class="month-year">{{ formatDateMonth(note.created_at) }}</span>
+        <!-- Empty State -->
+        <div v-else-if="notes.length === 0" class="py-12 text-center text-gray-400">
+          <span class="material-symbols-outlined text-4xl mb-2">auto_stories</span>
+          <p>No memories yet. Start writing...</p>
+        </div>
+
+        <!-- Diary Entries -->
+        <div 
+          v-else
+          v-for="(note, index) in notes" 
+          :key="note.id" 
+          class="relative group animate-fade-in"
+          :style="{ animationDelay: `${index * 0.1}s` }"
+        >
+          <!-- Timeline Dot -->
+          <div class="absolute -left-[41px] top-6 size-5 rounded-full bg-white border-4 border-diary-accent shadow-sm group-hover:scale-110 transition-transform"></div>
+          
+          <!-- Card -->
+          <div class="ios-glass-card p-6 rounded-[1.5rem] bg-white hover:bg-white/80 transition-all duration-300 hover:shadow-md border border-white/40 group-hover:-translate-y-1">
+            <div class="flex items-start justify-between mb-3">
+              <div class="space-y-1">
+                <span class="text-xs font-bold text-diary-accent uppercase tracking-wider">{{ formatDateFull(note.created_at) }}</span>
+                <h2 v-if="note.title" class="text-xl font-bold text-gray-900 leading-tight">{{ note.title }}</h2>
+                <h2 v-else class="text-xl font-bold text-gray-900 leading-tight">Untitled Memory</h2>
               </div>
-              <div class="diary-content-wrapper">
-                <h3 v-if="note.title" class="diary-title">{{ note.title }}</h3>
-                <div class="diary-text" v-html="formatContent(note.content)"></div>
-                
-                <div v-if="isAdmin" class="diary-footer">
-                  <button class="delete-btn anim-squash" @click="deleteDiary(note.id)">
-                    <span class="material-icons">delete_outline</span> 删除
-                  </button>
-                </div>
+              <button v-if="isAdmin" @click="deleteDiary(note.id)" class="text-gray-300 hover:text-red-400 transition-colors p-1">
+                <span class="material-symbols-outlined text-lg">delete</span>
+              </button>
+            </div>
+            
+            <div class="text-gray-600 leading-relaxed mb-4 line-clamp-4 whitespace-pre-wrap font-serif">
+              {{ note.content }}
+            </div>
+            
+            <div class="flex items-center gap-4 pt-4 border-t border-gray-100">
+              <button class="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-diary-accent transition-colors">
+                <span class="material-symbols-outlined text-base">visibility</span>
+                <span>Read</span>
+              </button>
+              <div class="flex items-center gap-1.5 text-xs font-semibold text-gray-500">
+                <span class="material-symbols-outlined text-base">schedule</span>
+                <span>{{ formatTime(note.created_at) }}</span>
               </div>
             </div>
           </div>
         </div>
       </div>
+    </main>
+
+    <!-- Floating Action Button (Mobile) -->
+    <div class="fixed bottom-24 right-6 md:hidden z-40">
+      <button v-if="isAdmin" @click="scrollToTop" class="size-14 rounded-full bg-diary-accent text-white shadow-xl flex items-center justify-center hover:scale-110 active:scale-90 transition-all">
+        <span class="material-symbols-outlined text-2xl">edit</span>
+      </button>
     </div>
   </div>
 </template>
@@ -113,7 +159,7 @@ const fetchNotes = async () => {
 
 // Publish Diary
 const publishDiary = async () => {
-  if (!newContent.value.trim()) return alert('写点什么吧...')
+  if (!newContent.value.trim()) return alert('Please write something...')
   
   try {
     publishing.value = true
@@ -136,9 +182,8 @@ const publishDiary = async () => {
     
     // Refresh list
     await fetchNotes()
-    alert('发布成功！')
   } catch (error) {
-    alert('发布失败: ' + error.message)
+    alert('Failed to publish: ' + error.message)
   } finally {
     publishing.value = false
   }
@@ -146,7 +191,7 @@ const publishDiary = async () => {
 
 // Delete Diary
 const deleteDiary = async (id) => {
-  if (!confirm('确定要删除这条日记吗？')) return
+  if (!confirm('Are you sure you want to delete this memory?')) return
   
   try {
     const { error } = await supabase
@@ -159,31 +204,28 @@ const deleteDiary = async (id) => {
     // Remove locally
     notes.value = notes.value.filter(n => n.id !== id)
   } catch (error) {
-    alert('删除失败: ' + error.message)
+    alert('Delete failed: ' + error.message)
   }
 }
 
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 // Formatters
-const formatDateDay = (dateStr) => {
-  return new Date(dateStr).getDate()
+const formatDateFull = (dateStr) => {
+  const options = { weekday: 'short', month: 'short', day: 'numeric' }
+  return new Date(dateStr).toLocaleDateString('en-US', options)
 }
 
-const formatDateMonth = (dateStr) => {
-  const date = new Date(dateStr)
-  return `${date.getFullYear()}年${date.getMonth() + 1}月`
-}
-
-const formatContent = (text) => {
-  if (!text) return ''
-  // Simple nl2br
-  return text.replace(/\n/g, '<br>')
+const formatTime = (dateStr) => {
+  return new Date(dateStr).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
 }
 
 onMounted(() => {
   checkAdmin()
   fetchNotes()
   
-  // Listen for auth changes (login/logout)
   const { data } = supabase.auth.onAuthStateChange((event, session) => {
     if (session?.user?.email === '2730377018@qq.com') {
       isAdmin.value = true
@@ -198,279 +240,3 @@ onUnmounted(() => {
   if (authListener) authListener.unsubscribe()
 })
 </script>
-
-<style scoped>
-.diary-page {
-  min-height: 100vh;
-  padding-top: 80px;
-  padding-bottom: 60px;
-  background-color: #fff; /* Enforce white background */
-  color: var(--text-main);
-}
-
-.diary-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
-.diary-header {
-  text-align: center;
-  margin-bottom: 40px;
-}
-
-.diary-header h1 {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 2.5rem;
-  margin-bottom: 8px;
-}
-
-.subtitle {
-  color: var(--text-light);
-  font-size: 1rem;
-}
-
-/* Post Box */
-.post-box {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 40px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-  border: 1px solid rgba(0,0,0,0.05);
-}
-
-[data-theme="dark"] .post-box {
-  background: rgba(30, 30, 30, 0.8);
-  border-color: rgba(255,255,255,0.1);
-}
-
-.post-box h3 {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-  font-size: 1.1rem;
-  color: var(--primary-color);
-}
-
-.diary-input {
-  width: 100%;
-  border: none;
-  background: transparent;
-  padding: 12px;
-  font-family: inherit;
-  outline: none;
-  color: inherit;
-}
-
-.title-input {
-  font-size: 1.2rem;
-  font-weight: 600;
-  border-bottom: 1px solid rgba(0,0,0,0.1);
-  margin-bottom: 12px;
-}
-
-[data-theme="dark"] .title-input {
-  border-bottom-color: rgba(255,255,255,0.1);
-}
-
-.content-input {
-  min-height: 120px;
-  resize: vertical;
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
-.post-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 12px;
-}
-
-.post-btn {
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 8px 24px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s;
-}
-
-.post-btn:hover:not(:disabled) {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-}
-
-.post-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.spinner-sm {
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-/* Timeline */
-.timeline {
-  position: relative;
-  padding-left: 20px;
-}
-
-.timeline::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: rgba(0,0,0,0.1);
-}
-
-[data-theme="dark"] .timeline::before {
-  background: rgba(255,255,255,0.1);
-}
-
-.timeline-item {
-  position: relative;
-  margin-bottom: 40px;
-  padding-left: 20px;
-}
-
-.timeline-dot {
-  position: absolute;
-  left: -25px; /* Adjust based on padding and line width */
-  top: 20px;
-  width: 12px;
-  height: 12px;
-  background: var(--primary-color);
-  border-radius: 50%;
-  border: 3px solid var(--bg-color);
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
-}
-
-[data-theme="dark"] .timeline-dot {
-  border-color: var(--bg-color);
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.2);
-}
-
-.diary-card {
-  display: flex;
-  gap: 20px;
-  background: white;
-  padding: 24px;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-  transition: transform 0.2s;
-}
-
-[data-theme="dark"] .diary-card {
-  background: #252525;
-}
-
-.diary-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-}
-
-@media (max-width: 600px) {
-  .diary-card {
-    flex-direction: column;
-    gap: 12px;
-  }
-}
-
-.diary-date {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-width: 80px;
-  text-align: center;
-  padding-right: 20px;
-  border-right: 1px solid rgba(0,0,0,0.1);
-}
-
-[data-theme="dark"] .diary-date {
-  border-right-color: rgba(255,255,255,0.1);
-}
-
-@media (max-width: 600px) {
-  .diary-date {
-    flex-direction: row;
-    gap: 8px;
-    border-right: none;
-    border-bottom: 1px solid rgba(0,0,0,0.1);
-    padding-bottom: 12px;
-    padding-right: 0;
-    justify-content: flex-start;
-  }
-}
-
-.day {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--primary-color);
-  line-height: 1;
-}
-
-.month-year {
-  font-size: 0.85rem;
-  color: var(--text-light);
-  margin-top: 4px;
-}
-
-.diary-content-wrapper {
-  flex: 1;
-}
-
-.diary-title {
-  margin: 0 0 12px;
-  font-size: 1.2rem;
-  color: var(--text-color);
-}
-
-.diary-text {
-  font-size: 1rem;
-  line-height: 1.7;
-  color: var(--text-color);
-  white-space: pre-wrap;
-}
-
-.diary-footer {
-  margin-top: 16px;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.delete-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-light);
-  cursor: pointer;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: color 0.2s;
-}
-
-.delete-btn:hover {
-  color: #ff4d4d;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-</style>

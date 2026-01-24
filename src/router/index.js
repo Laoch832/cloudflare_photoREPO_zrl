@@ -1,75 +1,69 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../views/Home.vue'
 import { supabase } from '../lib/supabase'
-
-const routes = [
-  {
-    path: '/',
-    name: 'Home',
-    component: Home,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/profile',
-    name: 'Profile',
-    component: () => import('../views/Profile.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/gallery',
-    name: 'Gallery',
-    component: () => import('../views/Gallery.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/notes',
-    name: 'Notes',
-    component: () => import('../views/Notes.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/diary',
-    name: 'Diary',
-    component: () => import('../views/Diary.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/music',
-    name: 'Music',
-    component: () => import('../views/Music.vue')
-  },
-  {
-    path: '/auth/callback',
-    name: 'AuthCallback',
-    component: () => import('../views/AuthCallback.vue')
-  },
-  {
-    path: '/manager',
-    name: 'Manager',
-    component: () => import('../views/Manager.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/temp',
-    name: 'TempImage',
-    component: () => import('../views/TempImage.vue'),
-    meta: { requiresAuth: true }
-  }
-]
+import Home from '../views/Home.vue'
+import Gallery from '../views/Gallery.vue'
+import Notes from '../views/Notes.vue'
+import Diary from '../views/Diary.vue'
+import Login from '../views/Login.vue'
+import Music from '../views/Music.vue'
+import Profile from '../views/Profile.vue'
 
 const router = createRouter({
-  history: createWebHistory(),
-  routes
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: [
+    {
+      path: '/',
+      name: 'home',
+      component: Home
+    },
+    {
+      path: '/gallery',
+      name: 'gallery',
+      component: Gallery
+    },
+    {
+      path: '/notes',
+      name: 'notes',
+      component: Notes
+    },
+    {
+      path: '/diary',
+      name: 'diary',
+      component: Diary
+    },
+    {
+      path: '/music',
+      name: 'music',
+      component: Music
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: Profile,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: Login
+    }
+  ]
 })
 
+// Auth Guard
 router.beforeEach(async (to, from, next) => {
-  if (to.meta.requiresAuth) {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
-      next('/music')
-      return
-    }
+  const { data: { session } } = await supabase.auth.getSession()
+
+  if (to.meta.requiresAuth && !session) {
+    next('/login')
+    return
   }
+
+  if (to.path === '/login' && session) {
+    next('/')
+    return
+  }
+
   next()
 })
 

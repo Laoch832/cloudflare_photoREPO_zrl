@@ -1,372 +1,136 @@
 <template>
-  <div class="profile-page">
-    <div class="profile-card">
-      <div class="header">
-        <h2>个人资料</h2>
-        <p>管理您的个人信息和隐私设置</p>
-      </div>
-
-      <div class="avatar-section">
-        <div class="avatar-wrapper">
-          <img v-if="avatarUrl" :src="avatarUrl" alt="Avatar" class="avatar-img">
-          <div v-else class="avatar-placeholder">
-            {{ (name || email || '?')[0].toUpperCase() }}
+  <div class="min-h-screen w-full bg-[#1e1e1e] font-sans antialiased text-white flex">
+    <!-- Sidebar (Same as Home) -->
+    <div class="fixed left-0 top-0 h-full w-64 glass-panel flex flex-col justify-between p-6 z-50">
+      <div class="flex flex-col gap-8">
+        <div class="flex items-center gap-3">
+          <div class="size-10 rounded-full ring-1 ring-white/20 p-0.5 overflow-hidden shadow-sm">
+            <div class="w-full h-full bg-cover bg-center rounded-full" 
+                 style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDgYG5fbrfAWYAbyZ7RmKq8IBLBAj6bbuVhR-COKsvf9zLkn7UK8IhEy7zQsn2FWb3n-Wf9-xvQX-ne5hKssruYZaOcM116VJWjTzmLyIO-LLLKLcBVtMQ_uL1ThysECYUBVxleFZSt_ZmhN-3s-mZrxirArEP9nN5vjZID5NmDaMMGXvXCEd8zsguRkntLDinf0r1jSD3Qf40ltscmLWb-HGfwakonh3J6UljgYOf7RI0eq2x4WHW49pdKb__McD7PxADWZ-jYgeY');">
+            </div>
           </div>
-          <label class="edit-avatar">
-            <span class="material-icons">edit</span>
-            <input type="file" accept="image/*" @change="uploadAvatar" :disabled="uploading">
-          </label>
-        </div>
-        <p class="email-display">{{ email }}</p>
-      </div>
-
-      <div class="form-section">
-        <div class="input-group">
-          <label>昵称</label>
-          <input type="text" v-model="name" placeholder="设置一个昵称">
+          <div class="flex flex-col">
+            <h2 class="text-white text-lg font-medium leading-tight">Sanctuary</h2>
+            <p class="text-white/60 text-xs uppercase tracking-widest">Private Space</p>
+          </div>
         </div>
         
-        <button class="save-btn" @click="updateProfile" :disabled="loading">
-          {{ loading ? '保存中...' : '保存更改' }}
-        </button>
+        <nav class="flex flex-col gap-2">
+          <router-link to="/" class="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/10 text-white/80 transition-colors">
+            <span class="material-symbols-outlined text-[22px]">auto_stories</span>
+            <p class="text-sm font-medium">Thoughts</p>
+          </router-link>
+          <router-link to="/gallery" class="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/10 text-white/80 transition-colors">
+            <span class="material-symbols-outlined text-[22px]">photo_library</span>
+            <p class="text-sm font-medium">Gallery</p>
+          </router-link>
+          <router-link to="/diary" class="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/10 text-white/80 transition-colors">
+            <span class="material-symbols-outlined text-[22px]">edit_note</span>
+            <p class="text-sm font-medium">Diary</p>
+          </router-link>
+          <router-link to="/music" class="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/10 text-white/80 transition-colors">
+            <span class="material-symbols-outlined text-[22px]">music_note</span>
+            <p class="text-sm font-medium">Music</p>
+          </router-link>
+        </nav>
       </div>
-
-      <div class="divider"></div>
-
-      <div class="actions">
-        <button v-if="isAdmin" class="action-btn primary anim-squash" @click="goToManager" style="margin-right: 12px;">
-          <span class="material-icons">dashboard</span> 管理后台
-        </button>
-        <button class="logout-btn anim-squash" @click="handleLogout">
-          <span class="material-icons">logout</span>
-          退出登录
+      
+      <div class="flex flex-col gap-4">
+        <div class="h-px bg-white/10 w-full"></div>
+        <div class="flex items-center gap-4 px-4 py-2 rounded-lg bg-primary/20 text-white transition-colors cursor-pointer">
+          <span class="material-symbols-outlined text-[22px]">settings</span>
+          <p class="text-sm font-medium">Settings</p>
+        </div>
+        <button @click="signOut" class="flex items-center gap-4 px-4 py-2 rounded-lg hover:bg-white/10 text-red-400 transition-colors w-full text-left">
+          <span class="material-symbols-outlined text-[22px]">logout</span>
+          <p class="text-sm font-medium">Sign Out</p>
         </button>
       </div>
     </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 ml-64 p-12 overflow-y-auto">
+      <div class="max-w-3xl mx-auto space-y-8">
+        <header class="space-y-2">
+          <h1 class="text-3xl font-display font-bold text-white">Profile Settings</h1>
+          <p class="text-white/60">Manage your personal information and preferences.</p>
+        </header>
+
+        <!-- Profile Card -->
+        <div class="glass-card-dark p-8 rounded-[2rem] space-y-8">
+          <!-- Avatar -->
+          <div class="flex items-center gap-6">
+            <div class="relative size-24">
+              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgYG5fbrfAWYAbyZ7RmKq8IBLBAj6bbuVhR-COKsvf9zLkn7UK8IhEy7zQsn2FWb3n-Wf9-xvQX-ne5hKssruYZaOcM116VJWjTzmLyIO-LLLKLcBVtMQ_uL1ThysECYUBVxleFZSt_ZmhN-3s-mZrxirArEP9nN5vjZID5NmDaMMGXvXCEd8zsguRkntLDinf0r1jSD3Qf40ltscmLWb-HGfwakonh3J6UljgYOf7RI0eq2x4WHW49pdKb__McD7PxADWZ-jYgeY" 
+                   class="w-full h-full object-cover rounded-full border-2 border-white/10" alt="Avatar">
+              <button class="absolute bottom-0 right-0 size-8 bg-primary rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-sm">edit</span>
+              </button>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-white">Sanctuary User</h3>
+              <p class="text-white/40 text-sm">admin@example.com</p>
+            </div>
+          </div>
+
+          <!-- Form -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-white/60 uppercase tracking-wider">Display Name</label>
+              <input type="text" value="Sanctuary User" class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary/50 focus:outline-none transition-all">
+            </div>
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-white/60 uppercase tracking-wider">Username</label>
+              <input type="text" value="@sanctuary" class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary/50 focus:outline-none transition-all">
+            </div>
+            <div class="col-span-full space-y-2">
+              <label class="text-xs font-bold text-white/60 uppercase tracking-wider">Bio</label>
+              <textarea class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary/50 focus:outline-none transition-all h-32 resize-none">Just a quiet soul capturing moments in time.</textarea>
+            </div>
+          </div>
+          
+          <div class="pt-6 border-t border-white/10 flex justify-end gap-4">
+            <button class="px-6 py-2 rounded-lg text-white/60 hover:text-white transition-colors">Cancel</button>
+            <button class="px-6 py-2 rounded-lg bg-primary text-white font-medium shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all">Save Changes</button>
+          </div>
+        </div>
+
+        <!-- Privacy Card -->
+        <div class="glass-card-dark p-8 rounded-[2rem] space-y-6">
+           <h3 class="text-xl font-bold text-white">Privacy & Security</h3>
+           <div class="space-y-4">
+             <div class="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
+               <div>
+                 <h4 class="font-medium text-white">Public Profile</h4>
+                 <p class="text-sm text-white/40">Allow others to find your profile</p>
+               </div>
+               <div class="relative inline-block w-12 h-6 transition duration-200 ease-in-out rounded-full cursor-pointer bg-primary">
+                  <span class="absolute left-0 inline-block w-6 h-6 transition duration-200 ease-in-out transform translate-x-6 bg-white rounded-full shadow border-2 border-primary"></span>
+               </div>
+             </div>
+             
+             <div class="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
+               <div>
+                 <h4 class="font-medium text-white">Two-Factor Authentication</h4>
+                 <p class="text-sm text-white/40">Add an extra layer of security</p>
+               </div>
+               <button class="text-sm font-medium text-primary hover:text-white transition-colors">Enable</button>
+             </div>
+           </div>
+        </div>
+      </div>
+    </main>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { supabase } from '../lib/supabase'
 import { useRouter } from 'vue-router'
+import { supabase } from '../lib/supabase'
 
 const router = useRouter()
-const loading = ref(false)
-const uploading = ref(false)
-const email = ref('')
-const name = ref('')
-const avatarUrl = ref('')
-const isAdmin = ref(false)
 
-onMounted(async () => {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    router.push('/')
-    return
-  }
-  
-  email.value = user.email
-  name.value = user.user_metadata.full_name || ''
-  avatarUrl.value = user.user_metadata.avatar_url || ''
-  
-  if (user.email === '2730377018@qq.com') {
-    isAdmin.value = true
-  }
-})
-
-const goToManager = () => {
-  router.push('/manager')
-}
-
-const updateProfile = async () => {
-  try {
-    loading.value = true
-    const { error } = await supabase.auth.updateUser({
-      data: { full_name: name.value }
-    })
-    if (error) throw error
-    alert('资料已更新')
-  } catch (error) {
-    alert(error.message)
-  } finally {
-    loading.value = false
-  }
-}
-
-const uploadAvatar = async (event) => {
-  try {
-    uploading.value = true
-    const file = event.target.files[0]
-    if (!file) return
-
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${Math.random()}.${fileExt}`
-    const filePath = `${fileName}`
-
-    // Upload to 'avatars' bucket (Assuming it exists, if not need to create or handle error)
-    // For now, let's assume we might not have storage bucket set up yet or permissions.
-    // Ideally user needs to create a bucket named 'avatars' in Supabase dashboard.
-    // If we fail, we'll alert user.
-    
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(filePath, file)
-
-    if (uploadError) throw uploadError
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(filePath)
-
-    const { error: updateError } = await supabase.auth.updateUser({
-      data: { avatar_url: publicUrl }
-    })
-
-    if (updateError) throw updateError
-    
-    avatarUrl.value = publicUrl
-  } catch (error) {
-    console.error(error)
-    alert('上传头像失败: 请确保在Supabase中创建了名为"avatars"的公开存储桶')
-  } finally {
-    uploading.value = false
-  }
-}
-
-const handleLogout = async () => {
+const signOut = async () => {
   await supabase.auth.signOut()
-  router.push('/')
-  // Force reload to update App state or rely on App.vue listener
+  router.push('/login')
 }
 </script>
-
-<style scoped>
-.profile-page {
-  padding: 40px 20px;
-  min-height: 80vh;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-}
-
-.profile-card {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px);
-  width: 100%;
-  max-width: 600px;
-  border-radius: 24px;
-  padding: 40px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-  border: 1px solid rgba(255,255,255,0.5);
-}
-
-[data-theme="dark"] .profile-card {
-  background: rgba(30, 30, 30, 0.9);
-  border-color: rgba(255,255,255,0.1);
-  color: white;
-}
-
-.header {
-  text-align: center;
-  margin-bottom: 40px;
-}
-
-.header h2 {
-  font-size: 28px;
-  margin-bottom: 8px;
-}
-
-.header p {
-  color: var(--text-light);
-}
-
-.avatar-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 40px;
-}
-
-.avatar-wrapper {
-  position: relative;
-  width: 120px;
-  height: 120px;
-  margin-bottom: 16px;
-}
-
-.avatar-img, .avatar-placeholder {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 4px solid white;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.avatar-placeholder {
-  background: var(--primary-color);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 48px;
-  font-weight: bold;
-}
-
-.edit-avatar {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  background: var(--text-main);
-  color: white;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  transition: transform 0.2s;
-}
-
-[data-theme="dark"] .edit-avatar {
-  background: white;
-  color: black;
-}
-
-.edit-avatar:hover {
-  transform: scale(1.1);
-}
-
-.edit-avatar input {
-  display: none;
-}
-
-.email-display {
-  font-size: 18px;
-  font-weight: 500;
-  opacity: 0.8;
-}
-
-.form-section {
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-.input-group {
-  margin-bottom: 24px;
-}
-
-.input-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.input-group input {
-  width: 100%;
-  padding: 12px 16px;
-  border-radius: 8px;
-  border: 1px solid rgba(0,0,0,0.1);
-  background: rgba(255,255,255,0.5);
-  font-size: 16px;
-  transition: all 0.3s;
-}
-
-[data-theme="dark"] .input-group input {
-  background: rgba(0,0,0,0.2);
-  border-color: rgba(255,255,255,0.1);
-  color: white;
-}
-
-.input-group input:focus {
-  background: white;
-  border-color: var(--primary-color);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(255, 77, 109, 0.1);
-}
-
-.save-btn {
-  width: 100%;
-  padding: 14px;
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.save-btn:hover:not(:disabled) {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-}
-
-.divider {
-  height: 1px;
-  background: rgba(0,0,0,0.05);
-  margin: 32px 0;
-}
-
-[data-theme="dark"] .divider {
-  background: rgba(255,255,255,0.05);
-}
-
-.actions {
-  display: flex;
-  justify-content: center;
-}
-
-.action-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 24px;
-  border-radius: 50px;
-  border: none;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.action-btn.primary {
-  background: var(--primary-color);
-  color: white;
-}
-
-.action-btn.primary:hover {
-  background: var(--primary-dark);
-}
-
-.logout-btn {
-  background: transparent;
-  border: 1px solid var(--gray-300);
-  padding: 10px 24px;
-  border-radius: 50px;
-  color: var(--error);
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.3s;
-}
-
-[data-theme="dark"] .logout-btn {
-  border-color: var(--gray-300);
-}
-
-.logout-btn:hover {
-  background: #fff5f5;
-  border-color: var(--error);
-}
-
-[data-theme="dark"] .logout-btn:hover {
-  background: rgba(255, 77, 77, 0.1);
-}
-</style>

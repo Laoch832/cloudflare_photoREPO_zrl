@@ -31,3 +31,7 @@ node_modules
 # public/music/covers
 # public/music/hls
 # public/music.json
+
+# Local Cloudflare Wrangler outputs
+kv_*.txt
+kv_*.json
