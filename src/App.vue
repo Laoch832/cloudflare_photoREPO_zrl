@@ -327,18 +327,18 @@ onUnmounted(() => {
   left: 0;
   width: 100%;
   height: var(--vp-nav-height);
-  background-color: #fff;
-  border-bottom: 1px solid var(--vp-c-divider);
+  background-color: #fff; /* Always white */
+  border-bottom: 1px solid transparent; /* No border for clean look */
   z-index: 1000;
   transition: transform 0.3s ease;
 }
 
 [data-theme="dark"] .VPNav {
-  background-color: #1e1e1e;
+  background-color: #fff; /* Even in dark mode per user request, or maybe specific dark logic if they insist on dark mode support */
 }
 
 .VPNav.has-player {
-    top: 0; /* VitePress header stays top */
+    top: 0; 
 }
 
 .VPNav.navbar-hidden {
@@ -350,81 +350,74 @@ onUnmounted(() => {
     justify-content: space-between;
     align-items: center;
     height: 100%;
-    padding: 0 24px;
+    padding: 0 32px; /* More padding */
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 /* Title / Logo */
 .VPNavBarTitle {
     display: flex;
     align-items: center;
-    font-weight: 600;
-    font-size: 20px;
 }
 
 .logo-text {
-    color: var(--vp-c-text-1);
-    font-size: 24px;
-    font-weight: 800;
-    font-family: var(--font-sans); /* Remove cursive, use bold sans */
-    letter-spacing: -0.5px;
+    color: #00008b; /* Deep blue/purple for "Love" */
+    font-size: 32px; /* Bigger */
+    font-weight: 900; /* Extra Bold */
+    font-family: var(--font-sans);
+    letter-spacing: -1px;
 }
 
 /* Menu (Desktop) */
 .VPNavBarMenu {
     display: flex;
-    gap: 24px;
+    gap: 32px; /* More space */
     align-items: center;
+    margin-right: 20px;
 }
 
 .VPLink {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
-    color: var(--vp-c-text-1);
-    transition: color 0.25s;
+    color: #333; /* Dark gray text */
+    transition: color 0.2s;
     position: relative;
+    text-decoration: none;
 }
 
 .VPLink:hover, .VPLink.active {
-    color: var(--vp-c-brand-1);
+    color: #000; /* Black on hover */
+    font-weight: 600;
 }
 
+/* No underline, just text color change per screenshot style usually */
 .VPLink.active::after {
-    content: '';
-    position: absolute;
-    bottom: -22px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: var(--vp-c-brand-1);
+    display: none; 
 }
 
 /* Actions */
 .VPNavBarActions {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
 }
 
 .VPSwitchAppearance {
     background: transparent;
     border: none;
-    color: var(--vp-c-text-2);
+    color: #333;
     cursor: pointer;
-    padding: 4px;
-    border-radius: 4px;
+    padding: 8px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.25s;
+    transition: background 0.2s;
 }
 
 .VPSwitchAppearance:hover {
-    color: var(--vp-c-text-1);
-    background-color: var(--gray-100);
-}
-
-[data-theme="dark"] .VPSwitchAppearance:hover {
-    background-color: var(--gray-300);
+    background-color: rgba(0,0,0,0.05);
 }
 
 /* User Profile Styles */

@@ -47,6 +47,11 @@
 
         <!-- Right: Volume/Extras -->
         <div class="player-right">
+           <!-- Mobile Play Button (Visible only on mobile) -->
+           <button class="play-btn-circle mobile-play-btn" @click.stop="togglePlay" v-if="isMobile">
+              <span class="material-icons" style="font-size: 20px">{{ isPlaying ? 'pause' : 'play_arrow' }}</span>
+           </button>
+
           <button class="icon-btn small" title="歌词" @click.stop="toggleExpand">
             <span class="material-icons">lyrics</span>
           </button>
@@ -63,8 +68,23 @@
 </template>
 
 <script setup>
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, ref, onUnmounted } from 'vue'
 import { useMusic } from '../composables/useMusic'
+
+const isMobile = ref(false)
+
+const checkMobile = () => {
+    isMobile.value = window.innerWidth <= 768
+}
+
+onMounted(() => {
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+})
+
+onUnmounted(() => {
+    window.removeEventListener('resize', checkMobile)
+})
 
 const { 
   currentTrack, 
@@ -127,135 +147,168 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.top-player-bar {
+.bottom-player-bar {
   position: fixed;
-  top: 0;
+  bottom: 0;
   left: 0;
   width: 100%;
-  height: 64px;
-  background: rgba(255, 255, 255, 0.98);
-  border-bottom: 1px solid var(--gray-300);
-  z-index: 1100; /* Above Navbar (1000) */
+  height: 90px;
+  background: #181818; /* Spotify-like dark bg */
+  border-top: 1px solid #282828;
+  z-index: 1100;
+  color: #fff;
   display: flex;
   align-items: center;
-  backdrop-filter: blur(12px);
-  box-shadow: var(--shadow-sm);
+  padding: 0 16px;
   cursor: pointer;
-  transition: background 0.2s;
 }
 
-.top-player-bar:hover {
-  background: rgba(255, 255, 255, 1);
-}
-
-[data-theme="dark"] .top-player-bar {
-  background: rgba(30, 30, 30, 0.98);
-  border-bottom-color: var(--gray-300); /* Need to ensure gray-300 is dark mode compatible */
+/* Mobile: Move up above bottom nav */
+@media (max-width: 768px) {
+    .bottom-player-bar {
+        bottom: 80px; /* Adjust based on mobile nav height */
+        height: 64px;
+        background: rgba(30,30,30,0.95);
+        backdrop-filter: blur(10px);
+    }
 }
 
 .player-container {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  height: 100%;
+  align-items: center;
   width: 100%;
+  max-width: 100%; /* Full width */
 }
 
-.player-controls {
+/* Left Section */
+.player-left {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex: 0 0 auto;
+  width: 30%;
+  min-width: 180px;
+}
+
+.cover-thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-right: 14px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.info-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.artist {
+  font-size: 11px;
+  color: #b3b3b3;
+}
+
+.like-btn {
+    color: #b3b3b3;
+}
+.like-btn:hover {
+    color: #fff;
+}
+
+/* Center Section */
+.player-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 40%;
+  max-width: 722px;
+}
+
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
 }
 
 .icon-btn {
   background: transparent;
   border: none;
-  color: var(--text-secondary);
-  padding: 8px;
-  border-radius: 50%;
+  color: #b3b3b3;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: color 0.2s;
 }
 
 .icon-btn:hover {
-  background: var(--gray-100);
-  color: var(--text-primary);
+  color: #fff;
 }
 
 .icon-btn.active {
-  color: var(--primary-color);
-  background: rgba(255, 77, 109, 0.1);
+    color: var(--primary-color);
 }
 
-.play-btn {
-  width: 36px;
-  height: 36px;
+.icon-btn.small .material-icons {
+    font-size: 20px;
+}
+
+.play-btn-circle {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: var(--primary-color);
-  color: white;
+  background: #fff;
+  color: #000;
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.2s;
+  transition: transform 0.2s;
 }
 
-.play-btn:hover {
-  background: var(--primary-dark);
+.play-btn-circle:hover {
   transform: scale(1.05);
 }
 
-.player-center {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  margin: 0 24px;
-  max-width: 600px;
-}
-
-.track-info {
+.progress-row {
   display: flex;
   align-items: center;
-  justify-content: center;
+  width: 100%;
   gap: 8px;
-  margin-bottom: 6px;
-  font-size: var(--text-sm);
 }
 
-.cover-thumb {
-  width: 20px;
-  height: 20px;
-  border-radius: 2px;
-  object-fit: cover;
-}
-
-.title {
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-}
-
-.artist {
-  color: var(--text-tertiary);
+.time {
+  font-size: 11px;
+  color: #b3b3b3;
+  min-width: 35px;
+  text-align: center;
 }
 
 .progress-bar-wrapper {
+  flex: 1;
   height: 12px;
   display: flex;
   align-items: center;
   cursor: pointer;
+  group: hover;
 }
 
 .progress-track {
   width: 100%;
   height: 4px;
-  background: var(--gray-300);
+  background: #535353;
   border-radius: 2px;
   position: relative;
   overflow: hidden;
@@ -263,50 +316,59 @@ onMounted(async () => {
 
 .progress-fill {
   position: absolute;
-  left: 0;
   top: 0;
+  left: 0;
   height: 100%;
-  background: var(--primary-color);
+  background: #fff;
   border-radius: 2px;
-  transition: width 0.1s linear;
+  transition: background 0.2s;
 }
 
-.progress-buffer {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  background: rgba(0,0,0,0.05);
-  z-index: 0;
+.progress-bar-wrapper:hover .progress-fill {
+    background: var(--primary-color);
 }
 
-.progress-bar-wrapper:hover .progress-track {
-  height: 6px;
-}
-
-.player-meta {
+/* Right Section */
+.player-right {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex: 0 0 auto;
+  justify-content: flex-end;
+  width: 30%;
+  min-width: 180px;
+  gap: 8px;
 }
 
-.time {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-  font-variant-numeric: tabular-nums;
+.volume-control {
+    display: flex;
+    align-items: center;
+    width: 100px;
+    gap: 8px;
 }
 
-/* Animations */
-.slide-down-enter-active,
-.slide-down-leave-active {
-  transition: transform 0.3s ease, opacity 0.3s ease;
+.volume-icon {
+    font-size: 20px;
+    color: #b3b3b3;
 }
 
-.slide-down-enter-from,
-.slide-down-leave-to {
-  transform: translateY(-100%);
-  opacity: 0;
+.volume-bar {
+    flex: 1;
+    height: 4px;
+    background: #535353;
+    border-radius: 2px;
+    position: relative;
+}
+
+.volume-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background: #b3b3b3;
+    border-radius: 2px;
+}
+
+.volume-control:hover .volume-fill {
+    background: #fff;
 }
 
 /* Mobile Adjustments */
@@ -348,5 +410,15 @@ onMounted(async () => {
   .title {
       font-size: 13px;
   }
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform 0.3s ease;
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(100%);
 }
 </style>
