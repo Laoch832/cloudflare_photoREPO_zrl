@@ -31,3 +31,4 @@ node_modules
 # public/music/covers
 # public/music/hls
 # public/music.json
+/public/images/thumbnails
