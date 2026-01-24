@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import './style.css'
+import './style.css' // Import global styles
 import App from './App.vue'
 import router from './router'
 import { inject } from '@vercel/analytics'
