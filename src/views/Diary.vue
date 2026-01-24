@@ -204,7 +204,7 @@ onUnmounted(() => {
   min-height: 100vh;
   padding-top: 80px;
   padding-bottom: 60px;
-  background-color: var(--bg-color);
+  background-color: #fff; /* Enforce white background */
   color: var(--text-main);
 }
 
