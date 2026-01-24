@@ -67,10 +67,11 @@
         </div>
       </div>
     </div>
+  </transition>
     
-    <!-- Playlist Popup -->
-    <transition name="slide-up-playlist">
-      <div v-if="showPlaylist" class="playlist-popup">
+  <!-- Playlist Popup -->
+  <transition name="slide-up-playlist">
+    <div v-if="showPlaylist" class="playlist-popup">
         <div class="playlist-header">
           <h3>播放列表</h3>
           <button class="icon-btn" @click="showPlaylist = false"><span class="material-icons">close</span></button>
@@ -93,7 +94,6 @@
         </div>
       </div>
     </transition>
-  </transition>
 </template>
 
 <script setup>
