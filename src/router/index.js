@@ -17,7 +17,7 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: Login,
-    meta: { hideChrome: true, hidePlayer: true }
+    meta: { hideChrome: false, hidePlayer: true }
   },
   {
     path: '/profile',

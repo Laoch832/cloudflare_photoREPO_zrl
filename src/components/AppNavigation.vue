@@ -82,12 +82,4 @@ onMounted(async () => {
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
 }
-
-.nav-link {
-  @apply px-4 py-1.5 rounded-full text-sm font-medium text-white/50 hover:text-white hover:bg-white/5 transition-all;
-}
-
-.nav-link.active {
-  @apply bg-white/10 text-white font-semibold;
-}
 </style>
