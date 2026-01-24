@@ -11,8 +11,7 @@ ffmpeg.setFfmpegPath(ffmpegStatic);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const musicDir = path.join(__dirname, '../assets-src/music');
-const publicMusicDir = path.join(__dirname, '../public/music');
+const musicDir = path.join(__dirname, '../public/music');
 const coversDir = path.join(__dirname, '../public/music/covers');
 const hlsDir = path.join(__dirname, '../public/music/hls');
 const outputFile = path.join(__dirname, '../public/music.json');
@@ -61,13 +60,9 @@ const convertToHls = (inputPath, outputDir, fileNameBase) => {
 async function generate() {
   try {
     if (!fs.existsSync(musicDir)) {
-      console.log('Music source directory not found, creating empty index.');
+      console.log('Music directory not found, creating empty index.');
       fs.writeFileSync(outputFile, JSON.stringify([]));
       process.exit(0);
-    }
-
-    if (!fs.existsSync(publicMusicDir)) {
-        fs.mkdirSync(publicMusicDir, { recursive: true });
     }
 
     if (!fs.existsSync(coversDir)) {
@@ -158,7 +153,7 @@ async function generate() {
           id: Buffer.from(file).toString('base64'),
           filename: file,
           url: `/music/hls/${encodeURIComponent(fileNameBase)}/${encodeURIComponent(fileNameBase)}.m3u8`,
-          originalUrl: null, // Removed to speed up deployment (was: /music/${encodeURIComponent(file)})
+          originalUrl: `/music/${encodeURIComponent(file)}`, // Fallback or download link
           isHls: true,
           ...metadata,
           cover: metadata.cover ? `/music/covers/${encodeURIComponent(metadata.cover)}` : null,

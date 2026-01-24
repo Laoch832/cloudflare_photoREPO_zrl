@@ -10,7 +10,6 @@ export default {
       colors: {
         "primary": "#ff4d94", // Home Pink
         "login-primary": "#f49d25", // Login Orange
-        "settings-primary": "#8b5cf6", // Account Settings Purple
         "diary-accent": "#E88D7D", // Diary Rose
         "music-accent": "#ff2d55", // Music Red
         "muted-rose": "#C58F8F",

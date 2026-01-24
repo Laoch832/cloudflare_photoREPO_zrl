@@ -6,9 +6,7 @@
   "scripts": {
     "dev": "node scripts/build-index.js && node scripts/build-music-index.js && vite",
     "build": "node scripts/build-index.js && node scripts/build-music-index.js && vite build && node scripts/clean-dist.js",
-    "preview": "vite preview",
-    "lint": "eslint . --fix",
-    "format": "prettier --write ."
+    "preview": "vite preview"
   },
   "dependencies": {
     "@cloudflare/kv-asset-handler": "^0.3.4",

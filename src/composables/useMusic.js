@@ -18,9 +18,6 @@ const buffered = ref(0)
 // Audio element (not reactive)
 let audio = null
 let hls = null
-let lyricTimes = []
-let lastLyricIndex = -1
-let timeupdateRafId = 0
 
 export function useMusic() {
   
@@ -55,39 +52,16 @@ export function useMusic() {
       })
 
       audio.addEventListener('timeupdate', () => {
-        if (timeupdateRafId) return
-        const schedule = typeof requestAnimationFrame === 'function'
-          ? requestAnimationFrame
-          : (cb) => setTimeout(cb, 0)
-        timeupdateRafId = schedule(() => {
-          timeupdateRafId = 0
-          currentTime.value = audio.currentTime
-          if (lyricTimes.length > 0) {
-            const t = currentTime.value
-            let nextIndex = -1
-            if (
-              lastLyricIndex >= 0 &&
-              lastLyricIndex < lyricTimes.length - 1 &&
-              t >= lyricTimes[lastLyricIndex] &&
-              t < lyricTimes[lastLyricIndex + 1]
-            ) {
-              nextIndex = lastLyricIndex
-            } else if (t >= lyricTimes[0]) {
-              let lo = 0
-              let hi = lyricTimes.length
-              while (lo < hi) {
-                const mid = (lo + hi) >> 1
-                if (lyricTimes[mid] <= t) lo = mid + 1
-                else hi = mid
-              }
-              nextIndex = lo - 1
-            }
-            if (nextIndex !== currentLyricIndex.value) {
-              currentLyricIndex.value = nextIndex
-            }
-            lastLyricIndex = nextIndex
+        currentTime.value = audio.currentTime
+        
+        // Update lyric index
+        if (parsedLyrics.value.length > 0) {
+          let index = parsedLyrics.value.findIndex(l => l.time > currentTime.value)
+          if (index === -1) {
+             index = parsedLyrics.value.length
           }
-        })
+          currentLyricIndex.value = index - 1
+        }
       })
 
       audio.addEventListener('loadedmetadata', () => {
@@ -119,7 +93,7 @@ export function useMusic() {
       currentTrackIndex.value = index
       
       const track = playlist.value[index]
-      if (import.meta.env.DEV) console.log('Playing track:', track.url)
+      console.log('Playing track:', track.url)
       
       // Reset state
       currentTime.value = 0
@@ -174,10 +148,10 @@ export function useMusic() {
             console.error('HLS setup failed:', e)
             // Fallback to original file if available
             if (track.originalUrl) {
-               if (import.meta.env.DEV) console.log('Falling back to original file:', track.originalUrl)
+               console.log('Falling back to original file:', track.originalUrl)
                audio.src = track.originalUrl
                audio.load()
-               audio.play().then(() => isPlaying.value = true).catch(() => isPlaying.value = false)
+               audio.play().then(() => isPlaying.value = true).catch(e => isPlaying.value = false)
             }
           }
         }
@@ -208,15 +182,8 @@ export function useMusic() {
   const togglePlay = () => {
     initAudio()
     if (audio.paused) {
-      const playPromise = audio.play()
-      if (playPromise !== undefined) {
-        playPromise.then(() => isPlaying.value = true).catch(e => {
-          console.error('Play failed:', e)
-          isPlaying.value = false
-        })
-      } else {
-        isPlaying.value = true
-      }
+      audio.play().catch(e => console.error('Play failed:', e))
+      isPlaying.value = true
     } else {
       audio.pause()
       isPlaying.value = false
@@ -309,15 +276,11 @@ export function useMusic() {
   const loadLyrics = async (id) => {
     parsedLyrics.value = []
     currentLyricIndex.value = -1
-    lyricTimes = []
-    lastLyricIndex = -1
     try {
       const response = await fetch(`/music/lyrics/${id}.lrc`)
       if (response.ok) {
         const text = await response.text()
-        const nextLyrics = parseLyrics(text).sort((a, b) => a.time - b.time)
-        parsedLyrics.value = nextLyrics
-        lyricTimes = nextLyrics.map(l => l.time)
+        parsedLyrics.value = parseLyrics(text)
       } else {
         // console.warn('No lyrics found for', id)
       }
@@ -329,15 +292,7 @@ export function useMusic() {
   const seek = (time) => {
     if (audio) {
       audio.currentTime = time
-      currentTime.value = audio.currentTime
     }
-  }
-
-  const setVolume = (value) => {
-    const next = Math.max(0, Math.min(1, Number(value)))
-    if (Number.isNaN(next)) return
-    volume.value = next
-    if (audio) audio.volume = next
   }
 
   return {
@@ -361,7 +316,6 @@ export function useMusic() {
     toggleMinimize,
     toggleExpand,
     toggleShuffle,
-    seek,
-    setVolume
+    seek
   }
 }

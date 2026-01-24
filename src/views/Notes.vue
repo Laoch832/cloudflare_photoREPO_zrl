@@ -1,131 +1,134 @@
 <template>
-  <div class="notes-page min-h-screen bg-[#F2F2F7] font-sans antialiased text-gray-900 pb-32">
-    <!-- Top Navigation Pill (Shared) -->
-    <div class="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-auto">
-      <nav class="ios-glass-nav px-1.5 py-1.5 rounded-full flex items-center gap-1 shadow-sm">
-        <router-link to="/" class="px-5 py-2.5 rounded-full text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-white/50 transition-all">
-          Home
-        </router-link>
-        <router-link to="/gallery" class="px-5 py-2.5 rounded-full text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-white/50 transition-all">
-          Gallery
-        </router-link>
-        <router-link to="/diary" class="px-5 py-2.5 rounded-full text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-white/50 transition-all">
-          Diary
-        </router-link>
-        <div class="px-6 py-2.5 rounded-full bg-white shadow-sm text-sm font-semibold text-gray-900">
-          Notes
-        </div>
-      </nav>
-    </div>
-
-    <main class="pt-32 px-6 max-w-5xl mx-auto">
+  <div class="notes-page">
+    <div class="container">
       <!-- Toolbar -->
-      <div class="notes-toolbar animate-fade-in mb-12 flex justify-between items-center flex-wrap gap-6">
-        <div class="toolbar-left flex items-center gap-6 flex-1">
-          <h1 class="font-display text-4xl font-bold tracking-tight text-gray-900">Document Sanctuary</h1>
-          <div class="search-bar ios-glass-card border-none bg-white/50 px-4 py-2 rounded-xl flex items-center flex-1 max-w-md">
-            <span class="material-symbols-outlined text-gray-400 mr-3">search</span>
-            <input type="text" placeholder="Search documents..." v-model="searchQuery" class="bg-transparent border-none outline-none text-sm w-full">
+      <div class="notes-toolbar fade-in">
+        <div class="toolbar-left">
+          <h1 class="page-title">心事文档</h1>
+          <div class="search-bar smooth-transition">
+            <span class="material-icons search-icon">search</span>
+            <input type="text" placeholder="搜索心事..." v-model="searchQuery">
           </div>
         </div>
         <div class="toolbar-right">
-          <button v-if="isAdmin" class="magic-gradient text-white px-6 py-2.5 rounded-full font-medium shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all flex items-center gap-2" @click="showCreateModal = true">
-            <span class="material-symbols-outlined text-[20px]">add</span> Create
+          <button v-if="isAdmin" class="action-btn create-btn anim-squash" @click="showCreateModal = true">
+            <span class="material-icons">add</span> 新建
           </button>
+          <div class="view-controls">
+            <button class="icon-btn anim-squash" :class="{ active: viewMode === 'grid' }" @click="viewMode = 'grid'">
+              <span class="material-icons">grid_view</span>
+            </button>
+            <button class="icon-btn anim-squash" :class="{ active: viewMode === 'list' }" @click="viewMode = 'list'">
+              <span class="material-icons">view_list</span>
+            </button>
+            <button class="icon-btn anim-squash" @click="toggleSort" title="排序">
+              <span class="material-icons">sort_by_alpha</span>
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- Create Modal -->
-      <div v-if="showCreateModal" class="fixed inset-0 z-[2000] flex items-center justify-center p-6" @click="showCreateModal = false">
-        <div class="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
-        <div class="relative bg-white p-8 rounded-2xl w-full max-w-2xl shadow-2xl" @click.stop>
-          <h3 class="text-xl font-bold mb-6">Capture a New Thought</h3>
-          <div class="space-y-4">
-            <input v-model="newNoteTitle" placeholder="Title" class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all">
-            <textarea v-model="newNoteContent" placeholder="Write your content here..." class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[300px] resize-none"></textarea>
-          </div>
-          <div class="mt-8 flex justify-end gap-4">
-            <button @click="showCreateModal = false" class="px-6 py-2.5 rounded-xl text-gray-500 hover:bg-gray-50 transition-all">Cancel</button>
-            <button @click="createNote" class="magic-gradient text-white px-8 py-2.5 rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all" :disabled="saving">
-              {{ saving ? 'Saving...' : 'Publish' }}
+      <div v-if="showCreateModal" class="modal-overlay">
+        <div class="modal-card">
+          <h3>写下新的心事</h3>
+          <input v-model="newNoteTitle" placeholder="标题" class="modal-input smooth-transition">
+          <textarea v-model="newNoteContent" placeholder="内容..." class="modal-textarea smooth-transition"></textarea>
+          <div class="modal-actions">
+            <button @click="showCreateModal = false" class="cancel-btn anim-squash">取消</button>
+            <button @click="createNote" class="confirm-btn anim-squash" :disabled="saving">
+              {{ saving ? '发布中...' : '发布' }}
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Main Content Container -->
-      <div class="docs-container animate-fade-in" style="animation-delay: 0.1s">
+      <!-- Main Content -->
+      <div class="docs-container fade-in" style="animation-delay: 0.1s">
         <!-- Loading State -->
-        <div v-if="loading" class="py-20 flex flex-col items-center justify-center text-gray-400 gap-4">
-          <div class="animate-spin size-8 border-2 border-primary/30 border-t-primary rounded-full"></div>
-          <p class="text-sm font-medium">Retrieving documents...</p>
+        <div v-if="loading" class="loading-state">
+          <div class="spinner"></div>
+          <p>正在加载文档...</p>
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="filteredNotes.length === 0" class="py-20 text-center text-gray-400">
-          <span class="material-symbols-outlined text-5xl mb-4 opacity-20">description</span>
-          <p class="font-serif italic text-lg">No documents found in the sanctuary...</p>
+        <div v-else-if="filteredNotes.length === 0" class="empty-state">
+          <span class="material-icons empty-icon">description</span>
+          <p>没有找到相关的心事...</p>
         </div>
 
-        <!-- Document Grid -->
-        <div v-else-if="!selectedNote" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div 
-            v-for="note in filteredNotes" 
-            :key="note.id" 
-            class="ios-glass-card bg-white p-6 rounded-[1.5rem] cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col h-[320px]"
-            @click="openNote(note)"
-          >
-            <div class="flex-1 overflow-hidden mask-linear-fade">
-              <div class="text-gray-500 text-sm leading-relaxed font-serif whitespace-pre-wrap" v-html="note.summary"></div>
-            </div>
-            <div class="mt-6 pt-6 border-t border-gray-50">
-              <h3 class="font-bold text-gray-900 truncate group-hover:text-primary transition-colors">{{ note.title }}</h3>
-              <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">{{ formatDate(note.created_at) }}</p>
+        <!-- Document Grid/List -->
+        <div v-else-if="!selectedNote" class="docs-grid" :class="{ 'list-view': viewMode === 'list' }">
+          <div class="grid-wrapper">
+            <div 
+              v-for="note in filteredNotes" 
+              :key="note.id" 
+              class="doc-card anim-hover-lift"
+              @click="openNote(note)"
+            >
+              <div class="doc-preview">
+                <div class="doc-content-preview">
+                  {{ note.summary }}
+                </div>
+              </div>
+              <div class="doc-info">
+                <div class="doc-title">{{ note.title }}</div>
+                <div class="doc-meta">
+                  <span class="doc-date">{{ formatDate(note.created_at) }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Document Reader View -->
-        <div v-else class="animate-fade-in">
-          <div class="mb-8 flex items-center justify-between">
-            <button class="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors font-medium" @click="closeNote">
-              <span class="material-symbols-outlined">arrow_back</span> Back to Sanctuary
+        <!-- Document Editor View -->
+        <div v-else class="doc-editor slide-up">
+          <div class="editor-toolbar container">
+            <button class="back-btn anim-squash" @click="closeNote">
+              <span class="material-icons">arrow_back</span> 返回列表
             </button>
-            <button class="ios-glass-card bg-white px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 hover:bg-white/80" @click="copyShareLink">
-              <span class="material-symbols-outlined text-base">share</span> Share
-            </button>
+            <div class="editor-title">
+              <h2>{{ selectedNote.title }}</h2>
+              <span class="editor-date">{{ formatDate(selectedNote.created_at) }}</span>
+            </div>
+            <div class="editor-actions">
+              <button class="share-btn anim-squash" @click="copyShareLink">
+                <span class="material-icons">share</span> 分享
+              </button>
+            </div>
           </div>
           
-          <div class="ios-glass-card bg-white p-12 md:p-20 rounded-[2.5rem] shadow-sm">
-            <div class="text-center mb-16 space-y-2">
-              <h2 class="text-4xl font-display font-bold text-gray-900">{{ selectedNote.title }}</h2>
-              <p class="text-gray-400 text-xs font-bold uppercase tracking-[0.2em]">{{ formatDate(selectedNote.created_at) }}</p>
+          <div class="editor-content-wrapper container">
+            <div class="editor-paper">
+              <div class="paper-content" v-html="selectedNote.content"></div>
             </div>
-            <div class="prose prose-lg max-w-none font-serif text-gray-800 leading-loose" v-html="selectedNote.content"></div>
           </div>
         </div>
       </div>
-    </main>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { supabase } from '../lib/supabase'
-import { fetchJsonCached } from '../lib/fetchJsonCached'
 
 const loading = ref(true)
 const notes = ref([])
 const selectedNote = ref(null)
 const searchQuery = ref('')
+const viewMode = ref('grid') // 'grid' or 'list'
+const sortDesc = ref(true)
 const isAdmin = ref(false)
 const showCreateModal = ref(false)
 const newNoteTitle = ref('')
 const newNoteContent = ref('')
 const saving = ref(false)
 
+// Computed
 const filteredNotes = computed(() => {
   let result = [...notes.value]
+  
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     result = result.filter(note => 
@@ -133,9 +136,15 @@ const filteredNotes = computed(() => {
       note.summary.toLowerCase().includes(query)
     )
   }
-  return result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+  
+  return result.sort((a, b) => {
+    const dateA = new Date(a.created_at)
+    const dateB = new Date(b.created_at)
+    return sortDesc.value ? dateB - dateA : dateA - dateB
+  })
 })
 
+// Methods
 const checkAdmin = async () => {
   const { data: { user } } = await supabase.auth.getUser()
   if (user && user.email === '2730377018@qq.com') {
@@ -144,7 +153,8 @@ const checkAdmin = async () => {
 }
 
 const createNote = async () => {
-  if (!newNoteTitle.value) return alert('Please enter a title')
+  if (!newNoteTitle.value) return alert('请输入标题')
+  
   saving.value = true
   try {
     const { data: { user } } = await supabase.auth.getUser()
@@ -156,13 +166,16 @@ const createNote = async () => {
         user_id: user.id,
         is_published: true
       })
+      
     if (error) throw error
+    
+    alert('发布成功！')
     showCreateModal.value = false
     newNoteTitle.value = ''
     newNoteContent.value = ''
     fetchNotes()
   } catch (error) {
-    alert('Failed to publish: ' + error.message)
+    alert('发布失败: ' + error.message)
   } finally {
     saving.value = false
   }
@@ -170,43 +183,57 @@ const createNote = async () => {
 
 const copyShareLink = () => {
   const url = `${window.location.origin}/notes#${selectedNote.value.id}`
-  navigator.clipboard.writeText(url).then(() => alert('Link copied!'))
+  navigator.clipboard.writeText(url).then(() => {
+    alert('链接已复制到剪贴板！')
+  }).catch(() => {
+    alert('复制失败，请手动复制地址栏链接')
+  })
 }
 
 const formatDate = (dateStr) => {
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()
+  const date = new Date(dateStr)
+  return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
+}
+
+const toggleSort = () => {
+  sortDesc.value = !sortDesc.value
 }
 
 const openNote = (note) => {
   selectedNote.value = note
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  window.scrollTo(0, 0)
 }
 
 const closeNote = () => {
   selectedNote.value = null
 }
 
+// Fetch notes
 const fetchNotes = async () => {
   try {
-    const { data: dbNotes } = await supabase
+    // Fetch from Supabase first
+    const { data: dbNotes, error } = await supabase
       .from('notes')
       .select('*')
       .eq('is_published', true)
       .order('created_at', { ascending: false })
       
     let allNotes = []
-    if (dbNotes) {
+    
+    if (!error && dbNotes) {
       allNotes = dbNotes.map(n => ({
         id: n.id,
-        title: n.title,
+        title: n.title, // Standardized
         content: n.content,
-        summary: n.summary || n.content.substring(0, 200).replace(/<[^>]*>/g, '') + '...',
-        created_at: n.created_at
+        summary: n.summary || n.content.substring(0, 100).replace(/<[^>]*>/g, '') + '...',
+        created_at: n.created_at // Standardized
       }))
     }
 
+    // Fetch from local JSON (legacy) - Map to standard structure
     try {
-      const localData = await fetchJsonCached('/notes.json')
+      const response = await fetch('/notes.json')
+      const localData = await response.json()
       const mappedLocal = localData.map(n => ({
         id: n.id,
         title: n.filename ? n.filename.replace('.docx', '') : n.id,
@@ -216,10 +243,12 @@ const fetchNotes = async () => {
       }))
       allNotes = [...allNotes, ...mappedLocal]
     } catch (e) {
-      // Ignore missing local file
+      console.warn('No local notes.json found')
     }
     
     notes.value = allNotes
+    
+    // Check hash for direct link
     const hash = window.location.hash.substring(1)
     if (hash) {
       const found = allNotes.find(n => n.id === hash)
@@ -239,16 +268,404 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.mask-linear-fade {
-  mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+.notes-page {
+  min-height: 100vh;
+  background-color: #fff; /* White background per request */
+  color: var(--text-primary);
+  padding-top: 40px; /* Space from global nav */
 }
-.animate-fade-in {
-  opacity: 0;
-  animation: fadeIn 0.8s ease-out forwards;
+
+/* Toolbar */
+.notes-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 20px;
 }
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex: 1;
+}
+
+.page-title {
+  font-size: 32px;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -1px;
+}
+
+.search-bar {
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+  transition: all 0.2s;
+}
+
+.search-bar:focus-within {
+  background: #fff;
+  box-shadow: 0 0 0 2px var(--primary-color);
+}
+
+.search-icon {
+  color: #888;
+  margin-right: 12px;
+}
+
+.search-bar input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 14px;
+  outline: none;
+  color: inherit;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.view-controls {
+  display: flex;
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.icon-btn:hover {
+  background: rgba(0,0,0,0.05);
+  color: #000;
+}
+
+.icon-btn.active {
+  background: #fff;
+  color: var(--primary-color);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #000;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: transform 0.2s;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Docs Grid */
+.docs-container {
+  padding-bottom: 120px;
+}
+
+.grid-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.list-view .grid-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.doc-card {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 320px;
+  display: flex;
+  flex-direction: column;
+}
+
+.doc-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+  border-color: transparent;
+}
+
+.doc-preview {
+  flex: 1;
+  background: #fafafa;
+  padding: 24px;
+  overflow: hidden;
+  position: relative;
+  font-family: 'Times New Roman', serif;
+}
+
+.doc-content-preview {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #666;
+  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+}
+
+.doc-info {
+  padding: 16px 20px;
+  background: #fff;
+  border-top: 1px solid #f5f5f5;
+}
+
+.doc-title {
+  font-weight: 700;
+  font-size: 16px;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.doc-meta {
+  font-size: 12px;
+  color: #999;
+}
+
+/* List View Overrides */
+.list-view .doc-card {
+  height: 72px;
+  flex-direction: row;
+  align-items: center;
+  padding: 0 24px;
+}
+
+.list-view .doc-preview {
+  display: none;
+}
+
+.list-view .doc-info {
+  border: none;
+  padding: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.list-view .doc-title {
+  margin: 0;
+  font-size: 15px;
+}
+
+/* Editor */
+.doc-editor {
+  position: fixed;
+  top: var(--vp-nav-height); /* Below global nav */
+  left: 0;
+  width: 100%;
+  height: calc(100vh - var(--vp-nav-height));
+  background: #f9f9f9;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-toolbar {
+  height: 60px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+.back-btn {
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #666;
+}
+
+.back-btn:hover {
+  color: #000;
+}
+
+.editor-title {
+  text-align: center;
+}
+
+.editor-title h2 {
+  font-size: 16px;
+  margin: 0;
+  font-weight: 700;
+}
+
+.editor-date {
+  font-size: 12px;
+  color: #999;
+}
+
+.share-btn {
+  background: #000;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.editor-content-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  padding: 40px 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.editor-paper {
+  background: #fff;
+  width: 100%;
+  max-width: 800px;
+  min-height: 1000px;
+  padding: 80px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  border-radius: 4px;
+}
+
+.paper-content {
+  font-family: 'Georgia', serif;
+  font-size: 18px;
+  line-height: 1.8;
+  color: #333;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 0;
+  color: #999;
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  opacity: 0.2;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-card {
+  background: white;
+  padding: 32px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.modal-input, .modal-textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 16px 0;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+.modal-textarea {
+  min-height: 200px;
+  resize: vertical;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.confirm-btn {
+  background: #000;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background: transparent;
+  border: 1px solid #dadce0;
+  padding: 10px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: inherit;
+}
+
+@media (max-width: 768px) {
+  .notes-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .toolbar-left {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .search-bar {
+    max-width: 100%;
+  }
+  
+  .editor-paper {
+    padding: 30px;
+  }
 }
 </style>
