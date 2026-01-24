@@ -49,17 +49,17 @@ async function generate() {
 
       // Generate thumbnail
       if (sharp) {
-        const thumbName = `thumb_${file}`;
+        const thumbName = `thumb_${path.parse(file).name}.webp`;
         const thumbPath = path.join(thumbnailsDir, thumbName);
         
         // Only generate if not exists
         if (!fs.existsSync(thumbPath)) {
           try {
             await sharp(filePath)
-              .resize(300, 300, { fit: 'inside' }) // Resize to max 300x300
-              .jpeg({ quality: 60 }) // Low quality for thumbnail
+              .resize(400, 400, { fit: 'inside', withoutEnlargement: true }) // slightly larger but WebP is efficient
+              .webp({ quality: 70 }) // WebP format
               .toFile(thumbPath);
-            console.log(`Generated thumbnail for ${file}`);
+            console.log(`Generated WebP thumbnail for ${file}`);
           } catch (err) {
             console.error(`Failed to generate thumbnail for ${file}:`, err.message);
           }
