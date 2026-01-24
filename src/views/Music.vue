@@ -55,6 +55,7 @@
               <p 
                 v-for="(line, index) in parsedLyrics" 
                 :key="index"
+                :data-lyric-index="index"
                 class="text-2xl md:text-3xl font-bold transition-all duration-500 cursor-pointer origin-left hover:opacity-100"
                 :class="index === currentLyricIndex ? 'text-white scale-100 opacity-100 blur-0' : 'text-white/20 scale-95 blur-[1px] hover:text-white/40'"
                 @click="seek(line.time)"
@@ -119,11 +120,14 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useMusic } from '../composables/useMusic'
+import { fetchJsonCached } from '../lib/fetchJsonCached'
 
 const lyricsContainer = ref(null)
+let scrollRafId = 0
 
 const { 
   currentTrack, 
+  playlist,
   isPlaying, 
   togglePlay, 
   nextTrack, 
@@ -133,6 +137,8 @@ const {
   currentTime, 
   duration, 
   seek,
+  loadPlaylist,
+  playTrack,
   parsedLyrics,
   currentLyricIndex
 } = useMusic()
@@ -164,15 +170,30 @@ const onSeekClick = (e) => {
 watch(currentLyricIndex, (newIndex) => {
   if (newIndex >= 0 && lyricsContainer.value) {
     nextTick(() => {
-      // Find the active line (using index instead of class selection for reliability)
-      const lines = lyricsContainer.value.querySelectorAll('p')
-      const activeLine = lines[newIndex]
-      
-      if (activeLine) {
-        activeLine.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      }
+      if (scrollRafId) cancelAnimationFrame(scrollRafId)
+      scrollRafId = requestAnimationFrame(() => {
+        scrollRafId = 0
+        const activeLine = lyricsContainer.value?.querySelector?.(`[data-lyric-index="${newIndex}"]`)
+        if (activeLine) activeLine.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      })
     })
   }
+})
+
+onMounted(async () => {
+  if (playlist.value.length > 0) return
+  try {
+    const tracks = await fetchJsonCached('/music.json')
+    if (playlist.value.length === 0) loadPlaylist(tracks)
+    if (!currentTrack.value && tracks.length > 0) playTrack(0)
+  } catch (e) {
+    console.error('Failed to load music:', e)
+  }
+})
+
+onUnmounted(() => {
+  if (scrollRafId) cancelAnimationFrame(scrollRafId)
+  scrollRafId = 0
 })
 </script>
 

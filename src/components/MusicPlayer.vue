@@ -53,12 +53,14 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMusic } from '../composables/useMusic'
+import { fetchJsonCached } from '../lib/fetchJsonCached'
 
 const router = useRouter()
-const { currentTrack, isPlaying, togglePlay, nextTrack, currentTime, duration } = useMusic()
+const { currentTrack, playlist, loadPlaylist, isPlaying, togglePlay, nextTrack, currentTime, duration } = useMusic()
+let preloadHandle = 0
 
 const progressPercent = computed(() => {
   if (!duration.value) return 0
@@ -68,6 +70,29 @@ const progressPercent = computed(() => {
 const navigateToMusic = () => {
   router.push('/music')
 }
+
+onMounted(() => {
+  if (playlist.value.length > 0) return
+  const schedule = typeof requestIdleCallback === 'function'
+    ? requestIdleCallback
+    : (cb) => setTimeout(cb, 0)
+  preloadHandle = schedule(async () => {
+    if (playlist.value.length > 0) return
+    try {
+      const tracks = await fetchJsonCached('/music.json')
+      if (playlist.value.length === 0) loadPlaylist(tracks)
+    } catch (e) {
+      if (import.meta.env.DEV) console.error('Failed to preload music index:', e)
+    }
+  })
+})
+
+onUnmounted(() => {
+  if (!preloadHandle) return
+  if (typeof cancelIdleCallback === 'function') cancelIdleCallback(preloadHandle)
+  else clearTimeout(preloadHandle)
+  preloadHandle = 0
+})
 </script>
 
 <style scoped>

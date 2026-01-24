@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   /* --- VitePress-like Variables Mapping --- */
   --vp-nav-height: 64px;

@@ -112,6 +112,7 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { supabase } from '../lib/supabase'
+import { fetchJsonCached } from '../lib/fetchJsonCached'
 
 const loading = ref(true)
 const notes = ref([])
@@ -232,8 +233,7 @@ const fetchNotes = async () => {
 
     // Fetch from local JSON (legacy) - Map to standard structure
     try {
-      const response = await fetch('/notes.json')
-      const localData = await response.json()
+      const localData = await fetchJsonCached('/notes.json')
       const mappedLocal = localData.map(n => ({
         id: n.id,
         title: n.filename ? n.filename.replace('.docx', '') : n.id,

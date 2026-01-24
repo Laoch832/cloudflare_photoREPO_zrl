@@ -48,6 +48,7 @@ const container = ref(null)
 const shouldLoad = ref(false)
 const isLoaded = ref(false)
 let observer = null
+let delayTimer = 0
 
 const onLoad = () => {
   isLoaded.value = true
@@ -56,10 +57,11 @@ const onLoad = () => {
 onMounted(() => {
   if ('IntersectionObserver' in window) {
     observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
+      if (entries[0] && entries[0].isIntersecting) {
         // Delay loading to prioritize other content (like docs)
-        setTimeout(() => {
+        delayTimer = setTimeout(() => {
           shouldLoad.value = true
+          delayTimer = 0
         }, props.delay)
         observer.disconnect()
       }
@@ -77,6 +79,10 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  if (delayTimer) {
+    clearTimeout(delayTimer)
+    delayTimer = 0
+  }
   if (observer) {
     observer.disconnect()
   }
