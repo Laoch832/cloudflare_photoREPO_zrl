@@ -361,8 +361,22 @@ onUnmounted(() => {
     align-items: center;
 }
 
+.title-link {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+}
+
+.title-link:visited,
+.title-link:active,
+.title-link:hover {
+    color: inherit;
+    text-decoration: none;
+}
+
 .logo-text {
-    color: #00008b; /* Deep blue/purple for "Love" */
+    color: #000; /* Black Logo */
     font-size: 32px; /* Bigger */
     font-weight: 900; /* Extra Bold */
     font-family: var(--font-sans);
