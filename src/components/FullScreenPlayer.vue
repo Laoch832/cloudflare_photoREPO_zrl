@@ -98,11 +98,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useMusic } from '../composables/useMusic'
 
 const isMobile = ref(false)
 const showLyrics = ref(false) // For mobile toggle
+const lyricsContainer = ref(null)
 
 const checkMobile = () => {
     isMobile.value = window.innerWidth <= 768
@@ -129,10 +130,22 @@ const {
   isShuffled,
   currentTime,
   duration,
-  seek
+  seek,
+  parsedLyrics,
+  currentLyricIndex
 } = useMusic()
 
-const lyrics = ref(null) // Todo: Load lyrics from currentTrack if available
+watch(currentLyricIndex, (newIndex) => {
+  if (newIndex >= 0 && lyricsContainer.value) {
+    // Wait for DOM update
+    setTimeout(() => {
+      const activeLine = lyricsContainer.value.querySelector('.lyric-line.active')
+      if (activeLine) {
+        activeLine.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    }, 100)
+  }
+})
 
 const progressPercent = computed(() => {
   if (!duration.value) return 0

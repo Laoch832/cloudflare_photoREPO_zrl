@@ -243,3 +243,123 @@ button {
 .cursive {
   font-family: var(--font-display);
 }
+
+/* --- New Design System Utilities --- */
+
+/* Glass Effects */
+.glass-panel, .ios-glass-nav, .ios-glass-card, .ios-glass-player, .glass-card, .glass-morphism, .nav-glass, .music-widget-glass, .ios-glass {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 0.5px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+}
+
+.glass-card-dark {
+  background: rgba(24, 21, 17, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.ios-blur {
+  backdrop-filter: blur(30px) saturate(190%);
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
+}
+
+.music-player-pill {
+  background: rgba(20, 20, 20, 0.6);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Textures */
+.grain-overlay, .grain-texture, .grain, .grain-layer {
+  background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuAhnN-c6-tvXKaxxtWEFk8ZQ6RmbkLBI9Tu3bsqNWc-EIPrnIwFFRSj6SdSMguirLBW_gm94P5Y2OfA3J2XQBfkhZgrYcHhvUEpBxEQiVEbD7hj4QtmWuNnHY71OiDBpv1kJQ9AmYeBR77LP1veXhxeixWY7W6W4nW_ZrfbKE-_2uQwCxxENnLox1oSeRRNOAl-gY0dU6I5uAL8epYCXkjqJrdRJdCMhSB6D7EsGHgN5HbhfD6GgiDGaqZyRtPPTn9ey14wZWXrObY);
+  opacity: 0.04;
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+}
+
+/* Specific Components */
+.photo-frame {
+  box-shadow: 
+      0 30px 60px -12px rgba(0,0,0,0.3),
+      inset 0 0 0 1px rgba(255,255,255,0.15);
+}
+
+.polaroid-frame {
+  background: #fdfdfd;
+  padding: 14px 14px 48px 14px;
+  box-shadow: 
+      0 20px 40px -10px rgba(0, 0, 0, 0.3),
+      0 10px 15px -5px rgba(0, 0, 0, 0.2),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  position: relative;
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform-style: preserve-3d;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.polaroid-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.9);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.polaroid-frame:hover {
+  transform: translateY(-12px) scale(1.03) rotate(0deg) !important;
+  box-shadow: 0 40px 60px -15px rgba(0, 0, 0, 0.5);
+  z-index: 30;
+}
+
+.bg-mesh {
+  background-color: #221a10;
+  background-image: 
+      radial-gradient(at 0% 0%, hsla(35, 90%, 55%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(20, 80%, 40%, 0.2) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(45, 92%, 55%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(15, 85%, 45%, 0.2) 0px, transparent 50%);
+}
+
+.deep-artistic-bg {
+  background-image: linear-gradient(135deg, rgba(12, 10, 15, 0.7), rgba(46, 16, 101, 0.4)), url(https://lh3.googleusercontent.com/aida-public/AB6AXuAxJXM0jdq9tuvBmGHxC-096qKAalgA3eM0vNwsdgQlteghFSC2NNW6IiHhUYuHW9i4dK0tri_7ZB__iCHgcIHsXMXOmJcW-nq4XbsCRALQ5IHemvFjfrcbE0QMkFFv-8jr5stpwdwk6vRtFo8PJZfADQEldgq9tg_kI1qe92kr3FgQ7IPiZrjZm6_dZBwQTx7XYOnBwkhMk7eSHbnqSurEg15QMi24OymzLpaqWFbIthCnMrmGVvr3QWrd3_J6zDWobXl7voouzEY);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+.concentric-circles {
+  background: repeating-radial-gradient(
+      circle at center,
+      transparent 0,
+      transparent 1.5px,
+      rgba(255,255,255,0.02) 2px,
+      rgba(255,255,255,0.02) 2.5px
+  );
+}
+
+.timeline-line {
+  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.05) 15%, rgba(0,0,0,0.05) 85%, rgba(0,0,0,0) 100%);
+}
+
+.inner-shadow-input {
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+}
+
+.magic-gradient {
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.mask-linear-fade {
+  mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+}

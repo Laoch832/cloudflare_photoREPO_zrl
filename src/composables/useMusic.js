@@ -6,6 +6,8 @@ const currentTrackIndex = ref(-1)
 const isPlaying = ref(false)
 const isMinimized = ref(false)
 const isPlayerExpanded = ref(false)
+const parsedLyrics = ref([])
+const currentLyricIndex = ref(-1)
 const volume = ref(0.5)
 const isShuffled = ref(false)
 const originalPlaylist = ref([]) // To restore after shuffle
@@ -51,6 +53,15 @@ export function useMusic() {
 
       audio.addEventListener('timeupdate', () => {
         currentTime.value = audio.currentTime
+        
+        // Update lyric index
+        if (parsedLyrics.value.length > 0) {
+          let index = parsedLyrics.value.findIndex(l => l.time > currentTime.value)
+          if (index === -1) {
+             index = parsedLyrics.value.length
+          }
+          currentLyricIndex.value = index - 1
+        }
       })
 
       audio.addEventListener('loadedmetadata', () => {
@@ -239,6 +250,45 @@ export function useMusic() {
     playlist.value = newPlaylist
   }
 
+  const parseLyrics = (lrc) => {
+    const lines = lrc.split('\n')
+    const result = []
+    const timeRegex = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/
+    
+    for (const line of lines) {
+      const match = timeRegex.exec(line)
+      if (match) {
+        const minutes = parseInt(match[1])
+        const seconds = parseInt(match[2])
+        const milliseconds = parseInt(match[3])
+        // Handle 2 or 3 digit milliseconds. Usually 2 digits = 1/100s, 3 digits = 1/1000s
+        const msDivisor = match[3].length === 3 ? 1000 : 100
+        const time = minutes * 60 + seconds + milliseconds / msDivisor
+        const text = line.replace(timeRegex, '').trim()
+        if (text) {
+          result.push({ time, text })
+        }
+      }
+    }
+    return result
+  }
+
+  const loadLyrics = async (id) => {
+    parsedLyrics.value = []
+    currentLyricIndex.value = -1
+    try {
+      const response = await fetch(`/music/lyrics/${id}.lrc`)
+      if (response.ok) {
+        const text = await response.text()
+        parsedLyrics.value = parseLyrics(text)
+      } else {
+        // console.warn('No lyrics found for', id)
+      }
+    } catch (e) {
+      console.error('Failed to load lyrics:', e)
+    }
+  }
+
   const seek = (time) => {
     if (audio) {
       audio.currentTime = time
@@ -251,6 +301,8 @@ export function useMusic() {
     isPlaying,
     isMinimized,
     isPlayerExpanded,
+    parsedLyrics,
+    currentLyricIndex,
     volume,
     isShuffled,
     currentTime,
