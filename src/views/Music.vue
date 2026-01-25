@@ -1,108 +1,126 @@
 <template>
-  <div class="bg-black font-sans overflow-hidden text-white selection:bg-music-accent/30 selection:text-white h-screen flex flex-col relative">
+  <div class="bg-white font-sans overflow-hidden text-gray-900 selection:bg-music-accent/20 selection:text-black h-screen flex flex-col relative">
     <!-- Dynamic Background -->
     <div class="fixed inset-0 z-0 overflow-hidden">
-      <!-- Image Layer -->
+      <!-- Image Layer with reduced opacity for Light Mode -->
       <div 
-        class="absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out scale-110 blur-[80px] opacity-60" 
+        class="absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out scale-110 blur-[100px] opacity-20" 
         :style="{ backgroundImage: `url(${currentTrack?.cover || defaultCover})` }"
       ></div>
-      <!-- Color Overlay based on extracted color (Simulated via strong blur + darkening) -->
-      <div class="absolute inset-0 bg-black/40 backdrop-brightness-75 transition-colors duration-1000"></div>
-      <!-- Grain Texture -->
-      <div class="absolute inset-0 grain"></div>
+      <!-- Light Gradient Overlay -->
+      <div class="absolute inset-0 bg-gradient-to-b from-white/60 via-white/80 to-white"></div>
     </div>
     
-    <main class="relative z-10 flex-1 flex flex-col md:flex-row items-center justify-center px-12 lg:px-24 gap-16 lg:gap-32 max-w-[1600px] mx-auto w-full pt-20 pb-32">
-      <!-- Left: Player Controls & Cover -->
-      <div class="flex flex-col items-center md:items-start gap-12 w-full max-w-lg">
-        <div class="relative group">
-          <div class="absolute -inset-12 bg-white/10 rounded-full blur-3xl opacity-20 transition-opacity duration-1000 group-hover:opacity-30 animate-pulse"></div>
-          <div class="relative size-72 md:size-[440px] flex items-center justify-center">
-            <div class="absolute inset-0 concentric-circles rounded-full border border-white/5"></div>
-            <div class="absolute inset-[10%] rounded-full border border-white/10 opacity-30"></div>
+    <main class="relative z-10 flex-1 flex flex-col px-8 lg:px-16 max-w-[1600px] mx-auto w-full pt-20 pb-24 h-full">
+      <div class="flex flex-col md:flex-row gap-12 lg:gap-24 h-full items-center">
+        
+        <!-- Left: Player & Cover -->
+        <div class="flex flex-col items-center md:items-start gap-10 w-full max-w-md shrink-0">
+          <div class="relative group">
+            <div class="relative size-64 md:size-[360px] flex items-center justify-center">
+              <div class="absolute inset-0 rounded-full border border-gray-200"></div>
+              
+              <!-- Album Art -->
+              <div 
+                class="relative size-56 md:size-80 rounded-full overflow-hidden shadow-2xl ring-4 ring-white transition-all duration-700"
+                :class="{ 'animate-spin-slow': isPlaying }"
+              >
+                <img :src="currentTrack?.cover || defaultCover" alt="Album Art" class="w-full h-full object-cover" />
+                <!-- Vinyl Center Hole -->
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-4 md:size-6 rounded-full bg-gray-900 shadow-inner flex items-center justify-center ring-2 ring-white">
+                  <div class="size-1 bg-white/50 rounded-full"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="w-full flex flex-col gap-6">
+            <div class="space-y-1 text-center md:text-left">
+              <h1 class="text-3xl md:text-4xl font-display font-bold tracking-tight text-gray-900 leading-tight truncate">{{ currentTrack?.title || 'No Track Selected' }}</h1>
+              <p class="text-gray-500 text-lg font-medium tracking-wide italic">{{ currentTrack?.artist || 'Select a track to play' }}</p>
+            </div>
             
-            <!-- Album Art (Spinning if playing) -->
+            <!-- Progress Bar -->
+            <div class="space-y-2">
+              <div class="relative h-1.5 w-full bg-gray-200 rounded-full cursor-pointer group/seek hover:h-2 transition-all" @click="handleSeek">
+                <div class="absolute h-full bg-gray-900 rounded-full" :style="{ width: progress + '%' }"></div>
+              </div>
+              <div class="flex justify-between text-[10px] font-bold tracking-[0.1em] text-gray-400 uppercase">
+                <span>{{ formatTime(currentTime) }}</span>
+                <span>{{ formatTime(duration) }}</span>
+              </div>
+            </div>
+            
+            <!-- Controls -->
+            <div class="flex items-center justify-center md:justify-between w-full px-4">
+              <button class="text-gray-400 hover:text-gray-900 transition-colors" @click="toggleShuffle" :class="{ 'text-music-accent': isShuffled }">
+                <span class="material-symbols-outlined text-[24px]">shuffle</span>
+              </button>
+              <div class="flex items-center gap-8">
+                <button class="text-gray-800 hover:text-gray-500 transition-all active:scale-90" @click="prevTrack">
+                  <span class="material-symbols-outlined text-[40px] font-light">skip_previous</span>
+                </button>
+                <button class="size-16 rounded-full bg-gray-900 text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xl" @click="togglePlay">
+                  <span class="material-symbols-outlined text-[36px] fill-current">{{ isPlaying ? 'pause' : 'play_arrow' }}</span>
+                </button>
+                <button class="text-gray-800 hover:text-gray-500 transition-all active:scale-90" @click="nextTrack">
+                  <span class="material-symbols-outlined text-[40px] font-light">skip_next</span>
+                </button>
+              </div>
+              <button class="text-gray-400 hover:text-gray-900 transition-colors">
+                <span class="material-symbols-outlined text-[24px]">repeat</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Middle: Lyrics -->
+        <div class="w-full flex-1 flex flex-col h-[60vh] justify-center relative border-l border-gray-100 pl-12">
+          <div class="lyrics-scroll flex-1 overflow-y-auto space-y-8 py-[30vh] mask-linear-fade-light pr-4" ref="lyricsContainer">
+            <template v-if="parsedLyrics.length > 0">
+              <p v-for="(line, index) in parsedLyrics" :key="index" 
+                 class="lyric-line text-xl md:text-2xl font-serif leading-relaxed cursor-pointer hover:opacity-80 transition-all duration-500 text-left"
+                 :class="{ 'active': index === currentLyricIndex }"
+                 @click="seek(line.time)">
+                {{ line.text }}
+              </p>
+            </template>
+            <div v-else class="flex flex-col items-center justify-center h-full text-gray-300 space-y-4">
+              <span class="material-symbols-outlined text-5xl opacity-50">music_off</span>
+              <p class="font-serif italic text-lg">No lyrics available</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Playlist Overview (New) -->
+        <div class="hidden xl:flex flex-col w-80 h-[60vh] bg-white/50 backdrop-blur-md rounded-2xl border border-white shadow-sm overflow-hidden shrink-0">
+          <div class="p-4 border-b border-gray-100 bg-white/80">
+            <h3 class="text-sm font-bold uppercase tracking-widest text-gray-500">Playlist</h3>
+          </div>
+          <div class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
             <div 
-              class="relative size-56 md:size-80 rounded-full overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.9)] ring-1 ring-white/20 transition-all duration-700"
-              :class="{ 'animate-spin-slow': isPlaying }"
+              v-for="(track, idx) in playlist" 
+              :key="track.id"
+              @click="playTrack(idx)"
+              class="flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors group"
+              :class="currentTrack?.id === track.id ? 'bg-gray-100' : 'hover:bg-gray-50'"
             >
-              <img :src="currentTrack?.cover || defaultCover" alt="Album Art" class="w-full h-full object-cover" />
-              <div class="absolute inset-0 bg-gradient-to-tr from-black/40 via-transparent to-white/10"></div>
-              <!-- Vinyl Center Hole -->
-              <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-4 md:size-6 rounded-full bg-black/90 shadow-inner flex items-center justify-center ring-1 ring-white/20">
-                <div class="size-1 bg-white/30 rounded-full"></div>
+              <div class="relative size-10 rounded overflow-hidden shrink-0">
+                <img :src="track.cover || defaultCover" class="w-full h-full object-cover" />
+                <div v-if="currentTrack?.id === track.id" class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-white text-sm animate-pulse">equalizer</span>
+                </div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium truncate text-gray-900" :class="{'text-music-accent': currentTrack?.id === track.id}">{{ track.title }}</p>
+                <p class="text-xs text-gray-500 truncate">{{ track.artist }}</p>
               </div>
             </div>
           </div>
         </div>
-        
-        <div class="w-full flex flex-col gap-8">
-          <div class="space-y-2 text-center md:text-left">
-            <h1 class="text-4xl md:text-5xl font-display font-bold tracking-tight text-white leading-tight truncate drop-shadow-lg">{{ currentTrack?.title || 'No Track Selected' }}</h1>
-            <p class="text-white/60 text-lg font-medium tracking-wide italic">{{ currentTrack?.artist || 'Select a track to play' }}</p>
-          </div>
-          
-          <!-- Progress Bar -->
-          <div class="space-y-4">
-            <div class="relative h-1.5 w-full bg-white/10 rounded-full cursor-pointer group/seek hover:h-2 transition-all" @click="handleSeek">
-              <div class="absolute h-full bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]" :style="{ width: progress + '%' }"></div>
-              <div class="absolute top-1/2 -translate-y-1/2 size-4 bg-white rounded-full shadow-2xl scale-0 group-hover/seek:scale-100 transition-transform" :style="{ left: progress + '%' }"></div>
-            </div>
-            <div class="flex justify-between text-[11px] font-bold tracking-[0.2em] text-white/50 uppercase">
-              <span>{{ formatTime(currentTime) }}</span>
-              <span>{{ formatTime(duration) }}</span>
-            </div>
-          </div>
-          
-          <!-- Controls -->
-          <div class="flex items-center justify-center md:justify-start gap-12">
-            <button class="text-white/40 hover:text-white transition-colors" @click="toggleShuffle" :class="{ 'text-music-accent': isShuffled }">
-              <span class="material-symbols-outlined text-[24px]">shuffle</span>
-            </button>
-            <div class="flex items-center gap-10">
-              <button class="text-white/80 hover:text-white transition-all active:scale-90" @click="prevTrack">
-                <span class="material-symbols-outlined text-[42px] font-light">skip_previous</span>
-              </button>
-              <button class="size-20 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-2xl" @click="togglePlay">
-                <span class="material-symbols-outlined text-[44px] fill-current">{{ isPlaying ? 'pause' : 'play_arrow' }}</span>
-              </button>
-              <button class="text-white/80 hover:text-white transition-all active:scale-90" @click="nextTrack">
-                <span class="material-symbols-outlined text-[42px] font-light">skip_next</span>
-              </button>
-            </div>
-            <button class="text-white/40 hover:text-white transition-colors">
-              <span class="material-symbols-outlined text-[24px]">repeat</span>
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Right: Lyrics -->
-      <div class="w-full md:w-[540px] flex flex-col h-[70vh] justify-center relative">
-        <div class="lyrics-scroll flex-1 overflow-y-auto space-y-10 py-[40vh] mask-linear-fade pr-4" ref="lyricsContainer">
-          <template v-if="parsedLyrics.length > 0">
-            <p v-for="(line, index) in parsedLyrics" :key="index" 
-               class="lyric-line text-2xl md:text-[32px] font-display leading-relaxed cursor-pointer hover:opacity-80 transition-all duration-500 text-center md:text-left"
-               :class="{ 'active': index === currentLyricIndex }"
-               @click="seek(line.time)">
-              {{ line.text }}
-            </p>
-          </template>
-          <div v-else class="flex flex-col items-center justify-center h-full text-white/30 space-y-4">
-            <span class="material-symbols-outlined text-5xl opacity-50">music_off</span>
-            <p class="font-serif italic text-lg">No lyrics available</p>
-          </div>
-        </div>
+
       </div>
     </main>
-    
-    <footer class="w-full py-6 flex items-center justify-center relative z-10 bg-gradient-to-t from-black/80 to-transparent">
-      <div class="flex flex-col items-center gap-2">
-        <div class="text-white/30 text-[10px] tracking-[0.4em] uppercase font-bold">Intimate Listening Mode • Phase IV</div>
-        <div class="w-16 h-0.5 bg-white/10 rounded-full"></div>
-      </div>
-    </footer>
   </div>
 </template>
 
@@ -124,7 +142,9 @@ const {
   parsedLyrics,
   currentLyricIndex,
   seek,
-  loadPlaylist
+  loadPlaylist,
+  playTrack,
+  playlist
 } = useMusic()
 
 const lyricsContainer = ref(null)
@@ -172,44 +192,28 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.concentric-circles {
-  background: repeating-radial-gradient(
-    circle at center,
-    transparent 0,
-    transparent 1.5px,
-    rgba(255,255,255,0.02) 2px,
-    rgba(255,255,255,0.02) 2.5px
-  );
-}
-
 .lyrics-scroll::-webkit-scrollbar {
   width: 0px;
 }
 
 .lyric-line {
-  filter: blur(2px);
+  filter: blur(1.5px);
   opacity: 0.4;
   transform: scale(0.98);
-  /* Ensure text doesn't get cut off */
-  padding: 0.5rem 0;
+  padding: 0.75rem 0;
+  color: #374151; /* gray-700 */
 }
 
 .lyric-line.active {
   filter: blur(0);
   opacity: 1;
   transform: scale(1);
-  font-weight: 700; /* Bold */
-  color: #fff;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  font-weight: 700;
+  color: #111827; /* gray-900 */
+  text-shadow: 0 0 1px rgba(0,0,0,0.1);
 }
 
-.grain {
-  background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuAhnN-c6-tvXKaxxtWEFk8ZQ6RmbkLBI9Tu3bsqNWc-EIPrnIwFFRSj6SdSMguirLBW_gm94P5Y2OfA3J2XQBfkhZgrYcHhvUEpBxEQiVEbD7hj4QtmWuNnHY71OiDBpv1kJQ9AmYeBR77LP1veXhxeixWY7W6W4nW_ZrfbKE-_2uQwCxxENnLox1oSeRRNOAl-gY0dU6I5uAL8epYCXkjqJrdRJdCMhSB6D7EsGHgN5HbhfD6GgiDGaqZyRtPPTn9ey14wZWXrObY);
-  opacity: 0.04;
-  pointer-events: none;
-}
-
-.mask-linear-fade {
+.mask-linear-fade-light {
   mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
 }
@@ -225,5 +229,16 @@ onMounted(async () => {
   to {
     transform: rotate(360deg);
   }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
 }
 </style>
