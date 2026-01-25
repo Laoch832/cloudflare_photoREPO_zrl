@@ -6,8 +6,6 @@
       <div class="absolute inset-0 grain-texture"></div>
     </div>
 
-    <AppNavigation />
-    
     <main class="relative z-10 pt-32 pb-48 h-screen overflow-y-auto custom-scrollbar px-8">
       <div class="max-w-6xl mx-auto">
         <div class="flex justify-between items-end mb-12">
@@ -70,7 +68,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { supabase } from '../lib/supabase'
-import AppNavigation from '../components/AppNavigation.vue'
 
 const files = ref([])
 const loading = ref(true)

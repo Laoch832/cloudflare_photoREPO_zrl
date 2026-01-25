@@ -24,7 +24,7 @@ const routes = [
     path: '/profile',
     name: 'Profile',
     component: Profile,
-    meta: { hideChrome: true, requiresAuth: true }
+    meta: { hideChrome: false, requiresAuth: true }
   },
   {
     path: '/files',
