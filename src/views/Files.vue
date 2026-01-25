@@ -74,7 +74,7 @@ const loading = ref(true)
 const uploading = ref(false)
 const user = ref(null)
 
-const BUCKET_NAME = 'pravicte_file' // Updated to match actual Supabase bucket name
+const BUCKET_NAME = 'cloudflare_photoREPO_zrl' // Updated to match actual Supabase bucket name
 
 const fetchFiles = async () => {
   try {

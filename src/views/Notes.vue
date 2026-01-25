@@ -90,9 +90,14 @@ onMounted(async () => {
 
 <style scoped>
 .ios-glass-card {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.05);
+}
+
+:global(.dark) .ios-glass-card {
+  background: rgba(255, 255, 255, 0.05);
   box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.1);
 }
 .custom-scrollbar::-webkit-scrollbar {

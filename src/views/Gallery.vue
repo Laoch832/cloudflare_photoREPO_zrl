@@ -91,9 +91,14 @@ onMounted(async () => {
   --depth-highlight: inset 0 2px 2px rgba(255, 255, 255, 0.9);
 }
 .ios-glass {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 0.5px solid rgba(0, 0, 0, 0.05);
+}
+
+:global(.dark) .ios-glass {
+  background: rgba(255, 255, 255, 0.08);
   border: 0.5px solid rgba(255, 255, 255, 0.15);
 }
 .polaroid-frame {

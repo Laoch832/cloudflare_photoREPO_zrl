@@ -105,12 +105,19 @@ const handleGithubLogin = async () => {
 
 <style scoped>
 .glass-card {
-  background: rgba(24, 21, 17, 0.7);
+  background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.05);
+}
+
+:global(.dark) .glass-card {
+  background: rgba(24, 21, 17, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
+
 .inner-shadow-input {
   box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
 }
