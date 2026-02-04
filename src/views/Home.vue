@@ -6,7 +6,7 @@
       <div class="absolute inset-0 grain-texture"></div>
     </div>
     
-    <main class="relative z-10 h-screen w-full flex items-center justify-center pt-16 pb-32">
+    <main class="relative z-10 h-screen w-full flex items-center justify-center pt-24 pb-32">
       <div class="max-w-7xl w-full px-12 grid grid-cols-12 gap-12 items-center">
         <div class="col-span-7 space-y-10">
           <div class="space-y-4">

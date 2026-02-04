@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen bg-white dark:bg-[#181818] font-sans text-[#444746] dark:text-[#e3e3e3] overflow-hidden transition-colors duration-300 pt-16">
+  <div class="flex h-screen bg-white dark:bg-[#181818] font-sans text-[#444746] dark:text-[#e3e3e3] overflow-hidden transition-colors duration-300 pt-20">
     <!-- Sidebar (Desktop) -->
     <aside class="w-64 flex-shrink-0 flex flex-col pt-4 pb-4 hidden md:flex">
       <!-- New Button -->

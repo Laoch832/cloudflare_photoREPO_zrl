@@ -11,7 +11,7 @@
       <div class="absolute inset-0 bg-gradient-to-b from-white/60 via-white/80 to-white"></div>
     </div>
     
-    <main class="relative z-10 flex-1 flex flex-col px-8 lg:px-16 max-w-[1600px] mx-auto w-full pt-20 pb-24 h-full">
+    <main class="relative z-10 flex-1 flex flex-col px-8 lg:px-16 max-w-[1600px] mx-auto w-full pt-24 pb-24 h-full">
       <div class="flex flex-col md:flex-row gap-12 lg:gap-24 h-full items-center">
         
         <!-- Left: Player & Cover -->

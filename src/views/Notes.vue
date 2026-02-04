@@ -5,9 +5,9 @@
       <div class="absolute inset-0 bg-black/40"></div>
     </div>
     
-    <main class="relative z-10 pt-32 pb-48 h-screen overflow-y-auto custom-scrollbar">
+    <main class="relative z-10 pt-24 pb-48 h-screen overflow-y-auto custom-scrollbar">
       <div class="max-w-5xl mx-auto px-6">
-        <div class="text-center mb-16">
+        <div class="text-center mb-16 mt-8">
           <h1 class="text-5xl font-display italic text-white mb-2">Documents</h1>
           <p class="text-sm text-white/40 tracking-[0.2em] uppercase font-medium">Archives of Thought</p>
         </div>

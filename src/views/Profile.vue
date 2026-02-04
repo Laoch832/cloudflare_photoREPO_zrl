@@ -1,8 +1,8 @@
 <template>
   <div class="deep-artistic-bg min-h-screen selection:bg-profile-primary/30 text-white font-sans">
-    <main class="pt-32 pb-48 flex items-center justify-center px-6">
+    <main class="pt-24 pb-48 flex items-center justify-center px-6">
       <div class="w-full max-w-[840px] flex flex-col items-center">
-        <div class="text-center mb-12">
+        <div class="text-center mb-12 mt-8">
           <h2 class="font-serif text-4xl text-white font-light mb-4">Account Settings</h2>
           <p class="text-white/40 text-[13px] uppercase tracking-[0.2em] font-light">Manage your private digital world</p>
         </div>

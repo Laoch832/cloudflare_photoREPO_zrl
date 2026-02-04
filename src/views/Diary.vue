@@ -2,9 +2,9 @@
   <div class="font-sans text-gray-900 bg-white min-h-screen relative overflow-hidden">
     <div class="fixed inset-0 z-0 bg-gray-50"></div>
     
-    <main class="relative z-10 pt-32 pb-48 h-screen overflow-y-auto custom-scrollbar">
+    <main class="relative z-10 pt-24 pb-48 h-screen overflow-y-auto custom-scrollbar">
       <div class="max-w-4xl mx-auto px-6">
-        <div class="text-center mb-16">
+        <div class="text-center mb-16 mt-8">
           <h1 class="text-5xl font-serif text-gray-900 mb-2 tracking-tight">Journal</h1>
           <p class="text-sm text-gray-500 tracking-[0.2em] uppercase font-medium">Fragments of Time</p>
         </div>

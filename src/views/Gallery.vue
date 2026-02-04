@@ -6,9 +6,9 @@
       <div class="absolute inset-0 grain-layer"></div>
     </div>
     
-    <main class="relative z-10 h-screen w-full pt-32 pb-32 flex flex-col items-center">
-      <div class="w-full max-w-6xl h-full flex flex-col px-6">
-        <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+    <main class="relative z-10 min-h-screen w-full pt-24 pb-32 flex flex-col items-center">
+      <div class="w-full max-w-6xl flex flex-col px-6">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6 mt-8">
           <div class="max-w-xl">
             <h1 class="text-6xl font-bold tracking-tight mb-4 bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent">Visual Echoes</h1>
             <p class="text-white/40 text-xl font-light italic leading-relaxed">Capturing the silence between our shared glances.</p>
