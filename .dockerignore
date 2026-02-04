@@ -1,0 +1,27 @@
+# 静态资源（通过卷挂载）
+public/images/
+public/music/
+public/notes/*.docx
+
+# dist 中的静态资源（通过卷挂载）
+dist/images/
+dist/music/
+dist/notes/*.docx
+
+# 源代码静态资源
+assets-src/
+
+# 依赖
+node_modules/
+
+# 开发文件
+.git/
+.gitignore
+README.md
+
+# 日志
+*.log
+
+# 环境文件
+.env
+.env.local

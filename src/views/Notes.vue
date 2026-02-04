@@ -20,68 +20,69 @@
         </div>
 
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div v-for="doc in documents" :key="doc.id" class="ios-glass-card p-6 rounded-2xl group hover:bg-white/10 transition-all cursor-pointer border border-white/10">
+          <div v-for="doc in documents" :key="doc.id" 
+               @click="openDocument(doc)"
+               class="ios-glass-card p-6 rounded-2xl group hover:bg-white/10 transition-all cursor-pointer border border-white/10">
             <div class="flex justify-between items-start mb-4">
               <div class="size-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/20 transition-colors">
                 <span class="material-symbols-outlined text-white/70 group-hover:text-white">description</span>
               </div>
-              <span class="text-[10px] uppercase tracking-widest text-white/30 font-bold">{{ formatDate(doc.created_at) }}</span>
+              <span class="text-[10px] uppercase tracking-widest text-white/30 font-bold">{{ formatDate(doc.date) }}</span>
             </div>
-            <h3 class="text-xl font-medium text-white mb-2 line-clamp-1">{{ doc.title }}</h3>
-            <p class="text-white/50 text-sm line-clamp-3 mb-4 leading-relaxed">{{ doc.content }}</p>
+            <h3 class="text-xl font-medium text-white mb-2 line-clamp-1">{{ doc.id }}</h3>
+            <p class="text-white/50 text-sm line-clamp-3 mb-4 leading-relaxed">{{ doc.summary }}</p>
             <div class="flex items-center gap-2 mt-auto pt-4 border-t border-white/5">
-              <span v-for="tag in (doc.tags || []).slice(0, 3)" :key="tag" class="text-[10px] bg-white/5 px-2 py-1 rounded-md text-white/40">
-                #{{ tag }}
-              </span>
+              <span class="text-[10px] bg-white/5 px-2 py-1 rounded-md text-white/40">#document</span>
             </div>
           </div>
         </div>
       </div>
     </main>
+
+    <!-- Document Viewer Modal -->
+    <div v-if="selectedDoc" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" @click.self="closeDocument">
+      <div class="bg-white dark:bg-gray-900 rounded-2xl max-w-3xl w-full max-h-[80vh] overflow-y-auto p-8 shadow-2xl">
+        <div class="flex justify-between items-start mb-6">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ selectedDoc.id }}</h2>
+          <button @click="closeDocument" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
+            <span class="material-symbols-outlined text-gray-500">close</span>
+          </button>
+        </div>
+        <div class="prose dark:prose-invert max-w-none" v-html="selectedDoc.content"></div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { supabase } from '../lib/supabase'
+import { fetchJsonCached } from '../lib/fetchJsonCached'
 
 const documents = ref([])
 const loading = ref(true)
+const selectedDoc = ref(null)
 
 const formatDate = (dateString) => {
   if (!dateString) return ''
   return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
+const openDocument = (doc) => {
+  selectedDoc.value = doc
+}
+
+const closeDocument = () => {
+  selectedDoc.value = null
+}
+
 onMounted(async () => {
   try {
-    // Fetch notes that are tagged as 'document' OR just all notes for now since we don't have strict differentiation
-    const { data, error } = await supabase
-      .from('notes')
-      .select('*')
-      .order('created_at', { ascending: false })
-    
-    if (error) throw error
-    documents.value = data
+    // 从本地 notes.json 加载文档
+    const data = await fetchJsonCached('/notes.json')
+    documents.value = data || []
   } catch (e) {
     console.error('Failed to load documents:', e)
-    // Fallback data
-    documents.value = [
-      {
-        id: 1,
-        title: "Project Specifications",
-        content: "Detailed requirements for the upcoming architectural overhaul. Key focus areas include structural integrity and aesthetic cohesion.",
-        tags: ["work", "planning"],
-        created_at: new Date().toISOString()
-      },
-      {
-        id: 2,
-        title: "Research Notes: Quantum Mechanics",
-        content: "Exploring the implications of entanglement in macroscopic systems. The bridge between classical and quantum physics remains elusive.",
-        tags: ["science", "research"],
-        created_at: new Date(Date.now() - 86400000 * 5).toISOString()
-      }
-    ]
+    documents.value = []
   } finally {
     loading.value = false
   }
@@ -109,5 +110,16 @@ onMounted(async () => {
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 10px;
+}
+
+.prose {
+  color: #374151;
+  line-height: 1.75;
+}
+.prose p {
+  margin-bottom: 1em;
+}
+:global(.dark) .prose {
+  color: #d1d5db;
 }
 </style>

@@ -5,14 +5,26 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const musicDir = path.join(__dirname, '../public/music');
-const coversDir = path.join(__dirname, '../public/music/covers');
-const hlsDir = path.join(__dirname, '../public/music/hls');
-const lyricsDir = path.join(__dirname, '../public/music/lyrics');
+// 支持从外部目录读取（Docker 部署时使用）
+const EXTERNAL_MUSIC_DIR = process.env.EXTERNAL_MUSIC_DIR || '/lhcos-data/zrl-app/music';
+const PUBLIC_MUSIC_DIR = path.join(__dirname, '../public/music');
 const outputFile = path.join(__dirname, '../public/music.json');
 
 async function generate() {
   try {
+    // 决定使用哪个目录作为源
+    let musicDir = PUBLIC_MUSIC_DIR;
+    
+    // 如果外部目录存在，优先使用外部目录
+    if (fs.existsSync(EXTERNAL_MUSIC_DIR)) {
+      console.log(`Using external music directory: ${EXTERNAL_MUSIC_DIR}`);
+      musicDir = EXTERNAL_MUSIC_DIR;
+    }
+    
+    const hlsDir = path.join(musicDir, 'hls');
+    const coversDir = path.join(musicDir, 'covers');
+    const lyricsDir = path.join(musicDir, 'lyrics');
+    
     if (!fs.existsSync(hlsDir)) {
         console.log('HLS directory not found.');
         fs.writeFileSync(outputFile, JSON.stringify([]));
@@ -25,17 +37,8 @@ async function generate() {
     console.log(`Found ${hlsFolders.length} HLS albums/tracks.`);
 
     for (const folder of hlsFolders) {
-      // The folder name is the "safe name" (e.g. "Artist_-_Title")
-      // We need to find the ID. 
-      // Strategy: Scan lyrics directory for a file that decodes to something matching this folder?
-      // Or simply iterate lyrics directory and see which one matches?
-      
-      // Better strategy: We can't easily know the original extension from the HLS folder name.
-      // However, we can try to find a matching lyrics file.
-      // The lyrics files are named BASE64(filename.ext).lrc
-      
       let id = null;
-      let originalFilename = folder; // Fallback
+      let originalFilename = folder;
       let extension = '';
 
       if (fs.existsSync(lyricsDir)) {
@@ -45,12 +48,7 @@ async function generate() {
                   const base64Name = lrc.replace('.lrc', '');
                   try {
                       const decoded = Buffer.from(base64Name, 'base64').toString('utf8');
-                      // Check if decoded filename starts with the folder name (ignoring extension)
-                      // The folder name was created by: name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_\u4e00-\u9fa5-]/g, '')
-                      // Let's assume the folder name IS the sanitized filename without extension.
-                      
                       const decodedBase = path.basename(decoded, path.extname(decoded));
-                      // We need to sanitize the decoded base to compare with folder
                       const sanitizedDecoded = decodedBase.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_\u4e00-\u9fa5-]/g, '');
                       
                       if (sanitizedDecoded === folder) {
@@ -64,26 +62,19 @@ async function generate() {
           }
       }
 
-      // If no lyrics found, generate a fake ID based on folder name (might break lyrics sync if later added)
       if (!id) {
           id = Buffer.from(folder).toString('base64');
       }
 
-      // Parse Metadata from Filename (Artist - Title)
-      // Format usually: Artist_-_Title or Artist-Title
       let artist = 'Unknown Artist';
       let title = folder.replace(/_/g, ' ');
       
-      // Try to split by - 
-      // The folder name often preserves the structure "Artist_-_Title"
       const parts = folder.split(/_-_|-/);
       if (parts.length >= 2) {
           artist = parts[0].replace(/_/g, ' ').trim();
           title = parts.slice(1).join('-').replace(/_/g, ' ').trim();
       }
 
-      // Check for cover
-      // Covers are usually named: safeName_cover.jpg or .png
       let cover = null;
       const jpgCover = path.join(coversDir, `${folder}_cover.jpg`);
       const pngCover = path.join(coversDir, `${folder}_cover.png`);
@@ -93,7 +84,6 @@ async function generate() {
       } else if (fs.existsSync(pngCover)) {
           cover = `${folder}_cover.png`;
       } else {
-          // Fallback: check for any image starting with folder name
           if (fs.existsSync(coversDir)) {
              const allCovers = fs.readdirSync(coversDir);
              const match = allCovers.find(c => c.startsWith(folder));
@@ -105,12 +95,12 @@ async function generate() {
         id: id,
         filename: originalFilename,
         url: `/music/hls/${encodeURIComponent(folder)}/${encodeURIComponent(folder)}.m3u8`,
-        originalUrl: null, // Source file missing
+        originalUrl: null,
         isHls: true,
         title: title,
         artist: artist,
         album: 'Unknown Album',
-        duration: 0, // Cannot determine without source or parsing m3u8
+        duration: 0,
         cover: cover ? `/music/covers/${encodeURIComponent(cover)}` : null,
         uploadedAt: new Date().toISOString()
       });

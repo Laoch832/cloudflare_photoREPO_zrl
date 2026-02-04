@@ -51,7 +51,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { supabase } from '../lib/supabase'
+import { fetchJsonCached } from '../lib/fetchJsonCached'
 
 const entries = ref([])
 const loading = ref(true)
@@ -74,13 +74,9 @@ const countWords = (text) => {
 
 onMounted(async () => {
   try {
-    const { data, error } = await supabase
-      .from('notes')
-      .select('*')
-      .order('created_at', { ascending: false })
-    
-    if (error) throw error
-    entries.value = data
+    // 从本地 diary.json 加载日记
+    const data = await fetchJsonCached('/diary.json')
+    entries.value = data || []
   } catch (e) {
     console.error('Failed to load diary entries:', e)
     entries.value = []

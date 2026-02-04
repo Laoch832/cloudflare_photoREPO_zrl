@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  zrl-web:
+    image: ccr.ccs.tencentyun.com/changzi/zrl:latest
+    container_name: zrl-container
+    restart: always
+    ports:
+      - "5033:80"  # [宿主机端口]:[容器内Nginx端口]
+    volumes:
+      # 音乐文件挂载
+      - /lhcos-data/zrl-app/music:/usr/share/nginx/html/music:ro
+      # 图片文件挂载
+      - /lhcos-data/zrl-app/images:/usr/share/nginx/html/images:ro
+      # 用户上传文件挂载（可写）
+      - /lhcos-data/zrl-app/files:/lhcos-data/zrl-app/files:rw
+    environment:
+      - FILE_SERVER_PORT=3001
+      - STORAGE_DIR=/lhcos-data/zrl-app
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"  # 限制日志大小，防止撑爆服务器磁盘
+        max-file: "3"

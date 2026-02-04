@@ -42,9 +42,9 @@
       <!-- Storage Meter -->
       <div class="px-6 mt-4">
         <div class="h-1 w-full bg-gray-200 dark:bg-[#444746] rounded-full overflow-hidden mb-2">
-          <div class="h-full bg-blue-600 dark:bg-[#a8c7fa] w-[15%]"></div>
+          <div class="h-full bg-blue-600 dark:bg-[#a8c7fa]" :style="{ width: storagePercent + '%' }"></div>
         </div>
-        <p class="text-xs text-gray-500 dark:text-gray-400">2.1 GB of 15 GB used</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">{{ formatSize(storageUsed) }} of {{ formatSize(storageMax) }} used</p>
       </div>
     </aside>
 
@@ -143,7 +143,7 @@
                 
                 <!-- Size -->
                 <div class="col-span-1 hidden lg:block text-gray-500 dark:text-gray-400 text-xs">
-                  {{ formatSize(file.metadata?.size) }}
+                  {{ formatSize(file.size) }}
                 </div>
                 
                 <!-- Actions -->
@@ -206,27 +206,25 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { supabase } from '../lib/supabase'
 
 const files = ref([])
 const loading = ref(true)
 const uploading = ref(false)
-const user = ref(null)
 const selectedFile = ref(null)
 const viewMode = ref('list') // 'list' or 'grid'
+const storageUsed = ref(0)
+const storageMax = ref(15 * 1024 * 1024 * 1024) // 15GB
+const storagePercent = ref(0)
 
-const BUCKET_NAME = 'cloudflare_photoREPO_zrl'
+const API_BASE = '/api'
 
 const fetchFiles = async () => {
   try {
-    const { data, error } = await supabase.storage.from(BUCKET_NAME).list(user.value.id + '/', {
-      limit: 100,
-      offset: 0,
-      sortBy: { column: 'created_at', order: 'desc' },
-    })
-    
-    if (error) throw error
-    files.value = data || []
+    const response = await fetch(`${API_BASE}/files`)
+    const data = await response.json()
+    if (data.success) {
+      files.value = data.files || []
+    }
   } catch (e) {
     console.error('Error loading files:', e)
   } finally {
@@ -234,23 +232,40 @@ const fetchFiles = async () => {
   }
 }
 
+const fetchStorageStats = async () => {
+  try {
+    const response = await fetch(`${API_BASE}/files/stats`)
+    const data = await response.json()
+    if (data.success) {
+      storageUsed.value = data.stats.totalSize
+      storageMax.value = data.stats.maxSize
+      storagePercent.value = Math.min((storageUsed.value / storageMax.value) * 100, 100)
+    }
+  } catch (e) {
+    console.error('Error loading storage stats:', e)
+  }
+}
+
 const uploadFile = async (e) => {
   const file = e.target.files[0]
-  if (!file || !user.value) return
+  if (!file) return
 
   uploading.value = true
   try {
-    const filePath = `${user.value.id}/${Date.now()}_${file.name}`
-    const { error } = await supabase.storage.from(BUCKET_NAME).upload(filePath, file)
+    const formData = new FormData()
+    formData.append('file', file)
     
-    if (error) {
-      if (error.message.includes('row-level security')) {
-        alert('Permission denied: You do not have permission to upload to this bucket. Please configure RLS policies in Supabase Dashboard.')
-      } else {
-        throw error
-      }
-    } else {
+    const response = await fetch(`${API_BASE}/files/upload`, {
+      method: 'POST',
+      body: formData
+    })
+    
+    const data = await response.json()
+    if (data.success) {
       await fetchFiles()
+      await fetchStorageStats()
+    } else {
+      alert('Upload failed: ' + data.error)
     }
   } catch (e) {
     console.error('Error uploading file:', e)
@@ -265,10 +280,18 @@ const deleteFile = async (file) => {
   if (!confirm(`Delete ${file.name}?`)) return
   
   try {
-    const { error } = await supabase.storage.from(BUCKET_NAME).remove([`${user.value.id}/${file.name}`])
-    if (error) throw error
-    await fetchFiles()
-    if (selectedFile.value?.id === file.id) selectedFile.value = null
+    const response = await fetch(`${API_BASE}/files/${encodeURIComponent(file.originalName)}`, {
+      method: 'DELETE'
+    })
+    
+    const data = await response.json()
+    if (data.success) {
+      await fetchFiles()
+      await fetchStorageStats()
+      if (selectedFile.value?.id === file.id) selectedFile.value = null
+    } else {
+      alert('Delete failed: ' + data.error)
+    }
   } catch (e) {
     console.error('Error deleting file:', e)
     alert('Delete failed')
@@ -276,9 +299,7 @@ const deleteFile = async (file) => {
 }
 
 const getFileUrl = (file) => {
-  if (!user.value) return ''
-  const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(`${user.value.id}/${file.name}`)
-  return data.publicUrl
+  return `${API_BASE}/files/download/${encodeURIComponent(file.originalName)}`
 }
 
 const isImage = (file) => {
@@ -308,11 +329,8 @@ const formatSize = (bytes) => {
 }
 
 onMounted(async () => {
-  const { data: { session } } = await supabase.auth.getSession()
-  user.value = session?.user || null
-  if (user.value) {
-    await fetchFiles()
-  }
+  await fetchFiles()
+  await fetchStorageStats()
 })
 </script>
 
