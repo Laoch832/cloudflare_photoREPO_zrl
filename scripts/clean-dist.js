@@ -47,4 +47,24 @@ function cleanDirectory(directory) {
 
 console.log('🧹 Cleaning oversized files from dist...');
 cleanDirectory(DIST_DIR);
+
+// Vercel serves audio as MP3. Do not deploy large, obsolete .ts segments
+// when every track has a verified MP3 counterpart.
+if (process.env.VERCEL) {
+    const manifest = path.join(DIST_DIR, 'music.json');
+    if (fs.existsSync(manifest)) {
+        const tracks = JSON.parse(fs.readFileSync(manifest, 'utf8'));
+        const allMp3 = tracks.length > 0 && tracks.every(track =>
+            track.url?.startsWith('/music/mp3/') &&
+            fs.existsSync(path.join(DIST_DIR, decodeURIComponent(track.url.slice(1))))
+        );
+        if (allMp3) {
+            fs.rmSync(path.join(DIST_DIR, 'music', 'hls'), { recursive: true, force: true });
+            console.log('✅ Dropped legacy HLS files from Vercel output (MP3s verified).');
+        } else {
+            console.warn('⚠️ Keeping legacy HLS files; some MP3 tracks are missing.');
+        }
+    }
+}
+
 console.log('✅ Cleanup complete.');

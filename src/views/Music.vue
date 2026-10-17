@@ -40,6 +40,7 @@
               <p class="text-gray-500 text-lg font-medium tracking-wide italic">{{ currentTrack?.artist || 'Select a track to play' }}</p>
             </div>
             
+            <p v-if="playbackError" role="alert" class="text-center xl:text-left text-red-600 text-sm break-words">{{ playbackError }}</p>
             <!-- Progress Bar -->
             <div class="space-y-2">
               <div class="relative h-1.5 w-full bg-gray-200 rounded-full cursor-pointer group/seek hover:h-2 transition-all" @click="handleSeek">
@@ -141,6 +142,7 @@ const {
   duration,
   parsedLyrics,
   currentLyricIndex,
+  playbackError,
   seek,
   loadPlaylist,
   playTrack,

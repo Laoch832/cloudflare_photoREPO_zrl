@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/build-index.js && node scripts/build-music-index.js && node scripts/build-notes.js && vite",
-    "build": "node scripts/build-index.js && node scripts/build-music-index.js && node scripts/build-notes.js && node scripts/repair-hls-manifests.js && vite build && node scripts/clean-dist.js",
+    "build": "node scripts/build-index.js && node scripts/build-music-index.js && node scripts/build-notes.js && node scripts/repair-hls-manifests.js && node scripts/prepare-vercel-music.js && vite build && node scripts/clean-dist.js",
     "preview": "vite preview",
     "process-music": "node scripts/process-music.js",
     "process-images": "node scripts/process-images.js",

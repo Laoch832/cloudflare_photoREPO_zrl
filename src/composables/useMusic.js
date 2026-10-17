@@ -15,6 +15,7 @@ const originalPlaylist = ref([]) // To restore after shuffle
 const currentTime = ref(0)
 const duration = ref(0)
 const buffered = ref(0)
+const playbackError = ref('')
 
 // Audio element (not reactive)
 let audio = null
@@ -42,6 +43,16 @@ export function useMusic() {
       audio.addEventListener('error', (e) => {
         console.error('Audio playback error:', e)
         console.error('Audio Error Code:', audio.error ? audio.error.code : 'unknown')
+        isPlaying.value = false
+        playbackError.value = '音乐文件加载失败，请换首歌重试。'
+      })
+
+      audio.addEventListener('playing', () => {
+        isPlaying.value = true
+        playbackError.value = ''
+      })
+
+      audio.addEventListener('pause', () => {
         isPlaying.value = false
       })
 
@@ -101,6 +112,7 @@ export function useMusic() {
       console.log('Playing track:', track.url)
       
       // Reset state
+      playbackError.value = ''
       currentTime.value = 0
       duration.value = track.duration || 0 // Use metadata duration if available
       buffered.value = 0
@@ -123,6 +135,7 @@ export function useMusic() {
             playPromise.then(() => isPlaying.value = true).catch(e => {
               console.error('Native HLS Play failed:', e)
               isPlaying.value = false
+              playbackError.value = 'HLS 音频无法播放，请稍后重试。'
             })
           }
         } 
@@ -140,6 +153,7 @@ export function useMusic() {
                 if (data.fatal) {
                   console.error('Fatal HLS error:', data.type, data.details)
                   isPlaying.value = false
+                  playbackError.value = 'HLS 音频加载失败，请重试或切换歌曲。'
                   if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
                     hls.startLoad()
                   } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
@@ -188,6 +202,7 @@ export function useMusic() {
             .catch(e => {
               console.error('Play failed:', e)
               isPlaying.value = false
+              playbackError.value = '播放失败：' + (e?.message || '请检查浏览器权限或音频文件')
             })
         }
       }
@@ -214,6 +229,7 @@ export function useMusic() {
       } catch (e) {
         console.error('Play failed:', e)
         isPlaying.value = false
+        playbackError.value = '播放失败：' + (e?.message || '请检查浏览器权限或音频文件')
       }
     } else {
       audio.pause()
@@ -341,6 +357,7 @@ export function useMusic() {
     currentTime,
     duration,
     buffered,
+    playbackError,
     loadPlaylist,
     playTrack,
     togglePlay,
