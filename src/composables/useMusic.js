@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import Hls from 'hls.js'
 
 // Global state
 const playlist = ref([])
@@ -80,8 +81,12 @@ export function useMusic() {
 
   // Actions
   const loadPlaylist = (tracks) => {
-    playlist.value = tracks
-    originalPlaylist.value = [...tracks]
+    playlist.value = Array.isArray(tracks) ? tracks : []
+    originalPlaylist.value = [...playlist.value]
+    // Select a song without autoplaying; the user presses Play to start audio.
+    if (playlist.value.length && (currentTrackIndex.value < 0 || currentTrackIndex.value >= playlist.value.length)) {
+      currentTrackIndex.value = 0
+    }
     if (isShuffled.value) {
       shufflePlaylist()
     }
@@ -124,7 +129,6 @@ export function useMusic() {
         // 2. Try hls.js
         else {
           try {
-            const { default: Hls } = await import('hls.js')
             if (Hls.isSupported()) {
               if (hls) {
                 hls.destroy()
@@ -132,6 +136,17 @@ export function useMusic() {
               hls = new Hls()
               hls.loadSource(track.url)
               hls.attachMedia(audio)
+              hls.on(Hls.Events.ERROR, (_event, data) => {
+                if (data.fatal) {
+                  console.error('Fatal HLS error:', data.type, data.details)
+                  isPlaying.value = false
+                  if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+                    hls.startLoad()
+                  } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+                    hls.recoverMediaError()
+                  }
+                }
+              })
               hls.on(Hls.Events.MANIFEST_PARSED, () => {
                 const playPromise = audio.play()
                 if (playPromise !== undefined) {
@@ -179,11 +194,27 @@ export function useMusic() {
     }
   }
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
+    // A newly opened page has no loaded audio yet. Start the selected song
+    // (or the first OneRepublic song) on the user's first Play gesture.
+    if (!playlist.value.length) return
+    if (currentTrackIndex.value < 0 || currentTrackIndex.value >= playlist.value.length) {
+      await playTrack(0)
+      return
+    }
     initAudio()
+    if (!audio.currentSrc && !hls) {
+      await playTrack(currentTrackIndex.value)
+      return
+    }
     if (audio.paused) {
-      audio.play().catch(e => console.error('Play failed:', e))
-      isPlaying.value = true
+      try {
+        await audio.play()
+        isPlaying.value = true
+      } catch (e) {
+        console.error('Play failed:', e)
+        isPlaying.value = false
+      }
     } else {
       audio.pause()
       isPlaying.value = false
@@ -191,6 +222,7 @@ export function useMusic() {
   }
 
   const nextTrack = () => {
+    if (!playlist.value.length) return
     let nextIndex = currentTrackIndex.value + 1
     if (nextIndex >= playlist.value.length) {
       nextIndex = 0 // Loop
@@ -199,6 +231,7 @@ export function useMusic() {
   }
 
   const prevTrack = () => {
+    if (!playlist.value.length) return
     let prevIndex = currentTrackIndex.value - 1
     if (prevIndex < 0) {
       prevIndex = playlist.value.length - 1 // Loop

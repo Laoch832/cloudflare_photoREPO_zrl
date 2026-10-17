@@ -1,7 +1,7 @@
 <template>
-  <div v-if="currentTrack" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 transition-all duration-300" :class="{ 'translate-y-24 opacity-0': !currentTrack }">
-    <div class="ios-glass-player px-4 py-3 rounded-[2rem] flex items-center gap-5 min-w-[420px]">
-      <div class="size-14 rounded-2xl overflow-hidden shrink-0 shadow-lg border border-white/10 relative group cursor-pointer" @click="togglePlay">
+  <div v-if="currentTrack" class="fixed bottom-3 left-3 right-3 sm:bottom-8 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-50 transition-all duration-300" :class="{ 'translate-y-24 opacity-0': !currentTrack }">
+    <div class="ios-glass-player px-3 sm:px-4 py-3 rounded-[2rem] flex items-center gap-3 sm:gap-5 w-full sm:min-w-[420px]">
+      <div class="size-11 sm:size-14 rounded-2xl overflow-hidden shrink-0 shadow-lg border border-white/10 relative group cursor-pointer" @click="togglePlay">
          <img :src="currentTrack.cover || 'https://lh3.googleusercontent.com/aida-public/AB6AXuB1cTdNnDkx3cYGJAHYTwAZoD6JhryILuFN_j4GKPjANEXVMKQvEhNYlZsu_JcCyyLQnv5cac1Iz2eCtzPjYX7fxR6FgwSVcu6cfSQWzwsJ3Ye1rn1M5D5ojJ82-aV66nQBluCjDbfo2_Z0CPFkbnFvWox16b6Xzt-5uBf6jjSyr4Dg5ZsdmD2c_QHHXjyVX67m3pNFwaPGpmqaql_mPcqi1lz54MUQER8XTuw_oNLXlbkckHhurry86KxqC8ciQxnm01X8CHnXoVc'" alt="Cover" class="w-full h-full object-cover" />
          <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
            <span class="material-symbols-outlined text-white">{{ isPlaying ? 'pause' : 'play_arrow' }}</span>

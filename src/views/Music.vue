@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white font-sans overflow-hidden text-gray-900 selection:bg-music-accent/20 selection:text-black h-screen flex flex-col relative">
+  <div class="bg-white font-sans overflow-x-hidden overflow-y-auto xl:overflow-hidden text-gray-900 selection:bg-music-accent/20 selection:text-black min-h-screen xl:h-screen flex flex-col relative">
     <!-- Dynamic Background -->
     <div class="fixed inset-0 z-0 overflow-hidden">
       <!-- Image Layer with reduced opacity for Light Mode -->
@@ -11,18 +11,18 @@
       <div class="absolute inset-0 bg-gradient-to-b from-white/60 via-white/80 to-white"></div>
     </div>
     
-    <main class="relative z-10 flex-1 flex flex-col px-8 lg:px-16 max-w-[1600px] mx-auto w-full pt-24 pb-24 h-full">
-      <div class="flex flex-col md:flex-row gap-12 lg:gap-24 h-full items-center">
+    <main class="relative z-10 flex-1 flex flex-col px-5 sm:px-8 lg:px-16 max-w-[1600px] mx-auto w-full pt-24 pb-28 xl:h-full">
+      <div class="flex flex-col xl:flex-row gap-8 xl:gap-12 2xl:gap-24 xl:h-full items-center">
         
         <!-- Left: Player & Cover -->
-        <div class="flex flex-col items-center md:items-start gap-10 w-full max-w-md shrink-0">
+        <div class="order-1 flex flex-col items-center xl:items-start gap-5 xl:gap-10 w-full max-w-md shrink-0">
           <div class="relative group">
-            <div class="relative size-64 md:size-[360px] flex items-center justify-center">
+            <div class="relative size-56 sm:size-64 xl:size-[360px] flex items-center justify-center">
               <div class="absolute inset-0 rounded-full border border-gray-200"></div>
               
               <!-- Album Art -->
               <div 
-                class="relative size-56 md:size-80 rounded-full overflow-hidden shadow-2xl ring-4 ring-white transition-all duration-700"
+                class="relative size-48 sm:size-56 xl:size-80 rounded-full overflow-hidden shadow-2xl ring-4 ring-white transition-all duration-700"
                 :class="{ 'animate-spin-slow': isPlaying }"
               >
                 <img :src="currentTrack?.cover || defaultCover" alt="Album Art" class="w-full h-full object-cover" />
@@ -75,8 +75,8 @@
         </div>
 
         <!-- Middle: Lyrics -->
-        <div class="w-full flex-1 flex flex-col h-[60vh] justify-center relative border-l border-gray-100 pl-12">
-          <div class="lyrics-scroll flex-1 overflow-y-auto space-y-8 py-[30vh] mask-linear-fade-light pr-4" ref="lyricsContainer">
+        <div class="order-3 xl:order-2 w-full flex-1 flex flex-col h-64 xl:h-[60vh] justify-center relative xl:border-l border-gray-100 xl:pl-12">
+          <div class="lyrics-scroll flex-1 overflow-y-auto space-y-5 xl:space-y-8 py-16 xl:py-[30vh] mask-linear-fade-light pr-4" ref="lyricsContainer">
             <template v-if="parsedLyrics.length > 0">
               <p v-for="(line, index) in parsedLyrics" :key="index" 
                  class="lyric-line text-xl md:text-2xl font-serif leading-relaxed cursor-pointer hover:opacity-80 transition-all duration-500 text-left"
@@ -93,9 +93,9 @@
         </div>
 
         <!-- Right: Playlist Overview (New) -->
-        <div class="hidden xl:flex flex-col w-80 h-[60vh] bg-white/50 backdrop-blur-md rounded-2xl border border-white shadow-sm overflow-hidden shrink-0">
+        <div class="order-2 xl:order-3 flex flex-col w-full xl:w-80 h-72 xl:h-[60vh] bg-white/50 backdrop-blur-md rounded-2xl border border-white shadow-sm overflow-hidden shrink-0">
           <div class="p-4 border-b border-gray-100 bg-white/80">
-            <h3 class="text-sm font-bold uppercase tracking-widest text-gray-500">Playlist</h3>
+            <h3 class="text-sm font-bold uppercase tracking-widest text-gray-500">OneRepublic · Playlist ({{ playlist.length }})</h3>
           </div>
           <div class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
             <div 
@@ -182,8 +182,10 @@ watch(currentLyricIndex, (newIndex) => {
 onMounted(async () => {
   try {
     const musicData = await fetchJsonCached('/music.json')
-    if (musicData && musicData.length > 0) {
+    if (Array.isArray(musicData) && musicData.length > 0) {
       loadPlaylist(musicData)
+    } else {
+      console.warn('No tracks found in /music.json')
     }
   } catch (e) {
     console.error('Failed to load music playlist:', e)
