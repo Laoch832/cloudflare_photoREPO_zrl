@@ -1,0 +1,67 @@
+name: Build original campus photobook PDF
+
+on:
+  push:
+    branches: [photobook-20261115]
+    paths:
+      - 'scripts/build_campus_book.py'
+      - '.github/workflows/build-campus-photobook.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  print-book:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: photobook-20261115
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install layout and PDF dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+          python -m pip install --disable-pip-version-check pillow==11.3.0 img2pdf==0.6.1 pymupdf==1.26.5
+      - name: Generate all pages and print-ready PDF
+        run: python scripts/build_campus_book.py
+      - name: Verify PDF, count images, and trim-box
+        run: |
+          python - <<'PY'
+          import json
+          import fitz
+          from pathlib import Path
+          folder=Path('book-output')
+          mf=json.loads((folder/'photo_manifest.json').read_text())
+          doc=fitz.open(folder/'Campus_Stories_B5_Print_300dpi.pdf')
+          assert len(doc)==mf['pages']
+          assert mf['photos']==143,(mf['photos'],len(doc))
+          assert len(mf['placements'])==143
+          assert len(doc)%4==0
+          assert all(170<p.trimbox.width*25.4/72<180 for p in doc)
+          assert all(246<p.trimbox.height*25.4/72<254 for p in doc)
+          print('PASS',len(doc),'pages and',mf['photos'],'photos; PDF bytes', (folder/'Campus_Stories_B5_Print_300dpi.pdf').stat().st_size)
+          PY
+      - name: Commit final PDF, preview and photo index to separate branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add book-output/Campus_Stories_B5_Print_300dpi.pdf book-output/photo_manifest.json book-output/preview_*.jpg
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish B5 print-ready 300dpi campus photobook"
+            git push origin HEAD:photobook-20261115
+          fi
+      - name: Upload downloadable PDF as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: campus-stories-b5-print
+          path: |
+            book-output/Campus_Stories_B5_Print_300dpi.pdf
+            book-output/photo_manifest.json
+            book-output/preview_*.jpg
+          if-no-files-found: error
