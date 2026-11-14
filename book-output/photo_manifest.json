@@ -1,0 +1,590 @@
+{
+  "photos": 143,
+  "pages": 64,
+  "chapter_counts": [
+    28,
+    14,
+    65,
+    36
+  ],
+  "trim_mm": [
+    176,
+    250
+  ],
+  "bleed_mm": 3,
+  "dpi": 300,
+  "placements": [
+    {
+      "filename": "20241115085633_IMG_0316_compressed.jpeg",
+      "page": 6
+    },
+    {
+      "filename": "20241115113602_IMG_0404_compressed.jpeg",
+      "page": 6
+    },
+    {
+      "filename": "20241115113616_IMG_0405_compressed.jpeg",
+      "page": 6
+    },
+    {
+      "filename": "20241115113620_IMG_0406_compressed.jpeg",
+      "page": 7
+    },
+    {
+      "filename": "20241125120029_IMG_0506_compressed.jpeg",
+      "page": 7
+    },
+    {
+      "filename": "IMG_2470_compressed.jpeg",
+      "page": 7
+    },
+    {
+      "filename": "IMG_2482_compressed.jpeg",
+      "page": 8
+    },
+    {
+      "filename": "IMG_2485_compressed.jpeg",
+      "page": 8
+    },
+    {
+      "filename": "IMG_2487_compressed.jpeg",
+      "page": 8
+    },
+    {
+      "filename": "IMG_2488_compressed.jpeg",
+      "page": 9
+    },
+    {
+      "filename": "IMG_2495_compressed.jpeg",
+      "page": 9
+    },
+    {
+      "filename": "微信图片_20250531143359_21_compressed.jpeg",
+      "page": 9
+    },
+    {
+      "filename": "微信图片_20250531143359_25_compressed.jpeg",
+      "page": 10
+    },
+    {
+      "filename": "微信图片_20250531143359_26_compressed.jpeg",
+      "page": 10
+    },
+    {
+      "filename": "微信图片_20250531143359_27_compressed.jpeg",
+      "page": 10
+    },
+    {
+      "filename": "微信图片_20250531143359_28_compressed.jpeg",
+      "page": 11
+    },
+    {
+      "filename": "微信图片_20250531143359_36_compressed.jpeg",
+      "page": 11
+    },
+    {
+      "filename": "微信图片_20250531143359_39_compressed.jpeg",
+      "page": 11
+    },
+    {
+      "filename": "微信图片_20250531143359_40_compressed.jpeg",
+      "page": 12
+    },
+    {
+      "filename": "微信图片_20250531143359_41_compressed.jpeg",
+      "page": 12
+    },
+    {
+      "filename": "微信图片_20250531143359_42_compressed.jpeg",
+      "page": 12
+    },
+    {
+      "filename": "微信图片_20250531143359_43_compressed.jpeg",
+      "page": 13
+    },
+    {
+      "filename": "微信图片_20250531143400_10_compressed.jpeg",
+      "page": 13
+    },
+    {
+      "filename": "微信图片_20250531143400_11_compressed.jpeg",
+      "page": 13
+    },
+    {
+      "filename": "微信图片_20250531143400_12_compressed.jpeg",
+      "page": 14
+    },
+    {
+      "filename": "微信图片_20250531143400_8_compressed.jpeg",
+      "page": 14
+    },
+    {
+      "filename": "微信图片_20250531143400_9_compressed.jpeg",
+      "page": 14
+    },
+    {
+      "filename": "微信图片_20250531143401_6_compressed.jpeg",
+      "page": 15
+    },
+    {
+      "filename": "20251120163415_IMG_2151_compressed.jpeg",
+      "page": 17
+    },
+    {
+      "filename": "20251120163416_IMG_2152_compressed.jpeg",
+      "page": 17
+    },
+    {
+      "filename": "20251120163417_IMG_2153_compressed.jpeg",
+      "page": 17
+    },
+    {
+      "filename": "20251120163418_IMG_2154_compressed.jpeg",
+      "page": 18
+    },
+    {
+      "filename": "20251120163421_IMG_2157_compressed.jpeg",
+      "page": 18
+    },
+    {
+      "filename": "dji_fly_20251121_075710_183_1763683165912_photo_optimized_compressed.jpeg",
+      "page": 18
+    },
+    {
+      "filename": "dji_fly_20251121_075720_184_1763683161637_photo_optimized_compressed.jpeg",
+      "page": 19
+    },
+    {
+      "filename": "dji_fly_20251121_075720_184_1763683161637_photo_optimized_compressed_1.jpeg",
+      "page": 19
+    },
+    {
+      "filename": "dji_fly_20251121_075908_185_1763683155566_photo_optimized_compressed.jpeg",
+      "page": 19
+    },
+    {
+      "filename": "IMG_20251229_215947_compressed.jpeg",
+      "page": 20
+    },
+    {
+      "filename": "IMG_20251229_220037_compressed.jpeg",
+      "page": 20
+    },
+    {
+      "filename": "IMG_20251229_220105_compressed.jpeg",
+      "page": 20
+    },
+    {
+      "filename": "IMG_20251229_220141_compressed.jpeg",
+      "page": 21
+    },
+    {
+      "filename": "IMG_20251229_220315_compressed.jpeg",
+      "page": 21
+    },
+    {
+      "filename": "20251231153826_IMG_3001_compressed.jpeg",
+      "page": 23
+    },
+    {
+      "filename": "20251231161215_IMG_3024_compressed.jpeg",
+      "page": 23
+    },
+    {
+      "filename": "20251231161431_IMG_3027_compressed.jpeg",
+      "page": 23
+    },
+    {
+      "filename": "20251231165102_IMG_3060_compressed.jpeg",
+      "page": 24
+    },
+    {
+      "filename": "20251231165246_IMG_3063_compressed.jpeg",
+      "page": 24
+    },
+    {
+      "filename": "20251231165249_IMG_3064_compressed.jpeg",
+      "page": 24
+    },
+    {
+      "filename": "20251231165250_IMG_3065_compressed.jpeg",
+      "page": 25
+    },
+    {
+      "filename": "20251231165251_IMG_3066_compressed.jpeg",
+      "page": 25
+    },
+    {
+      "filename": "20251231165252_IMG_3067_compressed.jpeg",
+      "page": 25
+    },
+    {
+      "filename": "20251231165252_IMG_3068_compressed.jpeg",
+      "page": 26
+    },
+    {
+      "filename": "20251231165253_IMG_3070_compressed.jpeg",
+      "page": 26
+    },
+    {
+      "filename": "20251231165253_IMG_3071_compressed.jpeg",
+      "page": 26
+    },
+    {
+      "filename": "20251231165253_IMG_3072_compressed.jpeg",
+      "page": 27
+    },
+    {
+      "filename": "20251231165254_IMG_3073_compressed.jpeg",
+      "page": 27
+    },
+    {
+      "filename": "20251231165258_IMG_3076_compressed.jpeg",
+      "page": 27
+    },
+    {
+      "filename": "20251231165259_IMG_3077_compressed.jpeg",
+      "page": 28
+    },
+    {
+      "filename": "_MG_2705_compressed.jpeg",
+      "page": 28
+    },
+    {
+      "filename": "_MG_2706_compressed.jpeg",
+      "page": 28
+    },
+    {
+      "filename": "_MG_2707_compressed.jpeg",
+      "page": 29
+    },
+    {
+      "filename": "_MG_2708_compressed.jpeg",
+      "page": 29
+    },
+    {
+      "filename": "_MG_2709_compressed.jpeg",
+      "page": 29
+    },
+    {
+      "filename": "_MG_2710_compressed.jpeg",
+      "page": 30
+    },
+    {
+      "filename": "_MG_2711_compressed.jpeg",
+      "page": 30
+    },
+    {
+      "filename": "_MG_2713_compressed.jpeg",
+      "page": 30
+    },
+    {
+      "filename": "_MG_2748_compressed.jpeg",
+      "page": 31
+    },
+    {
+      "filename": "_MG_2749_compressed.jpeg",
+      "page": 31
+    },
+    {
+      "filename": "_MG_2764_compressed.jpeg",
+      "page": 31
+    },
+    {
+      "filename": "_MG_2765_compressed.jpeg",
+      "page": 32
+    },
+    {
+      "filename": "_MG_2766_compressed.jpeg",
+      "page": 32
+    },
+    {
+      "filename": "_MG_2767_compressed.jpeg",
+      "page": 32
+    },
+    {
+      "filename": "_MG_2768_compressed.jpeg",
+      "page": 33
+    },
+    {
+      "filename": "_MG_2769_compressed.jpeg",
+      "page": 33
+    },
+    {
+      "filename": "_MG_2770_compressed.jpeg",
+      "page": 33
+    },
+    {
+      "filename": "IMG_2929_compressed.jpeg",
+      "page": 34
+    },
+    {
+      "filename": "IMG_2937_compressed.jpeg",
+      "page": 34
+    },
+    {
+      "filename": "IMG_2941_compressed.jpeg",
+      "page": 34
+    },
+    {
+      "filename": "IMG_2943_compressed.jpeg",
+      "page": 35
+    },
+    {
+      "filename": "IMG_2945_compressed.jpeg",
+      "page": 35
+    },
+    {
+      "filename": "IMG_2971_compressed.jpeg",
+      "page": 35
+    },
+    {
+      "filename": "IMG_3001_compressed.jpeg",
+      "page": 36
+    },
+    {
+      "filename": "IMG_3002_compressed.jpeg",
+      "page": 36
+    },
+    {
+      "filename": "IMG_3024_compressed.jpeg",
+      "page": 36
+    },
+    {
+      "filename": "IMG_3027_compressed.jpeg",
+      "page": 37
+    },
+    {
+      "filename": "IMG_3029_compressed.jpeg",
+      "page": 37
+    },
+    {
+      "filename": "IMG_3060_compressed.jpeg",
+      "page": 37
+    },
+    {
+      "filename": "IMG_3063_compressed.jpeg",
+      "page": 38
+    },
+    {
+      "filename": "IMG_3064_compressed.jpeg",
+      "page": 38
+    },
+    {
+      "filename": "IMG_3065_compressed.jpeg",
+      "page": 38
+    },
+    {
+      "filename": "IMG_3066_compressed.jpeg",
+      "page": 39
+    },
+    {
+      "filename": "IMG_3067_compressed.jpeg",
+      "page": 39
+    },
+    {
+      "filename": "IMG_3068_compressed.jpeg",
+      "page": 39
+    },
+    {
+      "filename": "IMG_3070_compressed.jpeg",
+      "page": 40
+    },
+    {
+      "filename": "IMG_3071_compressed.jpeg",
+      "page": 40
+    },
+    {
+      "filename": "IMG_3072_compressed.jpeg",
+      "page": 40
+    },
+    {
+      "filename": "IMG_3073_compressed.jpeg",
+      "page": 41
+    },
+    {
+      "filename": "IMG_3076_compressed.jpeg",
+      "page": 41
+    },
+    {
+      "filename": "IMG_3077_compressed.jpeg",
+      "page": 41
+    },
+    {
+      "filename": "MEITU_20251230_231526562_compressed.jpeg",
+      "page": 42
+    },
+    {
+      "filename": "MEITU_20251230_232012686_compressed.jpeg",
+      "page": 42
+    },
+    {
+      "filename": "Screenshot_2025-12-29-21-49-43-768_com.miui.gallery-edit_compressed.jpeg",
+      "page": 42
+    },
+    {
+      "filename": "Screenshot_2025-12-29-21-50-10-240_com.miui.gallery-edit_compressed.jpeg",
+      "page": 43
+    },
+    {
+      "filename": "Screenshot_2025-12-29-21-50-47-803_com.miui.gallery-edit_compressed.jpeg",
+      "page": 43
+    },
+    {
+      "filename": "Screenshot_2025-12-29-21-52-40-774_com.miui.gallery-edit_compressed.jpeg",
+      "page": 43
+    },
+    {
+      "filename": "Screenshot_2025-12-29-21-53-02-228_com.miui.gallery-edit_compressed.jpeg",
+      "page": 44
+    },
+    {
+      "filename": "Screenshot_2025-12-29-21-53-22-330_com.miui.gallery-edit_compressed.jpeg",
+      "page": 44
+    },
+    {
+      "filename": "FgX9Dr_compressed.jpeg",
+      "page": 46
+    },
+    {
+      "filename": "FhI56e_compressed.jpeg",
+      "page": 46
+    },
+    {
+      "filename": "FhwBb7_compressed.jpeg",
+      "page": 46
+    },
+    {
+      "filename": "FiBnxL_compressed.jpeg",
+      "page": 47
+    },
+    {
+      "filename": "FiPXO6_compressed.jpeg",
+      "page": 47
+    },
+    {
+      "filename": "FiXyzW_compressed.jpeg",
+      "page": 47
+    },
+    {
+      "filename": "Fj3anK_compressed.jpeg",
+      "page": 48
+    },
+    {
+      "filename": "Fj_GgL_compressed.jpeg",
+      "page": 48
+    },
+    {
+      "filename": "FjvywB_compressed.jpeg",
+      "page": 48
+    },
+    {
+      "filename": "FjzAlS_compressed.jpeg",
+      "page": 49
+    },
+    {
+      "filename": "Fk1Rbd_compressed.jpeg",
+      "page": 49
+    },
+    {
+      "filename": "FkOdMv_compressed.jpeg",
+      "page": 49
+    },
+    {
+      "filename": "Flo5df_compressed.jpeg",
+      "page": 50
+    },
+    {
+      "filename": "FlpyXB_compressed.jpeg",
+      "page": 50
+    },
+    {
+      "filename": "FlQADq_compressed.jpeg",
+      "page": 50
+    },
+    {
+      "filename": "FlWwQq_compressed.jpeg",
+      "page": 51
+    },
+    {
+      "filename": "FmJpUN_compressed.jpeg",
+      "page": 51
+    },
+    {
+      "filename": "FmOyIZ_compressed.jpeg",
+      "page": 51
+    },
+    {
+      "filename": "FmU2Pa_compressed.jpeg",
+      "page": 52
+    },
+    {
+      "filename": "Fn5__9_compressed.jpeg",
+      "page": 52
+    },
+    {
+      "filename": "FnbF78_compressed.jpeg",
+      "page": 52
+    },
+    {
+      "filename": "FnXyXt_compressed.jpeg",
+      "page": 53
+    },
+    {
+      "filename": "Fq9uPZ_compressed.jpeg",
+      "page": 53
+    },
+    {
+      "filename": "FqD8SR_compressed.jpeg",
+      "page": 53
+    },
+    {
+      "filename": "FqZFES_compressed.jpeg",
+      "page": 54
+    },
+    {
+      "filename": "Fr1bPx_compressed.jpeg",
+      "page": 54
+    },
+    {
+      "filename": "FrSzMC_compressed.jpeg",
+      "page": 54
+    },
+    {
+      "filename": "Fssb9H_compressed.jpeg",
+      "page": 55
+    },
+    {
+      "filename": "FtfWFV_compressed.jpeg",
+      "page": 55
+    },
+    {
+      "filename": "Fth7RJ_compressed.jpeg",
+      "page": 55
+    },
+    {
+      "filename": "FtW15T_compressed.jpeg",
+      "page": 56
+    },
+    {
+      "filename": "Fuktsl_compressed.jpeg",
+      "page": 56
+    },
+    {
+      "filename": "FvD4E1_compressed.jpeg",
+      "page": 56
+    },
+    {
+      "filename": "FvfMHY_compressed.jpeg",
+      "page": 57
+    },
+    {
+      "filename": "FvwKXW_compressed.jpeg",
+      "page": 57
+    },
+    {
+      "filename": "IMG_1734_compressed.jpeg",
+      "page": 57
+    }
+  ]
+}
